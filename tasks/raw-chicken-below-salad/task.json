@@ -1,0 +1,20 @@
+{
+  "title": "Store the raw chicken below the salad on a two-tier fridge rack",
+  "category": "Impact on jobs",
+  "keywords": [
+    "food safety",
+    "fridge storage",
+    "cross-contamination",
+    "placing at different heights",
+    "bimanual"
+  ],
+  "instruction": "Put the red tray of raw chicken and the green salad container on the two-tier rack, with the raw chicken tray lying flat on the lower shelf, below the salad container standing upright on the upper shelf.",
+  "context": "Food codes require raw meat and poultry to be stored below ready-to-eat food so its juice can't drip onto it; putting each item on the nearest free shelf gets it wrong. Done by: cooks, food preparation workers, grocery stockers.",
+  "setup": "A two-tier rack of painted steel is fixed to the table between the arms, centred on the midline, 41 cm side to side. The low tier is a dark grey deck 1.5 cm thick whose front edge is 10.5 cm in front of the arm bases; inside it is 14 cm front to back and 40 cm side to side. Directly behind it stands the high tier, a solid blue riser 9 cm tall (its top 7.5 cm above the low deck), 25 to 37 cm in front of the arm bases; inside it is 11 cm front to back and 40 cm side to side. Every open edge of each tier has a lip 1 cm tall and 5 mm thick: the low tier's front and both ends, the high tier's front, back and both ends; the riser's face is the low tier's back. A red tray of raw chicken (polystyrene tray wrapped in plastic film, 12 cm long, 7 cm wide, 4 cm tall, 400 g) lies flat on the table in front of the right arm, 30 cm right of centre, its centre 22 cm in front of the arm bases, its long side pointing away from the arms. A green plastic salad container (9 cm long, 7 cm wide, 6 cm tall, 250 g, lid on) stands on the table in front of the left arm, 30 cm left of centre, its centre 22 cm in front of the arm bases, its long side pointing away from the arms. Nothing else is on the table.",
+  "scoring": "An item counts as stored on a tier when its centre is inside that tier's inner outline (or within 5 mm past it, leaning on a lip), its bottom is between 5 mm below and 3 mm above that tier's deck (set down on the deck, not held above it), it is tilted at most 10 degrees, and it is still: moving under 1 cm/s and turning under 0.5 rad/s. The chicken stored on the low tier: 0.5. The salad stored on the high tier: 0.5. Both: 1.0, and the trial ends in success once that has held for 2.5 s. The score is 0 if the chicken is on the high tier (its centre inside the high tier's outline as above and its bottom no lower than 5 mm below the high deck, at any height), or if the chicken's footprint and the salad's footprint (each item's true outline seen from above, as turned and tilted) overlap and the chicken's bottom is at or above a level 1 cm below the salad's top.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Lay the chicken tray flat at its mark in front of the right arm and stand the salad container at its mark in front of the left arm, both with the long side pointing away from the arms; tape outlines on the table make this quick. Wipe the rack if a real tray leaked.",
+  "fidelity": "Approximate: the chicken tray and the salad container are rigid boxes; meat juice isn't modelled, so the chicken being on the high tier or over the salad stands in for drips. The rack is one fixed solid step shape (clamp it down for real trials) rather than wire shelves, and its tiers are closer together than a fridge's. Every object has the same rubber-like friction (1.2 static, 1.0 dynamic), grippier than film or plastic.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-9U9WAY"
+}
