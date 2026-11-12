@@ -88,7 +88,7 @@ GOAL_MODULE = {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrume
 
 def test_the_task_loads_with_its_loose_objects():
     assert TASK.scene == "station"
-    assert set(TASK.free_objects) == {'cuvette_a', 'cuvette_b'}
+    assert set(TASK.free_objects) == {'cuvette_b', 'cuvette_a'}
     assert TASK.docs and TASK.docs.strip()
 
 
@@ -144,7 +144,7 @@ CASES = [
     }, 1, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,True)'}),  # Sample bottomed in its pocket, leaning on the wall within the pocket's own geometric limit; it is in the rack.
     ('CAL on sample then reading sample', GOAL_POSES, {
         'cuvette_b': {'pos': (0.19, -0.045, 0.7775)},
-    }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': "nominal_instrument(0,False,'sample')"}),  # Sample self-reference reads 0.00 rather than 0.15 AU.
+    }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': "nominal_instrument(0,False,'sample')"}),  # Sample self-reference reads 0.00 rather than 0.12 AU.
     ('CAL on blank with ridged faces', GOAL_POSES, {
     }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': "nominal_instrument(0,False,'ridged_blank')"}),  # Wrong reference shifts the reading down by 0.60 AU.
     ('ridged blank CAL plus ridged sample', GOAL_POSES, {
@@ -155,7 +155,7 @@ CASES = [
     }, 0, {'TEST_LAYOUT': 'LAYOUTS[1]', 'TEST_INSTRUMENT': 'nominal_instrument(1,False,None)'}),  # Changing wavelength clears the reference.
     ('correct CAL sample read with ridged faces', GOAL_POSES, {
         'cuvette_b': {'pos': (0.19, -0.045, 0.7775), 'yaw_deg': 90},
-    }, 0.25, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,False)'}),  # Ridged sample gives 0.75 AU; only reference credit remains.
+    }, 0.25, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,False)'}),  # Ridged sample gives 0.72 AU; only reference credit remains.
     ('correct CAL sample read lid open', GOAL_POSES, {
         'cuvette_b': {'pos': (0.19, -0.045, 0.7775)},
     }, 0.25, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,False)'}),  # Open lid has no valid reading.

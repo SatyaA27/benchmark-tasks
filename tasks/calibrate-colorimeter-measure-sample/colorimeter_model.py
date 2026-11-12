@@ -6,7 +6,7 @@ The reference is an intensity, with no knowledge of the correct protocol.
 import math
 
 WAVELENGTHS = (430,470,565,635)
-ABSORBANCE = (.15,.10,.32,.78)
+ABSORBANCE = (.12,.22,.20,.78)
 I0 = (1.,.94,1.06,.98)
 
 
