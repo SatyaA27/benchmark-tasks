@@ -251,18 +251,27 @@ def _plate_bounds(bracket):
 
 
 def _plate_in_shank_span(bracket):
-    lo, hi = _plate_bounds(bracket)
-    return bool(lo[0] >= HEAD_BACK_X - PEN_TOL - NUM_EPS
-                and hi[0] <= PANEL_FACE_X + PEN_TOL + NUM_EPS)
+    """Behind both heads and in front of the panel, each within PEN_TOL.
 
-
-def _slot_pair_squared(bracket):
-    # Explicit lock alignment rule: each slot's yaw-induced x displacement
-    # from the holder centre plane is at most the 3 mm alignment allowance.
-    # This is stricter than collision fit with the long shanks, and symmetric
-    # under the equivalent 0/180-degree orientations.
-    return bool(abs(bracket.rotation()[0, 1]) * STUD_SPACING / 2
-                <= ALIGN_Y_TOL + NUM_EPS)
+    The front bound is checked where a head can touch the plate: over each
+    head's footprint, the part of the plate's head-side face within HEAD_R of
+    that shank axis. The plate's ends, which no head reaches, have no front
+    bound, so a yawed holder that fits between the heads and the panel is in
+    the span. No plate point may be past the panel face."""
+    _, hi = _plate_bounds(bracket)
+    origin = np.asarray(bracket.origin)
+    normal = bracket.rotation()[:, 0]
+    if abs(normal[0]) < 0.5:
+        return False
+    # Each shank axis crosses the plate mid-plane at mid_x. The head-side face
+    # is PLATE_T / 2 off the mid-plane, and on a face turned from x a HEAD_R
+    # disc around the shank axis reaches further toward -x.
+    reach = (PLATE_T / 2 + HEAD_R * math.sqrt(max(1.0 - normal[0] ** 2, 0.0))) / abs(normal[0])
+    for y in STUD_YS:
+        mid_x = origin[0] - (normal[1] * (y - origin[1]) + normal[2] * (STUD_Z - origin[2])) / normal[0]
+        if mid_x - reach < HEAD_BACK_X - PEN_TOL - NUM_EPS:
+            return False
+    return bool(hi[0] <= PANEL_FACE_X + PEN_TOL + NUM_EPS)
 
 
 def _shanks_local(bracket):
@@ -316,8 +325,7 @@ def score(objects):
     inserted = bool(staged and _plate_in_shank_span(bracket) and shanks
                     and all(_shank_in_opening(p, y) for p, y in shanks))
     hung = (inserted and all(_shank_bearing(p, y) for p, y in shanks)
-            and _slot_pair_squared(bracket) and released(bracket)
-            and bracket.resting(REST_SPEED, REST_SPIN))
+            and released(bracket) and bracket.resting(REST_SPEED, REST_SPIN))
     still_s = held_for("hung", hung)
     if not staged:
         return 0.0

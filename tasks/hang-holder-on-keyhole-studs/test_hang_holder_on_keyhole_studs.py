@@ -108,6 +108,18 @@ CASES = [
     ('actual_face_pen_1mm', GOAL_POSES, {
         'bracket': {'pos': (0.333, 0.18, 0.837)},
     }, 1),
+    ('yawed_4deg_at_goal', GOAL_POSES, {
+        'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': 4},
+    }, 1),  # yaw about the vertical leaves both shanks bearing at the same height; the plate face is 2.1 mm behind the near head and the far corner 0.4 mm in front of the panel, so the released holder hangs securely
+    ('yawed_minus_4deg_at_goal', GOAL_POSES, {
+        'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': -4},
+    }, 1),  # the mirror image of the 4-degree hang; the other head and the other corner set the limits
+    ('yawed_4deg_and_turned_180_at_goal', GOAL_POSES, {
+        'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': -176},
+    }, 1),  # 184 degrees (-176) is the 4-degree hang turned 180 degrees, equivalent for this symmetric, two-sided holder
+    ('yawed_5deg_against_the_heads', GOAL_POSES, {
+        'bracket': {'pos': (0.3249, 0.18, 0.837), 'yaw_deg': 5},
+    }, 1),  # near the geometric limit of about 5.05 degrees; the plate face touches the near head and the far corner is 0.13 mm in front of the panel, so it hangs on both studs; the plate's free end, which no head reaches, is in front of x=0.316
     ('lifted and staged within 50 mm of the panel', START_POSES, {
         'bracket': {'pos': (0.3, 0.18, 0.8585)},
     }, 0.25),
@@ -140,9 +152,6 @@ CASES = [
     ('red team: inserted through the entries 5 mm off centre sideways', GOAL_POSES, {
         'bracket': {'pos': (0.326, 0.185, 0.8585)},
     }, 0.5),  # the 24 mm entries let a 5 mm shank sit 9.5 mm off centre; the plate is behind both heads, so insertion is complete
-    ('yawed_4deg_at_goal', GOAL_POSES, {
-        'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': 4},
-    }, 0.5),  # a yawed holder has not squared its paired slots for full credit
     ('face_pen_4mm', GOAL_POSES, {
         'bracket': {'pos': (0.336, 0.18, 0.837)},
     }, 0),  # four millimetres of face penetration exceeds the contact tolerance and puts the origin behind the panel face
@@ -173,6 +182,9 @@ CASES = [
     ('turned 45 degrees at the goal', GOAL_POSES, {
         'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': 45},
     }, 0),  # corners go behind the panel face; centre alignment alone is insufficient
+    ('turned 7 degrees at the goal', GOAL_POSES, {
+        'bracket': {'pos': (0.326, 0.18, 0.837), 'yaw_deg': 7},
+    }, 0),  # beyond the geometric limit; the far plate corner is 3.7 mm into the panel face, past the 2 mm contact tolerance
     ('carried halfway at time out', START_POSES, {
         'bracket': {'pos': (0.281, 0.18, 0.8585)},
     }, 0),  # staging credit begins only within 50 mm of the panel face
@@ -215,6 +227,9 @@ CASES = [
     ('red team: rolled 2 degrees with only one shank bearing', GOAL_POSES, {
         'bracket': {'pos': (0.326, 0.18, 0.8387), 'tilt_deg': 2, 'tilt_axis': 'x'},
     }, 0.5),  # one shank bears on its slot end and the other is about 3.5 mm below its own; the holder is only stable like this while held, so it isn't hung on both studs
+    ('yawed 4 degrees and rolled 2 degrees with only one shank bearing', GOAL_POSES, {
+        'bracket': {'pos': (0.326, 0.18, 0.8387), 'yaw_deg': 4, 'tilt_deg': 2, 'tilt_axis': 'x'},
+    }, 0.5),  # the yaw is allowed, but one shank bears and the other is about 3.5 mm below its slot end, so it isn't hung on both studs
 ]
 
 

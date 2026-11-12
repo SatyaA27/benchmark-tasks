@@ -74,8 +74,8 @@ ends. Lowering the holder moves the shanks upward in the holder frame.
 |---|---|
 | 0 overall | Tilt exceeds 5 degrees; lowest collider point is below table top + 0.020; any plate corner is beyond x=0.336 or the origin is behind panel face x=0.334; or any plate width extends outside panel y=0.050..0.310. These reject table-supported, leaning, flipped, behind-panel and off-table layouts. |
 | 0.25 | The upright holder is out of the rest and within 0.050 of the finite panel face: Euclidean distance from its plate centre in y,z (clamped to the panel rectangle) and rear plate face in x. |
-| 0.50 | Inserted: the whole plate is inside the shank span (minimum plate x >= 0.316, maximum plate x <= 0.336, i.e. between the heads' back faces x=0.318 and the panel face x=0.334 with 0.002 contact tolerance), and both shank centres are inside their keyhole openings. Each shank centre is measured in the holder frame where its axis crosses the plate mid-plane: local z 0.0045..0.0375, and its local y offset from its opening's centre line (y=+/-0.050) is at most 0.0095 while local z < 0.026 (in the entry) and at most 0.003 at local z >= 0.026 (in the slot). This is one continuous band from the entry floor to the slot end: for an upright, centred holder, origin z 0.8350..0.8680. The holder may be held or moving. |
-| 1.00 | Hung: the 0.50 conditions, plus each shank centre at local z 0.0350..0.0375 (at most 0.0005 below its slot's closed end at local z=0.0355, or up to 0.002 into it) with local y offset at most 0.003; for an upright holder, origin z 0.8350..0.8375. Each slot centre has at most 0.003 of yaw-induced x displacement from the holder centre plane (yaw within about 3.44 degrees of 0 or 180). Released: each gripper's centre point between the pads is at least 0.030 m from the holder's world bounding box. At rest: speed below 0.010 m/s and spin below 0.500 rad/s. All hung, release and rest conditions must hold continuously for 1.0 s to earn 1.00. Success requires full credit for 1.0 s more. |
+| 0.50 | Inserted: the plate is inside the shank span, between the heads and the panel. Over each head's footprint (within 0.006, the head radius, of its shank axis) the plate's head-side face is at x >= 0.316 (behind the heads' back faces x=0.318 with 0.002 contact tolerance), and no plate point is beyond x=0.336 (the panel face x=0.334 with the same tolerance). Both shank centres are inside their keyhole openings. Each shank centre is measured in the holder frame where its axis crosses the plate mid-plane: local z 0.0045..0.0375, and its local y offset from its opening's centre line (y=+/-0.050) is at most 0.0095 while local z < 0.026 (in the entry) and at most 0.003 at local z >= 0.026 (in the slot). This is one continuous band from the entry floor to the slot end: for an upright, centred holder, origin z 0.8350..0.8680. The holder may be held or moving. |
+| 1.00 | Hung: the 0.50 conditions, plus each shank centre at local z 0.0350..0.0375 (at most 0.0005 below its slot's closed end at local z=0.0355, or up to 0.002 into it) with local y offset at most 0.003; for an upright holder, origin z 0.8350..0.8375. Released: each gripper's centre point between the pads is at least 0.030 m from the holder's world bounding box. At rest: speed below 0.010 m/s and spin below 0.500 rad/s. All hung, release and rest conditions must hold continuously for 1.0 s to earn 1.00. Success requires full credit for 1.0 s more. |
 
 The bearing rule is checked per shank and is one-sided: a shank more than 0.5 mm
 below its slot end does not bear, so a holder held still 0.8, 1.5 or 2 mm below
@@ -90,12 +90,21 @@ credit requires both grippers to clear the holder throughout the stillness
 interval. Timers reset on interrupted conditions,
 skipped control steps and episode resets.
 
-Full credit uses the entire plate bounds: for an upright holder, full credit
-allows origin x 0.318..0.334 (the plate anywhere between the head backs and the
-panel face, 2 mm contact tolerance), which is -8/+8 mm around the centred goal
-x=0.326; for example, 5 mm shifts forward or back (x=0.321 or 0.331) earn 1.00. A 4-degree yaw at the goal earns 0.50:
-the long shanks can physically accommodate that yaw, so squaring the slot pair is
-an explicit requirement, `abs(R[0,1]) * 0.050 <= 0.003`.
+For an upright holder at yaw 0, full credit allows origin x 0.318..0.334 (the
+plate anywhere between the head backs and the panel face, 2 mm contact
+tolerance), which is -8/+8 mm around the centred goal x=0.326; for example, 5 mm
+shifts forward or back (x=0.321 or 0.331) earn 1.00.
+
+Turning about the vertical does not raise a hung holder (the shanks bear at the
+same height at any yaw), so a released holder can rest at any yaw the heads and
+panel admit, and yaw has no separate limit. The front bound is taken over the
+head footprints, where a head can touch the plate, not at the plate's ends,
+which no head reaches. A centred holder fits between the heads and the panel
+without penetration up to about 5.05 degrees of yaw (6.74 with the 2 mm
+tolerance on both sides). A 4-degree yaw either way at the goal earns 1.00, as
+does 5 degrees with the plate against a head (origin x 0.3249, far corner
+0.13 mm in front of the panel); at 7 degrees the far plate corner is 3.7 mm into
+the panel at the goal, which earns zero.
 
 Examples: inserted with the shanks 3 mm above the entry floors (origin 9 mm
 above entry height), 9 mm below entry height, halfway from the entries to the
