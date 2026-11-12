@@ -22,6 +22,11 @@ from yam_arena.task_file import GREY
 
 @dataclass(frozen=True)
 class Hinge:
+    """Revolute joint; stiction efforts are N·m, without degree conversion.
+
+    friction is PhysX jointFriction (unitless, weak dissipation, not stiction).
+    Use static_friction and dynamic_friction for absolute friction efforts.
+    """
     axis: str
     anchor: tuple[float, float, float]
     lower: float
@@ -29,13 +34,20 @@ class Hinge:
     damping: float = 0.0
     spring: float = 0.0
     rest: float = 0.0
-    friction: float = 0.0
+    friction: float = 0.0  # PhysX jointFriction: unitless weak dissipation; see static/dynamic_friction
     initial: float = 0.0  # degrees
     armature: float = 0.0  # kg m²
+    static_friction: float = 0.0  # N·m
+    dynamic_friction: float = 0.0  # N·m
 
 
 @dataclass(frozen=True)
 class Slide:
+    """Prismatic joint; static_friction and dynamic_friction are efforts in N.
+
+    friction is PhysX jointFriction (unitless, weak dissipation, not stiction).
+    Use static_friction and dynamic_friction for absolute friction efforts.
+    """
     axis: str
     anchor: tuple[float, float, float]
     lower: float
@@ -43,9 +55,11 @@ class Slide:
     damping: float = 0.0
     spring: float = 0.0
     rest: float = 0.0
-    friction: float = 0.0
+    friction: float = 0.0  # PhysX jointFriction: unitless weak dissipation; see static/dynamic_friction
     initial: float = 0.0  # metres
     armature: float = 0.0  # kg
+    static_friction: float = 0.0  # N
+    dynamic_friction: float = 0.0  # N
 
 
 @dataclass(frozen=True)
@@ -177,6 +191,10 @@ class Mechanism(parts.Part):
                 raise ValueError("joint initial must be finite and within limits")
             if not math.isfinite(j.armature) or j.armature < 0:
                 raise ValueError("joint armature must be finite and non-negative")
+            if not all(math.isfinite(x) and x >= 0 for x in (j.static_friction, j.dynamic_friction)):
+                raise ValueError("joint static_friction and dynamic_friction must be finite and non-negative")
+            if j.dynamic_friction > j.static_friction:
+                raise ValueError("joint dynamic_friction must not exceed static_friction")
             seen.add(link.name)
         if self.lamp_logic is not None and not callable(self.lamp_logic):
             raise ValueError("lamp_logic must be callable or None")
@@ -440,6 +458,18 @@ def _spawn_mechanism(prim_path, cfg, *args, **kwargs):
             PhysxSchema.PhysxJointAPI.Apply(joint.GetPrim()).CreateJointFrictionAttr().Set(j.friction)
         if j.armature > 0:
             PhysxSchema.PhysxJointAPI.Apply(joint.GetPrim()).CreateArmatureAttr().Set(j.armature)
+        if j.static_friction > 0 or j.dynamic_friction > 0:
+            axis = "angular" if hinge else "linear"
+            prim = joint.GetPrim()
+            prim.ApplyAPI("PhysxJointAxisAPI", axis)
+            for effort, value in (("staticFrictionEffort", j.static_friction),
+                                  ("dynamicFrictionEffort", j.dynamic_friction)):
+                name = f"physxJointAxis:{axis}:{effort}"
+                attr = prim.GetAttribute(name)
+                if not attr:
+                    from pxr import Sdf
+                    attr = prim.CreateAttribute(name, Sdf.ValueTypeNames.Float)
+                attr.Set(float(value))
     if mech.mass is None:
         base = stage.GetPrimAtPath(f"{prim_path}/base")
         pose = UsdGeom.XformCache().GetLocalToWorldTransform(base).RemoveScaleShear()

@@ -74,12 +74,12 @@ def layout(poses):
 START_POSES = {
     'enclosure': {'pos': (0.215, 0, 0.7475), 'joints': {'catch': 0.0}},
     'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -50.0, 'bolt': 0.0}},
-    'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0}},
+    'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0, 'latch': 90.0}},
 }
 GOAL_POSES = {
     'enclosure': {'pos': (0.215, 0, 0.7475), 'joints': {'catch': -0.0001999999999999988}},
     'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'bolt': 0.015}},
-    'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0}},
+    'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'latch': 0.0}},
 }
 START, GOAL = layout(START_POSES), layout(GOAL_POSES)
 
@@ -107,7 +107,7 @@ CASES = [
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'bolt': 0.0}},
     }, 0),
     ('passive closed and bolted', GOAL_POSES, {
-        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0}},
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0, 'latch': 90.0}},
     }, 0.25),
     ('both closed bolt down', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'bolt': 0.0}},
@@ -115,19 +115,41 @@ CASES = [
     ('both closed bolt only 6 mm up', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'bolt': 0.006}},
     }, 0.5),
+    ('both closed and bolted, latch unlatched', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'latch': 90.0}},
+    }, 0.5),
+    ('both closed, bolt down and latch unlatched', GOAL_POSES, {
+        'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'bolt': 0.0}},
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'latch': 90.0}},
+    }, 0.5),
+    ('latch turned to 9 degrees', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'latch': 9.0}},
+    }, 1),
+    ('latch turned only to 11 degrees', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.0, 'latch': 11.0}},
+    }, 0.5),
     ('active 1.5 degrees open', GOAL_POSES, {
-        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 1.5}},
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 1.5, 'latch': 90.0}},
     }, 0.25),
-    ('passive forced against the front of the shut astragal at 7 degrees', GOAL_POSES, {
+    ('latch stopped at 45 degrees on the header bar', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.8, 'latch': 45.0}},
+    }, 0.5),  # Turned on a leaf 0.8 degrees open, the cam tip meets the underside of the header bar at about 44 degrees. The leaf counts as closed, but the latch is more than 10 degrees from latched, so it is not secured.
+    ('active leaf pulled against the thrown latch', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 0.35, 'latch': 0.0}},
+    }, 1),  # With the latch thrown, the cam meets the back of the header bar when the active leaf is 0.35 degrees open, so a latched leaf pulled open stays within the 1 degree closed band.
+    ('latch thrown on the open active leaf, passive bolted', GOAL_POSES, {
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 29.999999999999996, 'latch': 0.0}},
+    }, 0.25),  # The latch angle counts only on a closed active leaf. A latch thrown on a leaf this far open keeps it from shutting (its cam meets the front of the header bar at 6.97 degrees), so only the passive tier remains.
+    ('passive held against the front of the shut astragal at 7 degrees', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -7.0, 'bolt': 0.0}},
-    }, 0),  # The passive sheet meets the astragal's front at 6.46 degrees; 7 degrees is inside the 4.5..8 degree sticky band. Offline a static layout has infinite hold time, so the violation applies at once; online it needs 0.25 seconds.
-    ('passive forced against the front of an astragal 1 degree open at 7.7 degrees', GOAL_POSES, {
+    }, 0),  # The passive sheet meets the astragal's front at 6.46 degrees, so a passive leaf closed second stops about 7 degrees open and no tier applies. This is an end state, not a sticky penalty; reopening the active leaf and closing the leaves in order still reaches 1.0.
+    ('passive held against the front of an astragal 1 degree open at 7.7 degrees', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -7.699999999999999, 'bolt': 0.0}},
-        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 1.0}},
-    }, 0),  # With the active leaf 1 degree open the front contact moves to about 7.7 degrees, still inside the 8 degree band top.
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 1.0, 'latch': 90.0}},
+    }, 0),  # With the active leaf 1 degree open the front contact moves to about 7.7 degrees; the passive leaf is open, so no tier applies.
     ('passive 2 degrees ajar behind the shut astragal with bolt raised', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -2.0, 'bolt': 0.015}},
-    }, 0),  # Below the 4.5 degree band, so no violation; but the passive leaf is more than 1 degree open, so the raised bolt does not count as bolted and no tier applies. Once pushed to 0 degrees it can still reach 1.0.
+    }, 0),  # The passive leaf is more than 1 degree open, so the raised bolt does not count as bolted and no tier applies. Once pushed to 0 degrees it can still reach 1.0.
     ('passive 0.9 degrees ajar behind the shut astragal, bolted', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -0.9, 'bolt': 0.015}},
     }, 1),
@@ -136,11 +158,11 @@ CASES = [
     }, 0),
     ('bolt raised passive open 30 degrees', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -29.999999999999996, 'bolt': 0.015}},
-        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0}},
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0, 'latch': 90.0}},
     }, 0),  # Away from the keeper a raised rod falls. A numerical raised q alone never counts as bolted.
     ('undo closure loses credit', GOAL_POSES, {
         'door_left': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': -50.0, 'bolt': 0.0}},
-        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0}},
+        'door_right': {'pos': (0.215, 0, 0.7475), 'joints': {'leaf': 70.0, 'latch': 90.0}},
     }, 0),
 ]
 
