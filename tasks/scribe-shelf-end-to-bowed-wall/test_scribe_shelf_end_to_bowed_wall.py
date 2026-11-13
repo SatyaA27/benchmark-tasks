@@ -81,7 +81,7 @@ GOAL_MODULE = {'TEST_STROKES': 'nominal_strokes(0)'}
 
 def test_the_task_loads_with_its_loose_objects():
     assert TASK.scene == "station"
-    assert set(TASK.free_objects) == {'shelf', 'compass'}
+    assert set(TASK.free_objects) == {'compass', 'shelf'}
     assert TASK.docs and TASK.docs.strip()
 
 
@@ -134,6 +134,20 @@ CASES = [
     }, 1, {'TEST_LAYOUT': '3', 'TEST_STROKES': 'nominal_strokes(3)'}),
     ('only the front half scribed', GOAL_POSES, {
     }, 0, {'TEST_STROKES': '[ideal_line(0, 0.0, 0.002, 0.070)]'}),
+    ('line on target with a 1.9 mm skip between stations 57 and 67, still one line', GOAL_POSES, {
+    }, 1, {'TEST_STROKES': 'broken_strokes(0, 0.0019)'}),
+    ('line on target with a 2.1 mm skip between stations 57 and 67, broken', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': 'broken_strokes(0, 0.0021)'}),
+    ('line on target starting 2.5 mm in from the front edge', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': '[ideal_line(0, 0.0, 0.0025, SHELF_D)]'}),
+    ('line on target stopping 2.5 mm short of the back edge', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': '[ideal_line(0, 0.0, 0.0, SHELF_D - 0.0025)]'}),
+    ('continuous line 2.5 mm off', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': 'nominal_strokes(0, 0.0025)'}),
+    ('single touches on target at the 14 stations, nothing between', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': 'station_dots(0)'}),  # the touches are 7 to 10 mm apart, not one line; line credit needs no gap over 2 mm from edge to edge
+    ('station touches on target joined by dashes 3 mm off the line', GOAL_POSES, {
+    }, 0, {'TEST_STROKES': 'dashes_and_dots(0, 0.003)'}),  # the marks read at the stations are 3 mm from the rest of the line, so the line read is not continuous
     ('best straight line through the targets (ruler, no wall)', GOAL_POSES, {
     }, 0, {'TEST_STROKES': 'straight_strokes(0)'}),  # misses the wall's bend at the gate stations
     ("layout 1's line drawn on layout 0 (memorised path)", GOAL_POSES, {

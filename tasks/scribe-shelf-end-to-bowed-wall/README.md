@@ -2,7 +2,7 @@
 
 Walls are rarely flat, so a shelf, countertop or cabinet side that must sit tight against one is scribed before it is cut. The board is set against the wall where it touches, and a pencil compass, locked open, is run along the wall with its steel point on the wall and its pencil on the board, its legs kept square to the wall. The pencil copies the wall's line onto the board, offset by the compass setting; cut to that line, the board fits with no gap. If the compass twists or comes off the wall, or the board drifts away from the wall, the line is copied wrong and the cut leaves a gap.
 
-Here a pine shelf board lies on the table with its end against a fixed wall section whose face has two humps and a hollow (up to 5.1 mm of gap along the shelf's end). One hand holds the shelf; the other takes the compass off its stand, scribes a line across the shelf's end from its front edge to its back edge, and puts the compass down off the shelf. The line is read at 14 stations to 0.5 mm.
+Here a pine shelf board lies on the table with its end against a fixed wall section whose face has two humps and a hollow (up to 5.1 mm of gap along the shelf's end). One hand holds the shelf; the other takes the compass off its stand, scribes one unbroken line across the shelf's end from its front edge to its back edge, and puts the compass down off the shelf. The line may have no gap longer than 2 mm and is read at 14 stations to 0.5 mm.
 
 Category: Impact on jobs. Done by carpenters (O*NET 47-2031.00: "Measure and mark cutting lines on materials, using a ruler, pencil, chalk, and marking gauge."), including finish carpenters and cabinet and countertop installers. The demonstration holds the shelf with the right arm and scribes with the left; the scorer does not care which arm does what.
 
@@ -16,7 +16,7 @@ With the official simulator installed, run from this folder with zero object jit
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
   -E task=scribe_shelf_end_to_bowed_wall.py -E object_jitter=0 -E control_hz=20 \
   -E cam_width=320 -E cam_height=176 --seed 0 \
-  --instruction "Holding the shelf against the wall, scribe its end to the wall: run the compass from the shelf's front edge to its back edge, point on the wall, pencil on the shelf, then put the compass down off the shelf and wall." \
+  --instruction "Holding the shelf against the wall, scribe its end to the wall: run the compass from the shelf's front edge to its back edge in one unbroken line, point on the wall, pencil on the shelf, then put the compass down off the shelf and wall." \
   --scorer task_score --max-steps 2400 --store-frames --log-dir ./demo-run
 ```
 
@@ -26,7 +26,7 @@ The model run uses the same command with `--policy dream`. The harness reports t
 
 **CPU checks.** `python -m pytest -q -p no:cacheprovider` in this folder with yam_arena installed runs the scorer on the start, the goal and named partial and cheat layouts, and `test_red_team.py` steps the pencil-path recorder and scorer through whole trials.
 
-Runtime per trial: at most 2,400 control steps (120 s simulated). The scripted demonstration's plan lasts 37.4 s (748 steps); success needs 1 s more after both hands are clear, 32% of the limit. Wall-clock time depends on the GPU.
+Runtime per trial: at most 2,400 control steps (120 s simulated). The scripted demonstration's plan lasts 38.6 s (772 steps); success needs 1 s more after both hands are clear, 33% of the limit. Wall-clock time depends on the GPU.
 
 ## Scoring
 
@@ -38,14 +38,18 @@ Runtime per trial: at most 2,400 control steps (120 s simulated). The scripted d
 
 **Bend.** For each layout the README names three gate stations: the two outer ones and the middle one where the wall bends most. There is no line credit unless all three are marked and the middle reading lies at least 1.5 mm off the straight line through the outer two readings, on the same side as the target's bend. A ruler line, which ignores the wall, fails this on every layout.
 
+**One unbroken line.** A scribed line guides the cut, so it must be one line across the shelf's end from its front edge to its back edge (0 to 140 mm from the front edge, across the shelf's depth), with no gap longer than 2.0 mm. To find the gap, follow the line from the front edge to the back edge, through the marks read at the stations. Wherever it breaks, measure the unmarked stretch to where it goes on: straight across the board, from the end of one mark to the nearest point of the next. The stretches from the front edge to where the line starts, and from where it ends to the back edge, count too. The longest stretch is the line's gap. Other marks on the board count neither way, except where they cross a station (Repeated marks).
+
+Why 2.0 mm: a scribed line is drawn in one pass, and the cut follows it by eye along its whole length. A good line breaks only where the lead skips over the grain, for a millimetre or so. 2.0 mm is four times the width of an HB line (0.3 to 0.5 mm), four cells of the 0.5 mm grid on which the simulation draws the mark, and a fifth of the 10 mm station spacing. Single touches at the stations, however well placed, leave 7 to 10 mm unmarked and get no line credit.
+
 **Line credit.**
 
-| Line credit | Stations within tolerance of their targets (and the bend met) |
+| Line credit | One unbroken line (gap at most 2.0 mm), the bend met, and stations within tolerance of their targets |
 |---|---|
 | 1.0 | all 14 within 0.5 mm |
 | 0.5 | at least 12 within 1.0 mm |
 | 0.25 | at least 10 within 2.0 mm |
-| 0 | otherwise, or the bend not met |
+| 0 | otherwise: a gap longer than 2.0 mm (separate touches or dashes, or a line that stops short of an edge), the bend not met, or fewer stations within tolerance |
 
 **Finished.**
 - The compass is put down clear of the shelf and the wall: its bounding box is at least 2 mm from theirs. Hanging it back on its stand does this.
@@ -65,14 +69,15 @@ Runtime per trial: at most 2,400 control steps (120 s simulated). The scripted d
 
 Success is a score of 1.0.
 
-**In simulation.** The scorer records the pencil lead's lowest point every control step, in the shelf's own frame, while it marks: within 0.2 mm above to 2 mm below the shelf's top face, over the board. Consecutive marking steps join into one stroke; a lift, or a step the scorer did not see, starts a new stroke. Station readings are where these strokes cross the station lines. The graphite dots drawn on the board follow the same path but are only a picture; the scorer never reads them.
+**In simulation.** The scorer records the pencil lead's lowest point every control step, in the shelf's own frame, while it marks: within 0.2 mm above to 2 mm below the shelf's top face, over the board. Consecutive marking steps join into one stroke; a lift, or a step the scorer did not see, starts a new stroke. Station readings are where these strokes cross the station lines. For the gap, each stroke is the straight pieces between its recorded points (a single recorded point is a dot). The gap is the longest step needed to go from the front edge to the back edge from mark to mark, through every stroke that gives a station reading, on the route that keeps the longest step smallest; a step is the straight-line distance on the board between the two marks' nearest points, or from an edge to a mark's nearest point. The graphite dots drawn on the board follow the same path but are only a picture; the scorer never reads them.
 
 **In a real trial.**
 1. Before the trial, note the layout. With the shelf in place, either take the targets from the tables below or measure the wall's gap at each station with feeler gauges (0.05 mm steps); the target is then 10.0 mm minus the gap.
 2. After the trial, tick the 14 stations on the shelf's end with a combination square.
-3. Read each station with a steel rule graduated in 0.5 mm. Butt the rule's zero end against a square block held flat to the shelf's end, and read the centre of the pencil line under a 10x loupe, interpolating to the nearest 0.1 mm. This is good to about ±0.15 mm.
-4. A digital caliper with a depth rod can be used instead: rest the caliper on the end face and run the rod to the line.
-5. An HB line is about 0.3 to 0.5 mm wide; read its centre. Where the pencil went over the same place twice, read the centre of the darkened band; if two lines at a station are more than 1 mm apart, the station is unmarked.
+3. Find the line's gap (One unbroken line, above). Look along the line from the front edge to the back edge under the loupe, and measure with the steel rule the stretch from the front edge to where the line starts, every break (from the end of one mark straight to the nearest point of the next), and the stretch from where the line ends to the back edge. The longest is the gap; with the 0.5 mm graduations, a gap over 2.0 mm is plain. Over 2.0 mm, the line credit is 0 and the stations need not be read.
+4. Read each station with a steel rule graduated in 0.5 mm. Butt the rule's zero end against a square block held flat to the shelf's end, and read the centre of the pencil line under a 10x loupe, interpolating to the nearest 0.1 mm. This is good to about ±0.15 mm.
+5. A digital caliper with a depth rod can be used instead: rest the caliper on the end face and run the rod to the line.
+6. An HB line is about 0.3 to 0.5 mm wide; read its centre. Where the pencil went over the same place twice, read the centre of the darkened band; if two lines at a station are more than 1 mm apart, the station is unmarked.
 
 ## Layouts and targets
 
@@ -177,7 +182,7 @@ All contact offsets are 1 mm.
 2. It lifts the knuckle 10 mm off the tines, draws the compass 35 mm out of the open side of the fork, rises, and moves sideways 28 mm in x so it clears the stand.
 3. It carries the compass to the shelf's front corner (1.8 s), with the pencil tip 8 mm above the board and the point 2 mm short of the wall.
 4. It lowers the pencil (1 s) to a target 1 mm into the board's top and moves the point onto the wall (0.8 s), to a target 4 mm into it.
-5. After 0.4 s it scribes from 7 mm from the front edge to 3 mm past the back edge at 10 mm/s. The lead lands and ends 2 to 5 mm behind the hand (the arm's steady error near full reach, and the compass turning about a degree in the hand), so it starts on the board and runs off the back edge. Every target puts the point 4 mm into the wall at that x, from the wall table, and the compass stays upright and square to the wall. This takes 13.6 s.
+5. After 0.4 s it scribes from 4 mm from the front edge to 3 mm past the back edge at 10 mm/s. The lead lands and ends 2.3 to 3.8 mm behind the hand (the arm's steady error, larger at full reach, and the compass leaning under a degree in the hand), so the line runs in one stroke from 0.4 to 1.3 mm in from the front edge to 0.5 to 1.1 mm short of the back edge (GPU runs on all four layouts), inside the 2 mm allowed at each edge. Every target puts the point 4 mm into the wall at that x, from the wall table, and the compass stays upright and square to the wall. This takes 14 s.
 6. It dwells 0.6 s, lifts the pencil 4 mm, backs the point 7 mm off the wall while moving 10 mm back along it, lifts, carries the compass back through the same aisle and hangs its knuckle in the notches again, correcting its path by the compass's measured offset in the hand.
 7. It opens the hand and slides the open pads 48 mm off the grip, along the knuckle's axis, to 38 mm from the compass's bounding box.
 

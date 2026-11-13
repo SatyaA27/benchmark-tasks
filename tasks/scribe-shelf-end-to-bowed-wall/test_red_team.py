@@ -143,3 +143,35 @@ def test_pencil_hovering_or_too_deep_does_not_mark():
     for x, y in T.ideal_line(0)[50:100]:
         step(scene(0, compass_at(0, (x, y), depth=0.0025)))    # 2.5 mm into the board
     assert T._STROKES == []
+
+
+def test_single_touches_at_the_stations_score_nothing():
+    """A touch on target at each of the 14 stations, lifting between them: the stations read on target, but the
+    marks are 7 to 10 mm apart, not one line, so there is no line credit."""
+    for (x, y), in T.station_dots(0):
+        step(scene(0, compass_at(0, (x, y)), compass_vel=(0.01, 0.0, 0.0)))
+        step(scene(0, compass_at(0, (x, y), depth=-0.003)))         # lifted 3 mm: not marking
+    assert len(T._STROKES) == 14 and all(len(s) == 1 for s in T._STROKES)
+    assert T.line_quality(T._STROKES, 0)[0] == 1.0                    # the stations alone would read full marks
+    assert hang_and_wait(0, 1.3)[-1] == 0.0
+
+
+def _scribe_with_lift(skip):
+    """Layout 0's line with the pencil lifted for one step after 61 mm; it marks again `skip` points (0.5 mm
+    apart) after the last mark."""
+    line = T.ideal_line(0)
+    i = int(np.searchsorted(line[:, 0], -T.SHELF_D / 2 + 0.061))
+    scribe(0, line[:i])
+    step(scene(0, compass_at(0, line[i], depth=-0.003)))
+    scribe(0, line[i - 1 + skip:])
+    assert len(T._STROKES) == 2
+
+
+def test_lift_leaving_1_5_mm_still_one_line():
+    _scribe_with_lift(3)
+    assert hang_and_wait(0, 1.3)[-1] == 1.0
+
+
+def test_lift_leaving_2_5_mm_breaks_the_line():
+    _scribe_with_lift(5)
+    assert hang_and_wait(0, 1.3)[-1] == 0.0
