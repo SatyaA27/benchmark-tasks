@@ -365,8 +365,9 @@ def score(objects):
     # Observe all poses every step, including while release or another gate fails.
     still={n:quiet(objects[n],n) for n in (blank,sample)}
     lidstill=(_RUN['t'] is None or _POSE_HISTORY.still('lid',[objects['colorimeter'].joints['lid']]))
-    fallen=any((released(objects[n]) and objects[n].tilt_deg()>30.+1e-10) or
-               lowest_body_corner(objects[n])<TOP-.005-1e-12 for n in (blank,sample))
+    # Loss only: a cuvette whose body goes >5 mm below the table top has left the table. Tipping over on the
+    # table is not penalised by itself; it only fails the seated and pocket tiers while it lasts.
+    fallen=any(lowest_body_corner(objects[n])<TOP-.005-1e-12 for n in (blank,sample))
     dropped=ever('dropped',fallen or bool(view.get('dropped',False)))
     ref=view.get('ref'); good=(view['w']==w and ref is not None and ref[0]==w and ref[1]>0 and
                              abs(math.log10(I0[w]/ref[1]))<=.02+1e-12)

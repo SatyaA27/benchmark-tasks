@@ -126,12 +126,11 @@ def test_cal_start_wavelength_then_change_loses_reference():
     assert T._INSTRUMENT.ref is None
 
 
-@pytest.mark.parametrize('bad',('side','below','edge_below'))
-def test_sticky_drop_then_restoration(bad):
+@pytest.mark.parametrize('bad',('below','edge_below'))
+def test_sticky_loss_then_restoration(bad):
     start_live();T.TEST_INSTRUMENT=T.nominal_instrument(0,True)
     d=states();s=d['cuvette_a']
-    if bad=='side':s=part(T.CUVETTE_A,s.origin+[0,0,.010],tilt=90)
-    elif bad=='below':s=part(T.CUVETTE_A,s.origin*[1,1,0]+[0,0,T.TOP-.0051])
+    if bad=='below':s=part(T.CUVETTE_A,s.origin*[1,1,0]+[0,0,T.TOP-.0051])
     else:
         # Origin is only 4 mm below table, but lowest bottom corner is >5 mm below.
         s=part(T.CUVETTE_A,(*T.POCKETS[0],T.TOP-.004),tilt=20)
@@ -141,12 +140,32 @@ def test_sticky_drop_then_restoration(bad):
     assert tick(states(),40)==0.
 
 
-def test_drop_held_tilt_allowed_until_release_but_below_always_zero():
+@pytest.mark.parametrize('when',('before_record','after_record'))
+def test_released_tip_over_then_restored_is_not_a_loss(when):
+    # A sealed cuvette knocked over on the table and set upright again does not lose the trial.
+    start_live()
+    def tipped(where=None):
+        d=states(0,where);blank,_=T.identity_names()
+        d[blank]=part(T.CUVETTE_A,(.13,-.15,T.TOP+.00625),tilt=90)
+        return d
+    if when=='before_record':
+        assert tick(tipped(),5)==0.
+        assert not T._EVER.get('dropped',False)
+    tick(states(0,'blank',press={'cal_button':.0036}));tick(states(0,'blank'))
+    assert tick(states(0,'sample'),33)==.5
+    if when=='after_record':
+        # Sample back in its pocket and still; the blank lies on its side on the table.
+        assert tick(tipped(),15)==.75
+        assert not T._EVER.get('dropped',False)
+    assert tick(states(),33)==1.
+
+
+def test_tilt_held_or_released_is_not_a_loss():
     d=states();s=part(T.CUVETTE_A,(*T.POCKETS[0],T.TOP+.1),tilt=45);d['cuvette_a']=s
     T.TEST_GRIPPERS={'left':(s.pos,0.)}
     assert grade(record=True,d=d)==.75
     T.TEST_GRIPPERS=None
-    assert grade(record=True,d=d)==0.
+    assert grade(record=True,d=d)==.75
 
 
 def test_live_return_tiers_release_motion_no_best_so_far():

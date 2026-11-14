@@ -165,7 +165,7 @@ CASES = [
     }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,False,None)'}),  # Return tiers require a measurement record.
     ('record then cuvette lying on side in rack', GOAL_POSES, {
         'cuvette_a': {'pos': (0.19, -0.31, 0.7675), 'tilt_deg': 90, 'tilt_axis': 'x'},
-    }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,True)'}),  # Released tilt over 30 degrees is a sticky drop.
+    }, 0.75, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,True)'}),  # Tipping over is not a loss; the blank is out of its pocket, so only the sample-returned tier applies.
     ('record then cuvette below table', GOAL_POSES, {
         'cuvette_a': {'pos': (0.19, -0.31, 0.7415)},
     }, 0, {'TEST_LAYOUT': 'LAYOUTS[0]', 'TEST_INSTRUMENT': 'nominal_instrument(0,True)'}),  # Lowest bottom corner more than 5 mm below table is a sticky drop.
