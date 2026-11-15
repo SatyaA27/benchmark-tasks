@@ -1,0 +1,22 @@
+{
+  "title": "Extend a suitcase's handle to full height: keep its button pressed past the first stop, then let both rails lock",
+  "category": "Societal relatability",
+  "keywords": [
+    "suitcase",
+    "luggage",
+    "telescopic handle",
+    "release button",
+    "trolley handle",
+    "bimanual",
+    "American Tourister Airconic"
+  ],
+  "instruction": "Pull the suitcase's handle out to its full height and leave it locked there.",
+  "context": "Pulling out a wheeled suitcase's handle is something most people do every trip. The handle is two telescopic rails joined by the grip; a button in the grip works a spring pin in each rail, and the pins lock the handle closed, at a first height and at full height. Thumb on the button, fingers under the grip, you draw it out in one straight stroke and let the button up at the top, where both pins click in. Let it up early and the handle stops at the first height; let it up at the top before the rails reach their stop and it is not locked; pull it crooked and the paired rails drag. Here a 55 cm hard-shell cabin case lies flat on the bench, handle side up (stood up, its grip would be above the arms' reach): one hand holds the case down, the other pinches the grip with one finger pad on the button and draws the handle out 520 mm along its rails.",
+  "setup": "Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. An American Tourister Airconic Spinner 55/20 hard-shell cabin case (Deep Ocean teal polypropylene, 550 long including its wheels, 400 wide, 200 deep, 2.0 kg, empty, zipped shut) lies flat on its front on the bench, its back panel (the handle side) up and its handle end toward the robot's right: the handle end's corners at (6, -32) and (394, -128), the wheel end's at (139, 502) and (527, 405). Its twin-tube telescopic handle is closed: the black grip (155 long, 21 thick, 32 deep) lies in a pocket in the handle end's upper edge (190 wide, 49 deep, 45 down from the back panel), its outer face flush with the end, a 40 x 20 grey release button in the middle of that face standing 2 proud, and a 26 wide finger gap between the grip and the pocket's floor. The grip's centre is at (203, -68), 178 up. Each rail is an aluminium telescope inside the back panel, the rails 130 apart: a middle tube (17 across) and an inner tube (13) that carries the grip. Drawn fully out, the grip is 520 further along the case's axis, at (77, -572); the first locking height is half way, 260 out. Nothing else is on the bench. Every collider is listed in README.md.",
+  "scoring": "Judged at the end of the run with a tape measure and by hand. Full height: the grip 520 mm (+-3) out from closed, both rails at their stops. Locked: both pins in their holes with the button back out (on the real case: a 10 N push on the grip toward the case moves it less than 3 mm). Clear: both grippers at least 5 cm from the grip. Kept in place: the case within 50 mm and 10 degrees of where it lay. 1.0 (success): locked at full height, clear, held 1 s, and the case kept in place. 0.5: the same, but the case was dragged or turned further. 0.25: locked at the first height (260 out) instead, clear, held 1 s. 0: anything else, including the handle out but not locked (button still held, or let go between the heights), still closed, or the case tipped off its front at any time.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Press the button and push the handle fully closed until it clicks, then lay the case back on its front at the marked place, handle end toward the robot's right. Nothing is consumed or fastened.",
+  "fidelity": "Rigid bodies, 240 Hz physics. The case is one articulated body: a free shell, the middle tubes and the inner tubes with grip on two slides, the button on a third. Pins and button rods are not bodies: case_runtime.py turns the button's travel into pins in or out and stops the slides where the holes line up. Estimates to measure on the real case: 260 mm per stage, pin clearances, tube friction, 4 mm button travel, grip, pocket and tube sizes. Laid flat, handle up: stood up it is out of reach.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-CU9TAQ"
+}
