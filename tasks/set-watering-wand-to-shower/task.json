@@ -1,0 +1,22 @@
+{
+  "title": "Set a garden hose wand from Jet to Shower: hold the wand by its handle while the other hand clicks the dial round",
+  "category": "Societal relatability",
+  "keywords": [
+    "garden",
+    "watering wand",
+    "hose sprayer",
+    "spray pattern dial",
+    "detent",
+    "bimanual",
+    "holding a part still"
+  ],
+  "instruction": "Set the watering wand's spray dial from Jet to Shower, then leave the wand lying on the bench.",
+  "context": "Garden hose sprayers, pistol nozzles and watering wands alike, pick their spray with a dial on the head: you turn it until the pattern you want clicks in at the index mark. Going from a hard Jet, for rinsing a path, to a soft Shower, for plants, is an everyday chore in the 80% of US households that do lawn and garden work (National Gardening Survey 2023). The dial is held in each click by a spring, so it takes a firm twist, and the light round wand has nothing to stop it turning: twisted with one hand, the whole wand just rolls along with the dial. One hand has to hold the handle still while the other turns the dial, two clicks, and stops in a click: a dial left between two patterns sprays from neither properly.",
+  "setup": "A bench in front of two arms (bases 61 cm apart), seen by one overhead camera and a camera on each wrist. Distances are measured forward from the line between the arm bases and sideways from the midpoint between them. One object: a Melnor RelaxGrip 8-Pattern 16 in. pivot watering wand (model R8633; 404 mm long, 0.30 kg, black and yellow plastic with a black rubber grip), dry, no hose. It lies on the bench across the robot, 17 cm forward, centred between the arms, its head toward the right arm, the yellow thumb lever on top and the head pivoted straight, in line with the shaft. From the left: the hose coupling (33 mm across), the handle (132 mm long, 33 mm round over a flat underside), a 16 mm shaft, the head's pivot, the yellow head and its dial: a black knurled ring 63 mm across and 22 mm long at the right end, which turns on the head and clicks into eight positions, 45 degrees apart. Each of the eight spray patterns has a coloured mark on the dial's front face; the pattern selected is the one whose mark is at the top, at the head's white index mark. Round the dial: JET (red), CENTER (orange), SHOWER (blue), MIST (cyan), SOAKER (green), CONE (purple), FLAT (yellow), FULL (brown). It starts on JET; turning the dial's top toward the robot, SHOWER is two clicks round (six the other way). The dial needs about 0.2 N m to turn; the wand itself rolls freely about its axis.",
+  "scoring": "Judged at the end. A pattern is selected when its mark is within 5 degrees of the index mark, i.e. the dial sits in that pattern's click. 1.0: SHOWER selected, the wand lying on the bench (both ends of its axis 15.5 to 37.5 mm above the bench), still (under 1 cm/s) and both grippers' centre points at least 5 cm from the wand's axis, all held for 1 s. 0.5: SHOWER selected but the wand still held, lifted or moving. 0.25: one click only (CENTER selected). 0: anything else: still on JET, the dial left between two clicks (more than 5 degrees from every mark), any other pattern, or the wand off the bench. Check with a photo of the dial's face.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Turn the dial back to JET (two clicks, its top away from the robot) and lay the wand back at its start, thumb lever up, head straight. Nothing is used up.",
+  "fidelity": "Rigid bodies (PhysX). No hose or water. The dial's click is a sprung steel ball between eight pins (2000 N/m, 5 N preload, about 0.1 N m) plus 0.08 N m of seal drag: both estimates, as are the dial's 63 mm size, the patterns' order, the handle's shape and the 0.30 kg spread at uniform density. The head's pivot is fixed straight and the thumb lever doesn't move. Pattern names are coloured marks; the real dial prints names.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-SZDA4Z"
+}
