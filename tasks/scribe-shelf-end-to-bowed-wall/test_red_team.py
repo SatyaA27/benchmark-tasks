@@ -1,5 +1,6 @@
 """Scorer rules that need a sequence of control steps: the pencil-path record, strokes, sticky rules and the 1 s window."""
 import itertools
+import math
 from pathlib import Path
 
 import numpy as np
@@ -175,3 +176,25 @@ def test_lift_leaving_1_5_mm_still_one_line():
 def test_lift_leaving_2_5_mm_breaks_the_line():
     _scribe_with_lift(5)
     assert hang_and_wait(0, 1.3)[-1] == 0.0
+
+
+CONTINUITY_ONLY = {
+    "single touches on target at the 14 stations": lambda: T.station_dots(0),
+    "line on target with a 2.1 mm skip": lambda: T.broken_strokes(0, 0.0021),
+    "line on target starting 2.5 mm in from the front edge": lambda: [T.ideal_line(0, 0.0, 0.0025, T.SHELF_D)],
+}
+
+
+@pytest.mark.parametrize("name", CONTINUITY_ONLY)
+def test_the_continuity_gate_alone_takes_the_line_credit(name, monkeypatch):
+    """Marks that meet everything except continuity (every station on target, the bend met, the compass hung back
+    and still for 1.3 s) score 0, because line_credit() applies GAP_MAX; with the gate lifted the same marks score
+    1.0. Fails if the gate is removed from line_credit() or if score() stops taking its line credit from it."""
+    T.TEST_STROKES = CONTINUITY_ONLY[name]()
+    cap, gap = T.line_credit(T.TEST_STROKES, 0)
+    assert T.line_quality(T.TEST_STROKES, 0)[0] == 1.0       # the stations and the bend alone: full marks
+    assert gap > T.GAP_MAX and cap == 0.0                     # the continuity gate
+    assert hang_and_wait(0, 1.3)[-1] == 0.0
+    monkeypatch.setattr(T, "GAP_MAX", math.inf)               # lift the gate: the same marks score full
+    T._RUN.update(t=0.0, step=0, episode=next(EPISODES))
+    assert hang_and_wait(0, 1.3)[-1] == 1.0
