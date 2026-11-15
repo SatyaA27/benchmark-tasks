@@ -2,7 +2,7 @@
 
 Click the mop frame onto the handle: hold the frame's socket in line with the handle's tip and push the tip in until its spring button clicks out through the socket's window. Then let go of both and leave the mop on the bench.
 
-Janitors and cleaners (about 2.2 million US workers) have this O*NET task: "Clean building floors by sweeping, mopping, scrubbing, or vacuuming." Flat microfibre mops are built from a frame and a handle that click together; Rubbermaid's HYGEN manual starts each room with "affix the Quick-Connect Handle to the 18" Quick-Connect Frame by clicking into place", and frames of other sizes and dusters share one handle. The frame's socket swivels freely on a two-axis nylon joint, so one hand must hold it in line with the handle's tip while the other pushes the tip in: the button's ramp must be pushed past and the tip's lug must drop into the socket's notch before the button can spring out. With the socket left turned aside the tip misses its mouth or stops on its rim; a push that stops short leaves the button pressed inside, and the frame falls off at the first lift.
+Clicking a mop's head onto its handle is something most people who mop floors at home have done: many flat mops, spray mops and floor sweepers have a head that pushes onto the end of the handle and clicks, put on when the mop is new and again whenever a head is swapped. Here the head is a Rubbermaid HYGEN 17-inch flat mop frame and the handle its quick-connect handle; the maker's manual says to connect them "by clicking into place". The frame's socket swivels freely on a two-axis nylon joint, so one hand must hold it in line with the handle's tip while the other pushes the tip in: the button's ramp must be pushed past and the tip's lug must drop into the socket's notch before the button can spring out. With the socket left turned aside the tip misses its mouth or stops on its rim; a push that stops short leaves the button pressed inside, and the frame falls off at the first lift.
 
 Sources: Rubbermaid Commercial Products, HYGEN Quick-Connect Frames (FGQ56000YL00: 16.00 x 3.00 x 1.50 in, aluminium,
 nylon swivel joint), https://www.rubbermaidcommercial.com/cleaning/hygen-microfiber/hygen-quick-connect-frames/ ;
@@ -10,8 +10,7 @@ HYGEN Quick Connect Extension Handle (FGQ74500YL00, 20-40 in, aluminium),
 https://www.rubbermaidcommercial.com/cleaning/hygen-microfiber/hygen-quick-connect-extension-handle-20-40/ ; HYGEN
 Product Use Manual ("CONNECT the Quick-Connect Adjustable Handle to the Quick-Connect Frame by clicking into place"),
 https://rcp.structpim.com/media/22100/hygen-product-use-manual.pdf ; HYGEN Microfiber Selection Guide, Quick-Connect
-Handles and Frames (the close-up of the handle's tip going into the frame's socket); O*NET 37-2011.00,
-https://www.onetonline.org/link/details/37-2011.00 .
+Handles and Frames (the close-up of the handle's tip going into the frame's socket).
 
 ## Run and score
 
