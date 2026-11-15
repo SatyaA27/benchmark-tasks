@@ -109,13 +109,16 @@ listed where it lies (its frame: nose centre at x 240, y -100, 35 up; chuck axis
 
 ## Scoring
 
-Judged after the run with a ruler, a fixed pointer, a spring scale and a 100 mm bar clamped to the flutes. Key out: the key's pilot at least 30 mm from the key hole (not in any hole). Captured: at least 20 mm of the shank between the jaws (at most 73 mm of bit stands out of the nose). Centred: turned one turn by hand, the bit's axis 50 mm in front of the nose stays within 1 mm of the chuck's axis. Gripped: all three jaws on the shank. Secure: the bit does not turn in the jaws under 0.5 N m (5 N at the bar's end) for 2 s, nor slip under a 20 N pull; in the simulation, the chuck was tightened to at least 0.30 N m at the key. 1.0 (success): key out, bit captured, centred, gripped and secure, both grippers at least 3 cm clear of the drill, the bit and the key, drill and bit still (under 1 mm in 0.5 s), held 1 s. 0.5: key out, bit captured, centred and gripped, short of that (not secure, a hand not clear, or not yet still for 1 s). 0.25: key out, bit at least 5 mm in the chuck (within 15 degrees of its axis) and either not gripped (lying in the open jaws) or gripped centred with under 20 mm in. 0: the key left in the chuck, no bit in the chuck, the bit clamped off-centre (more than 1 mm out 50 mm in front: crooked), or the drill tipped more than 10 degrees, lifted more than 10 mm or moved more than 50 mm at any time.
+Judged after the run with a ruler, a fixed pointer, a spring scale and a 100 mm bar clamped to the flutes. Key out: the key's pilot at least 30 mm from the key hole (not in any hole). Captured: at least 20 mm of the shank between the jaws (at most 73 mm of bit stands out of the nose). Centred: turned one turn by hand, the bit's axis 50 mm in front of the nose stays within 1 mm of the chuck's axis. Gripped: all three jaws on the shank. Secure: the bit does not turn in the jaws under 0.5 N m (5 N at the bar's end) for 2 s, nor slip under a 20 N pull; in the simulation, the chuck was tightened to at least 0.30 N m at the key. 1.0 (success): key out, bit captured, centred, gripped and secure, both grippers at least 3 cm clear of the drill, the bit and the key, drill and bit still (under 1 mm in 0.5 s), held 1 s. 0.5: key out, bit captured, centred and gripped, short of that (not secure, a hand not clear, or not yet still for 1 s). 0.25: key out, bit at least 5 mm in the chuck (its shank end between the jaws, within 5 mm of the chuck's axis; the bit within 15 degrees of the axis) and either not gripped (lying in the open jaws) or gripped centred with under 20 mm in. 0: the key left in the chuck, no bit in the chuck, the bit clamped off-centre (more than 1 mm out 50 mm in front: crooked), or, at the end, the drill fallen off the bench or out past its edge (its centre of mass below the bench top or outside the 1,100 x 1,300 mm top: x -190 to 910, y -650 to 650). Lifting, tipping or moving the drill over the bench is allowed and costs nothing by itself.
 
 How each condition is read in `score()` (the chuck's state comes from the chuck model, `chuck_runtime.py`):
 
 - **Key out:** the key's pilot tip at least 30 mm from the key hole's mouth, and the key not meshed.
 - **In the chuck / captured:** the shank's end at least 5 mm / 20 mm past the nose face, along the
-  chuck's axis (the jaws are 25 mm long), the bit within 15 degrees of the axis.
+  chuck's axis (the jaws are 25 mm long), and between the jaws: within 5 mm of the
+  chuck's axis (its largest opening is 10 mm) and no deeper than the bore's end
+  (34 mm, with 2 mm for contact); the bit within 15 degrees of the axis. A bit lying beside the drill,
+  parallel to it, is not in the chuck.
 - **Centred:** the bit's axis 50 mm in front of the nose within 1 mm of the chuck's
   axis (half the reading of a full turn against a fixed pointer).
 - **Gripped:** the model's three jaws have closed on the shank (opening = 6.0 mm with the shank between them).
@@ -125,10 +128,12 @@ How each condition is read in `score()` (the chuck's state comes from the chuck 
   0.5 N m on the bit).
 - **Let go:** both grippers' centre points at least 30 mm outside the drill's, the bit's and
   the key's axis-aligned bounding boxes. **Still:** the drill and the bit move under 1 mm over 0.5 s.
-- **Zero for the rest of the run:** the drill tipped more than 10 degrees, lifted more than 10 mm
-  or moved more than 50 mm.
+- **On the bench:** at the end, the drill's centre of mass (from its colliders at uniform density) over the bench
+  top, x -190 to 910 mm and y -650 to 650 mm, and not
+  below its surface; otherwise (fallen off, or carried out past the edge) the score is 0. Nothing about the drill is
+  latched during the run: it may be lifted, tipped, turned over or moved anywhere over the bench.
 
-Why the shortcuts fail: on the simulator, the bit's shank pushed only 8 mm into the open jaws and let go tipped 20 degrees in them, so the closing jaws never held it: the run scored 0 (had it lain within 15 degrees, the jaws would have clamped it at their front, crooked, which also scores 0). Tightened with the key left in the chuck scores 0 (the maker's warning). Tried offline on 437 random layouts of the free parts, the scorer never gave a non-zero score.
+Why the shortcuts fail: on the simulator, the bit's shank pushed only 8 mm into the open jaws and let go tipped 20 degrees in them, so the closing jaws never held it: the run scored 0 (had it lain within 15 degrees, the jaws would have clamped it at their front, crooked, which also scores 0). Tightened with the key left in the chuck scores 0 (the maker's warning). A bit laid on the bench beside the drill, parallel to it, is not in the chuck (its shank end is not between the jaws) and scores 0. Tried offline on 437 random layouts of the free parts (the drill included), the scorer never gave a non-zero score.
 
 ## Scripted demonstration
 

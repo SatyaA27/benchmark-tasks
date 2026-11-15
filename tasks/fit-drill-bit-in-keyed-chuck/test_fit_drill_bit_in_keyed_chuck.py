@@ -79,7 +79,7 @@ GOAL_MODULE = {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": Fa
 
 def test_the_task_loads_with_its_loose_objects():
     assert TASK.scene == "station"
-    assert set(TASK.free_objects) == {'bit', 'drill', 'key'}
+    assert set(TASK.free_objects) == {'drill', 'bit', 'key'}
     assert TASK.docs and TASK.docs.strip()
 
 
@@ -123,6 +123,17 @@ CASES = [
     ('tight; the key laid on the bench beside the drill (not in a hole)', GOAL_POSES, {
         'key': {'pos': (0.16, -0.08, 0.7515), 'tilt_deg': 90, 'tilt_axis': 'y'},
     }, 1, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),
+    ('tight, key out; the drill slid 60 mm along the bench and turned 30 degrees on it', GOAL_POSES, {
+        'drill': {'pos': (0.3, -0.1, 0.7825), 'yaw_deg': 30},
+        'bit': {'pos': (0.288, -0.0792, 0.7825), 'yaw_deg': 30},
+    }, 1, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),
+    ("tight, key out; the drill turned over onto its other side (rolled half a turn about the chuck's axis)", GOAL_POSES, {
+        'drill': {'pos': (0.24, -0.1, 0.7825), 'yaw_deg': 180, 'tilt_deg': 180, 'tilt_axis': 'y', 'quat': (0.0, 1.0, 0.0, 6.123233995736766e-17)},
+    }, 1, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),
+    ('tight, key out; the drill lifted 40 mm and tipped 20 degrees in the left hand', GOAL_POSES, {
+        'drill': {'pos': (0.24, -0.1, 0.8225), 'tilt_deg': 20, 'tilt_axis': 'x'},
+        'bit': {'pos': (0.24, -0.0775, 0.8307), 'tilt_deg': 20, 'tilt_axis': 'x'},
+    }, 0.5, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (np.array([X_AX - 0.080, Y_NOSE + 0.100, TOP + Z_AX + 0.040]), 0.0), "right": (PARK["right"], 1.0)}'}),
     ('tightened, then the key left in the chuck (pilot in the top hole)', GOAL_POSES, {
         'key': {'pos': (0.24, -0.063, 0.7925)},
     }, 0, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": True, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the maker's warning - a key left in a chuck is flung when the drill starts
@@ -132,13 +143,17 @@ CASES = [
     ('bit put in flutes first (shank sticking out)', GOAL_POSES, {
         'bit': {'pos': (0.24, -0.141, 0.7825), 'yaw_deg': 180},
     }, 0, {'TEST_MODEL': '{"gripped": False, "tightness": 0.0, "engaged": False, "opening": 0.0075}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the bit is backwards; nothing is fitted
-    ('drill knocked onto its handle side (rolled 90 degrees)', GOAL_POSES, {
-        'drill': {'pos': (0.24, -0.1, 0.7825), 'tilt_deg': 90, 'tilt_axis': 'y'},
-    }, 0, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the drill must be left lying where it was
-    ('drill dragged 60 mm along the bench', GOAL_POSES, {
-        'drill': {'pos': (0.3, -0.1, 0.7825)},
-        'bit': {'pos': (0.3, -0.076, 0.7825)},
-    }, 0, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the drill is never lifted or dragged off its place
+    ("drill pushed off the bench's right edge onto the floor, bit tight in it, key out", GOAL_POSES, {
+        'drill': {'pos': (0.24, -0.75, 0.0225)},
+        'bit': {'pos': (0.24, -0.726, 0.0225)},
+    }, 0, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the drill fell off the bench
+    ("drill held out past the bench's right edge, bit tight in it, key out", GOAL_POSES, {
+        'drill': {'pos': (0.24, -0.82, 0.8475)},
+        'bit': {'pos': (0.24, -0.796, 0.8475)},
+    }, 0, {'TEST_MODEL': '{"gripped": True, "tightness": 0.34, "engaged": False, "opening": 0.006}', 'TEST_GRIPPERS': '{"left": (np.array([X_AX - 0.080, -0.720, TOP + 0.100]), 0.0), "right": (PARK["right"], 1.0)}'}),  # the drill has left the workspace (its centre of mass is outside the bench top)
+    ('bit laid on the bench beside the chuck, parallel to it and level with the jaws (not in them), key in its rest', START_POSES, {
+        'bit': {'pos': (0.2, -0.08, 0.7505)},
+    }, 0, {'TEST_MODEL': '{"gripped": False, "tightness": 0.0, "engaged": False, "opening": 0.0075}', 'TEST_GRIPPERS': '{"left": (PARK["left"], 1.0), "right": (PARK["right"], 1.0)}'}),  # the shank is 51 mm off the chuck's axis, not between the jaws
     ('bit left on its rest, key in its rest', START_POSES, {
     }, 0, {}),  # nothing done
     ("clamped crooked, the bit 2 degrees off the chuck's axis (2.7 mm out 50 mm in front)", GOAL_POSES, {

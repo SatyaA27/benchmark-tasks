@@ -70,7 +70,6 @@ def _run_context():
 _RUN = _run_context()
 _MEMORY_EPISODE = None
 _TIMERS = {}
-_EVER = {}
 
 
 def grippers():
@@ -117,7 +116,6 @@ def _episode_memory():
     global _MEMORY_EPISODE
     if _MEMORY_EPISODE != _RUN["episode"]:
         _TIMERS.clear()
-        _EVER.clear()
         _MEMORY_EPISODE = _RUN["episode"]
 
 
@@ -135,14 +133,6 @@ def held_for(key, cond):
         start = t
     _TIMERS[key] = (step, start)
     return float(t - start)
-
-
-def ever(key, cond):
-    if _RUN["t"] is None:
-        return bool(cond)
-    _episode_memory()
-    _EVER[key] = bool(_EVER.get(key, False) or cond)
-    return _EVER[key]
 
 
 TOP = TABLE_TOP[SCENE]
@@ -278,7 +268,10 @@ RUNOUT_AT, RUNOUT_MAX = 0.050, 0.001  # the bit's axis within 1 mm of the chuck'
 SECURE_NM = 0.30  # chuck tightened to at least 0.30 N m at the key
 KEY_CLEAR = 0.030  # key out: its pilot tip at least 30 mm from the hole's mouth
 RELEASE_CLEAR = 0.030
-DRILL_TILT_MAX, DRILL_MOVE_MAX = 10.0, 0.050  # still on its side on the bench, within 50 mm of where it lay
+# The workspace is the bench top (the station's 1.10 x 1.30 m bench): at the end the drill's centre of mass must be
+# over it and not below its surface (fallen off). Lifting, tipping or moving the drill over the bench is allowed.
+BENCH_X, BENCH_Y = (-0.190, 0.910), (-0.650, 0.650)
+DRILL_COM = DRILL.volume_centroid()  # drill frame; its colliders at uniform density, as the simulator takes it
 STILL_WINDOW, STILL_MOVE = 0.5, 0.0010
 
 
@@ -322,7 +315,9 @@ def drill_terms(objects):
     o, R = pose(objects["drill"])
     tilt = math.degrees(math.acos(float(np.clip(R[2, 2], -1, 1))))
     move = float(np.linalg.norm((o - DRILL_START)[:2]))
-    return {"tilt": tilt, "move": move, "z": float(o[2] - DRILL_START[2])}
+    com = world(objects["drill"], DRILL_COM)
+    on_bench = bool(BENCH_X[0] <= com[0] <= BENCH_X[1] and BENCH_Y[0] <= com[1] <= BENCH_Y[1] and com[2] >= TOP)
+    return {"tilt": tilt, "move": move, "z": float(o[2] - DRILL_START[2]), "on_bench": on_bench}
 
 
 def model_terms():
@@ -372,29 +367,29 @@ def at_rest(objects):
 
 def score_terms(objects):
     b, k, dr, m = bit_terms(objects), key_terms(objects), drill_terms(objects), model_terms()
-    drill_ok = dr["tilt"] <= DRILL_TILT_MAX and dr["move"] <= DRILL_MOVE_MAX and abs(dr["z"]) <= 0.010
-    knocked = ever("drill knocked over or moved off its place", not drill_ok)
+    on_bench = dr["on_bench"]
     key_out = k["tip_from_hole"] >= KEY_CLEAR and not m["engaged"]
-    in_chuck = b["depth"] >= 0.005 and b["angle"] <= 15.0
+    in_chuck = (0.005 <= b["depth"] <= STOP_Y + 0.002 and b["end_off"] <= CR.OPEN_MAX / 2  # shank end between jaws
+                and b["angle"] <= 15.0)
     captured = b["depth"] >= CAPTURE_MIN
     centred = b["runout"] <= RUNOUT_MAX
     gripped = bool(m["gripped"])
     secure = m["tightness"] >= SECURE_NM - 1e-9
     free = released(objects)
     rest = at_rest(objects)
-    full = gripped and captured and centred and secure and key_out and free and rest and not knocked
+    full = gripped and captured and centred and secure and key_out and free and rest and on_bench
     full_s = held_for("bit gripped, centred, secure; key out; hands clear; still", full)
     if DIAG:
         _diag(objects, b, k, dr, m, free, rest)
-    return {"bit": b, "key": k, "drill": dr, "model": m, "knocked": knocked, "key_out": key_out,
+    return {"bit": b, "key": k, "drill": dr, "model": m, "on_bench": on_bench, "key_out": key_out,
             "in_chuck": in_chuck, "captured": captured, "centred": centred, "gripped": gripped, "secure": secure,
             "released": free, "at_rest": rest, "full_s": full_s}
 
 
 def score(objects):
     t = score_terms(objects)
-    if t["knocked"] or not t["key_out"] or not t["in_chuck"]:
-        return 0.0
+    if not t["on_bench"] or not t["key_out"] or not t["in_chuck"]:
+        return 0.0  # the drill fallen off the bench or out past its edge; the key left in; no bit in the chuck
     if t["gripped"] and not t["centred"]:
         return 0.0  # clamped off the chuck's axis (crooked, or shallow and tipped): it would wobble and snap
     tight = t["gripped"] and t["captured"] and t["centred"]
