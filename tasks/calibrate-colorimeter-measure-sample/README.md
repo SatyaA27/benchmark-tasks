@@ -1,18 +1,26 @@
 # Calibrate a colorimeter on the blank and measure a sealed sample
 
-The blank sets zero absorbance for the cuvette walls and solvent. A wrong reference or ridged faces on the beam gives a plausible but wrong concentration with no warning. The requested wavelength comes from the card. Done by: lab technicians, students. This tests reference-dependent analytical measurement, beyond setting a device value or moving laboratory vessels.
+The blank sets zero absorbance for the cuvette walls and solvent. A wrong reference or ridged faces on the beam gives a plausible but wrong concentration with no warning. The requested wavelength comes from the card. This tests reference-dependent measurement, beyond setting a device value or moving laboratory vessels.
 
-Category: Impact on jobs, because correct reference-dependent measurements are routine analytical laboratory work. The two-arm split is the demonstration's choice: the left operates the panel and the right handles the hood and cuvettes. All assets are locally authored primitives and the included kits; no external assets or licences.
+Category: Impact on jobs. Reading a sample against a blank on a colorimeter or spectrophotometer is a task O*NET rates Core for these occupations (importance out of 100); US employment is from BLS OEWS, May 2025:
+
+| Occupation (BLS code) | O*NET task statement, Core | US workers |
+|---|---|---|
+| Clinical laboratory technologists and technicians (29-2010) | 29-2011.00, importance 93: "Operate, calibrate, or maintain equipment used in quantitative or qualitative analysis, such as spectrophotometers, calorimeters, flame photometers, or computer-controlled analyzers." | 332,940 |
+| Water and wastewater treatment plant and system operators (51-8031) | 51-8031.00, importance 97, its highest-rated task: "Collect and test water and sewage samples, using test equipment and color analysis standards." | 128,490 |
+| Chemists (19-2031) | 19-2031.00, importance 77: "Analyze organic or inorganic compounds to determine chemical or physical properties, composition, structure, relationships, or reactions, using chromatography, spectroscopy, or spectrophotometry techniques." | 82,770 |
+| Chemical technicians (19-4031) | 19-4031.00, importance 84: "Set up and conduct chemical experiments, tests, and analyses, using techniques such as chromatography, spectroscopy, physical or chemical separation techniques, or microscopy." | 57,540 |
+| Total | | 601,740 |
+
+BLS counts technologists (O*NET 29-2011.00) and technicians (29-2012.00) as one occupation, 29-2010; the technicians' Core tasks include "Conduct chemical analyses of body fluids, such as blood or urine, using microscope or automatic analyzer to detect abnormalities or diseases and enter findings into computer." and "Set up, maintain, calibrate, clean, and test sterility of medical laboratory equipment." Sources: O*NET OnLine task lists with their Core/Supplemental ratings, https://www.onetonline.org/link/details/29-2011.00 (likewise 29-2012.00, 51-8031.00, 19-2031.00, 19-4031.00); May 2025 national employment from the BLS data API, https://api.bls.gov/publicAPI/v1/timeseries/data/OEUN000000000000029201001 (likewise series OEUN000000000000051803101, OEUN000000000000019203101, OEUN000000000000019403101).
+
+The two-arm split is the demonstration's choice: the left operates the panel and the right handles the hood and cuvettes. All assets are locally authored primitives and the included kits; no external assets or licences.
 
 ## Revision: earlier review feedback and what changed
 
-The earlier version of this task was not accepted. Its review said: "Flags: The setup screenshot and Dream-1 frames show a 470 card, contradicting the claimed layout 12 and 635 card. Scoring (not met): A sealed cuvette briefly resting at more than 30 degrees permanently zeros the score even if the subsequent measurement and return are correct. What to change: Remove the permanent zero for a released sealed cuvette exceeding 30 degrees of tilt; score actual damage or loss instead, so a correct completed measurement is not invalidated by harmless temporary handling. Correct the stated screenshot and Dream-1 layout or provide media matching the stated 635 nm layout."
+The latest review said: "Provide evidence to show that this is a core task of occupations totaling more than 500k US workers". This version adds that evidence and nothing else: the occupations, their O*NET task statements and their BLS employment, in task.json context and the Category paragraph above. The scene, scorer, tests, demo and media are those of the previous version.
 
-Changes in this version, and nothing else:
-1. Scoring: the 30 degree tilt zero is removed from the scorer, its tests, task.json scoring and the Scoring section below. Only loss zeros a trial: a cuvette whose lowest body corner goes more than 5 mm below the table top has gone over the table edge. A cuvette that tips over or lies on the table costs nothing by itself, so a correct measurement and return afterwards still score 1.0; new tests cover a tip-over before and after the measurement record.
-2. Layout statement: setup.png, the Dream-1 run and the scripted demo were recorded again for this version, all at CLI `--seed 0`, and all show layout 6 (card 470). task.json setup and this README now say so.
-
-The review before that asked for the sample's dye identity, concentration and preparation, or a batch procedure for its targets; both are in Sample, unchanged.
+Earlier reviews' points stay answered as before: the sample's dye identity, concentration, preparation and batch targets (Sample); no zero for a tilted or tipped cuvette, only for one lost off the table (Scoring); setup.png, the Dream-1 run and the demo all show layout 6, card 470 (Layouts).
 
 ## Run and score
 
