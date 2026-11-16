@@ -8,6 +8,13 @@ Source: Dell PowerEdge R760 Installation and Service Manual, "Installing the air
 https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/install-the-air-shroud ; chassis dimensions,
 https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/chassis-dimensions .
 
+## Revision: review feedback and what changed
+
+The latest review said: "Provide a real-trial setup costing no more than a few hundred dollars, such as a sourced used chassis and genuine shroud with affordable stand-ins for the surrounding internals. Specify the parts or fabrication files and preserve the actual tab, slot and internal clearances needed for the installation." This version adds Real-trial setup: Dell's own shroud (T9P2J) and fan cage (CNYJ3) by
+part number, so the tabs and slots are the real ones, stand-ins for the rest built to the collider table, and a fit check
+of the clearances; about $210. No used chassis was found for a few hundred dollars. Setup points to it. Scene, scorer,
+tests, demo and media are unchanged.
+
 ## Run and score
 
 From this task folder, with the official YAM Arena environment installed:
@@ -30,7 +37,7 @@ partial and shortcut layouts.
 
 ## The scene
 
-Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. A Dell PowerEdge R760 2U rack server (steel chassis 434 wide without its rack ears, 722.7 from its front panel to its rear wall, 86.8 high; unpowered and unplugged, system cover off) lies flat on the bench between the arms, front panel toward the robot at x -150, centred on y 0. Inside, from the front: the drive cage under its closed steel top (to x -15); the backplane's cable space; the cooling fan cage of six fans (x 69.5 to 144.5; its steel top 82 above the chassis floor, with two slots 22 wide and 6.5 high in its back face just under that top, centred at y +107 and -107); the shroud's bay over the system board: two finned aluminium processor heat sinks (61 wide, 100 long, 71 high, centred at x 228, y +-107) and four rows of eight DDR5 RDIMMs (133 long, 46 high; outer rows y +-148.5 to +-207, inner rows y +-7.5 to +-65.5); then the riser cages from x 345.5 to the rear wall. The server's own standard (non-GPU) air shroud, black moulded plastic, 426 wide, 165 front to back, 79 high, 0.30 kg, rests right way up on the drive cage's closed top, its middle at x -45, y 0, its tabbed front edge toward the robot: a top panel over the heat sinks and inner memory rows, a duct wall each side of each heat sink, an open trough (wing) over each outer memory row whose back wall is 2.5 thick, an end wall at each end, and two front tabs (16 wide, 7 long, 2 thick) on its front edge at y +107 and -107. Seated, its end walls stand on the chassis floor 3 inside the side walls, its front edge 1 behind the fan cage's back face, each tab 6 through its slot. Every collider is listed in README.md.
+Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. A Dell PowerEdge R760 2U rack server (steel chassis 434 wide without its rack ears, 722.7 from its front panel to its rear wall, 86.8 high; unpowered and unplugged, system cover off) lies flat on the bench between the arms, front panel toward the robot at x -150, centred on y 0. Inside, from the front: the drive cage under its closed steel top (to x -15); the backplane's cable space; the cooling fan cage of six fans (x 69.5 to 144.5; its steel top 82 above the chassis floor, with two slots 22 wide and 6.5 high in its back face just under that top, centred at y +107 and -107); the shroud's bay over the system board: two finned aluminium processor heat sinks (61 wide, 100 long, 71 high, centred at x 228, y +-107) and four rows of eight DDR5 RDIMMs (133 long, 46 high; outer rows y +-148.5 to +-207, inner rows y +-7.5 to +-65.5); then the riser cages from x 345.5 to the rear wall. The server's own standard (non-GPU) air shroud, black moulded plastic, 426 wide, 165 front to back, 79 high, 0.30 kg, rests right way up on the drive cage's closed top, its middle at x -45, y 0, its tabbed front edge toward the robot: a top panel over the heat sinks and inner memory rows, a duct wall each side of each heat sink, an open trough (wing) over each outer memory row whose back wall is 2.5 thick, an end wall at each end, and two front tabs (16 wide, 7 long, 2 thick) on its front edge at y +107 and -107. Seated, its end walls stand on the chassis floor 3 inside the side walls, its front edge 1 behind the fan cage's back face, each tab 6 through its slot. Every collider is listed in README.md. Real trial (about $210; README.md, Real-trial setup): no server is needed. Dell's own R760 standard air shroud (part T9P2J) and fan cage (part CNYJ3) give the real tabs and slots; every other collider is a stand-in of the same outer size and place from the collider table: a 2.9 mm hardboard floor, walls, drive cage and riser block of 12.7 mm MDF, and 3D-printed system board, heat-sink and memory-row blocks. Before trials the shroud is seated by hand to check that both tabs enter the slots and the modelled gaps hold.
 
 ### Collider table
 
@@ -214,14 +221,58 @@ Rigid bodies, 240 Hz physics, 20 Hz control. The chassis and all its parts are o
 
 - Sizes from Dell: the chassis' outer size (434 x 722.7 x 86.8 mm, front panel to rear wall). Sizes taken from Dell's
   drawings of the R760's inside (Figures 15 and 44 of the manual, scaled by the chassis' width): the shroud's 426 x 165
-  outline and where it, the fan cage and the riser cages sit. Estimates, to measure on the real R760 and its standard
-  shroud when the trial is set up: the shroud's height (79), wall thickness (2), mass (0.3 kg), the tabs' size
+  outline and where it, the fan cage and the riser cages sit. Estimates, to measure on the T9P2J shroud and the CNYJ3
+  fan cage when the trial is set up: the shroud's height (79), wall thickness (2), mass (0.3 kg), the tabs' size
   and position (16 x 7 x 2 at y +-107) and the slots' (22 x 6.5), the heat sinks' and memory modules' sizes, and the
   friction of the plastic on steel (0.45).
-- Static parts: the chassis and everything in it is one fixed body; nothing in it moves. The real fan cage, heat
-  sinks and memory are left in place, as in service.
+- Static parts: the chassis and everything in it is one fixed body; nothing in it moves. In the real trial the fan
+  cage is Dell's own and the other internals are fixed stand-ins of the same outer size (Real-trial setup).
 - The robot's own limits: two YAM arms, parallel grippers; the shroud is gripped by its own walls (no fixture, no
   tool).
+
+## Real-trial setup (no server needed, about $210)
+
+A whole R760 costs thousands (an open-box barebone, no processors or memory: $3,932.07,
+https://www.ebay.com/itm/188558735310). The trial buys the shroud and the fan cage whose slots take its tabs, and builds
+every other part as a stand-in of the same outer size and place, from the collider table.
+
+Bought (prices seen in November 2026):
+
+| Item | Gives | Price and source |
+| --- | --- | --- |
+| Dell T9P2J ("ASSY,SHRD,REGLR,R760"), the R760's standard air shroud | the real shroud, its walls and both front tabs | $89.70 new (bulk), https://oemcomputerpart.com/product/t9p2j-dell-r760-air-shroud/ ; $99 refurbished, https://www.serverworlds.com/dell-t9p2j-poweredge-r760-plastic-shroud/ ; Dell's description: https://www.pc21.fr/fiche/t9p2j-assy-shrd-reglr-r760-i5789113.html |
+| Dell CNYJ3, the R760's cooling fan cage (16th-generation fan tray); the fans are not needed | the real cage top and the slots under it | $19.99 used and tested, with six fans, https://www.ebay.com/itm/376235927394 ; R760 fit ("Fan Cage: CNYJ3"): https://expresscomputersystems.com/products/dell-poweredge-r760-high-performance-gold-fan-2x4xn |
+| 1/2 in (12.7 mm) MDF panel, 4 x 8 ft | walls, drive cage, riser block | $45, https://www.homedepot.com/p/202522732 |
+| 1/8 in (2.9 mm) tempered hardboard, 4 x 8 ft | floor | $14.25, https://www.homedepot.com/p/202086860 |
+| PLA filament, 1 kg | board plate, heat-sink and memory blocks | $22.99 list, https://overture3d.com/products/overture-pla |
+| wood glue, screws, two steel L brackets, double-sided tape | assembly | about $20 (estimate) |
+
+Built (mm, to within 0.5). Each stand-in is a "chassis" row of the collider table, or one solid block over a group of
+rows, at the table's x and y. The floor sheet is 2.9 thick where the steel floor is 1, so heights below are above the
+floor sheet's top (the table's z minus 1) and the whole rig stands 1.9 higher than in the simulation.
+
+- Floor: hardboard 722.7 x 434, x -150 to 572.7, y -217 to 217, clamped or taped to the bench.
+- Side walls and rear wall: MDF strips 84.8 high standing on the floor, inner faces at y +216, y -216 and x 571.7 (thicker
+  than the steel, outward). Rack ears: hardboard plates 86.8 high at x -130 to -128 on the side walls' outsides, reaching
+  y +-241.
+- Drive cage: an open-bottom MDF box, x -150 to -15, between the side walls, top 85.8 above the floor. The shroud starts
+  on its top.
+- System board: a printed plate 7 thick, x 144.5 to 345.5, y -209 to 209 (printed in four tiles).
+- Heat sinks: two printed blocks, x 178 to 278, y 76.5 to 137.5 and -137.5 to -76.5, 64 tall on the board plate (top 71
+  above the floor). The shroud meets only their outer faces, so the fins are not reproduced.
+- Memory: four printed blocks, one per row of eight modules (the shroud never goes between modules), x 161.5 to 294.5,
+  y 148.5 to 207, 7.5 to 65.5, -65.5 to -7.5 and -207 to -148.5, 39 tall on the board plate (top 46 above the floor).
+- Risers: an open-bottom MDF box, x 345.5 to 571.7, y -215 to 215, top 80 above the floor.
+- Fan cage: the CNYJ3 stands on the floor between the side walls with its back face at x 144.5, held by the two L
+  brackets screwed into the side walls. The simulation puts its top 82 above the floor; set the real cage's height (shim
+  under it if needed) so that the real shroud, stood on the floor, takes both tabs into the slots level, as the two parts
+  meet in the server.
+
+Fit check, before the first trial (by hand, ruler and the 2 mm feeler gauge): tilt the shroud, put both tabs into the
+slots and lower it. Both tab tips at least 3 mm past the cage's back face, the gauge passing under no end-wall corner,
+and the shroud touching only the floor and the slots. Modelled gaps: 3 at the side walls, 4 from the duct walls to the
+memory blocks, 5 to the heat-sink blocks, 4 under the wings, 3 under the duct walls. If the real shroud meets a block,
+move or trim the block until its gap is back. Scoring and reset are unchanged.
 
 ## Reset
 
