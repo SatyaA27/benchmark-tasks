@@ -1,0 +1,22 @@
+{
+  "title": "Put a CD back in its jewel case: press it onto the hub until the teeth grip, then shut the lid",
+  "category": "Societal relatability",
+  "keywords": [
+    "CD",
+    "jewel case",
+    "compact disc",
+    "disc hub",
+    "snap fit",
+    "thin object grasp",
+    "closing a case"
+  ],
+  "instruction": "Put the CD back in its case, pressed onto the hub, and close the case.",
+  "context": "Anyone who has owned CDs, DVDs or game discs has put one back in its case. The disc is a 1.2 mm plate, 120 mm across, wider than the gripper opens, so it can only be held by its edge. Its 15 mm hole has to be centred on the tray's hub, a ring of twelve sprung teeth whose rounded tips give less than 2 mm of lead-in, then pressed down until the teeth flex in and snap back over the hole (about 3 N), and finally the lid is swung over and pressed until its catch clicks. A disc only laid on the hub fits under the shut lid but rides loose and gets scratched as it rattles: that scores nothing.",
+  "setup": "Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the table top. A Denon DCD-600NE CD player (434 wide, 273 deep, 107 high, black, tray shut) stands on the table with its front face at x 235, centred on y 0. On its top lies an open standard CD jewel case (142 x 125 x 10.4 shut, clear polystyrene plastic, 70 g, black tray): base flat, its 142 mm length along y from y -71 (spine, right) to +71, its front long side 2 mm over the player's front edge, so the hub's centre is at x 296, y 0, 107 up. The lid stands open at 100 degrees on the spine (leaning 10 degrees past upright, away from the tray) and holds a 120 x 120 booklet. The tray has a well for the disc, two thumb cut-outs at the ends and the usual hub: 12 teeth on a 15.3 mm crown (14.85 mm below it) standing on a 33 mm support ring. A CD (120 across, 1.2 thick, 15 mm hole, 16 g, polycarbonate plastic) lies label up on the player's top centred at x 268, y 145, its rim 27 mm past the front edge: just taken out of the player and put down where a person (or a gripper) can take it by the edge without sliding it. Nothing else is on the table. The right arm can do the disc and the lid's swing; the left presses the lid shut.",
+  "scoring": "Judged at the end of the run. Seated means the disc's centre is within 0.6 mm of the hub's axis, it lies flat (within 1.5 degrees) on the support ring (within 0.35 mm of its seated height) and every tooth has sprung back over it (in a real case: it stays on when the case is turned over). Caught means the lid is within 0.8 degrees of shut, past the catch's crest, and still there 1 s after both grippers are at least 30 mm clear of the case, so the catch alone holds it (in a real case: the lid stays shut when the case is lifted by its base). Seated and caught: 1.0. Seated, lid down within 10 degrees but not caught: 0.8. Seated, lid open wider: 0.6. Not seated but lying in the tray within 12 mm of the hub with the lid open: 0.2. 0 if the lid is down (within 10 degrees) over a disc that is not seated, the disc falls off the player, or the case is tipped over 10 degrees or knocked off the player. If the case has been pushed more than 50 mm along the player the score is capped at 0.5. The run ends early with success once 1.0 has held for 1 second.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Open the case, press the hub's centre and lift the disc off by its edge; lay the disc label up on its mark with its rim over the player's front edge, put the case on its marks and stand the lid open at 100 degrees. Loose items may be off their marks by up to 10 mm. The 4 kg player stands free on the table (fixed in the simulation; the few newtons of the task do not move it).",
+  "fidelity": "Disc and case true size. Hub: 12 teeth (US 2002/0112976 sizes) as 4 sprung groups of 3 (sim slides run along x/y), 2 g each for the solver. The lid's two catch tabs are modelled as one detent at the hinge (3 N to click shut, 2 N to open; estimates). Estimates: tooth profile and stiffness (~3 N push), wall heights, lid mass, frictions. Disc collider: 48 convex sectors. Clear plastic tinted; 4 kg player fixed. Demo reads poses, drops the hole 7 mm onto the hub.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-2SDBAC"
+}
