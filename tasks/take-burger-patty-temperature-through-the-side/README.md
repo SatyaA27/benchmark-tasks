@@ -17,6 +17,14 @@ Note on method: ThermoWorks' own burger guide also allows a top-down insertion (
 value). This task follows the USDA FSIS method for patties, through the side, which is also the one that keeps the
 thermometer's tip in the middle of a thin food without touching the hot pan side.
 
+## Revision: review feedback and what changed
+
+Review: "Please specify how to prepare a repeatable batch of one-use patties, including cooking and dimensional checks,
+safe storage and handling, and the patty's temperature at the start of each trial. Explain how a replacement patty can
+be put in place within a few minutes between trials." Changes, text only: the reset notes give the batch, its checks,
+handling, the start temperature (160 F through) and the swap; the setup and the real-world trial point to them; the
+demo's timetables became one paragraph. Code, run limit and runs unchanged.
+
 ## Run and score
 
 From this task folder, with the official YAM Arena environment installed:
@@ -35,7 +43,7 @@ scorer (no GPU).
 
 ## The scene
 
-Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. (1) A white co-polymer cutting board, San Jamar CB121812WH, 457 x 305 x 12.7, held still (on a damp cloth), long side along y from y -50 to 407, centred on x 300. (2) A cooked 8 oz (227 g raw) 80/20 beef burger patty, 100 across and 23 thick with a rounded edge, 170 g, browned top and bottom, lying flat on the board, centre at x 300, y 30 (its right edge 30 from the board's right edge). (3) A Dexter-Russell Sani-Safe Cool Blue 19713H hamburger turner, 140 g: solid stainless blade 102 x 76 x 1.2 with bevelled edges, handle raised 28 by the offset, blue handle 127 x 24 x 18; lying on its blade on the board along y, centred on x 300, the blade's front edge at y 95 (15 left of the patty), handle toward the left arm. (4) A ThermoWorks Thermapen ONE instant-read thermometer, 115 g, red body 156 x 48 x 19, its 110 mm steel probe (3.3 thick, narrowing to 1.5 over the last 12) folded out straight; lying display up on the bench right of the board, body centre at x 215, y -262, probe pointing left at the patty, along y, 17 off the body's centre line toward x+, its tip at y -74. Real trials: tape marks at these positions. Real patty: 8 oz 80/20 ground beef pressed to 114 (4.5 in) across, cooked to 160 F, rested; measure it before the trial.
+Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. (1) A white co-polymer cutting board, San Jamar CB121812WH, 457 x 305 x 12.7, held still (on a damp cloth), long side along y from y -50 to 407, centred on x 300. (2) A cooked 8 oz (227 g raw) 80/20 beef burger patty, 100 across and 23 thick with a rounded edge, 170 g, browned top and bottom, lying flat on the board, centre at x 300, y 30 (its right edge 30 from the board's right edge). (3) A Dexter-Russell Sani-Safe Cool Blue 19713H hamburger turner, 140 g: solid stainless blade 102 x 76 x 1.2 with bevelled edges, handle raised 28 by the offset, blue handle 127 x 24 x 18; lying on its blade on the board along y, centred on x 300, the blade's front edge at y 95 (15 left of the patty), handle toward the left arm. (4) A ThermoWorks Thermapen ONE instant-read thermometer, 115 g, red body 156 x 48 x 19, its 110 mm steel probe (3.3 thick, narrowing to 1.5 over the last 12) folded out straight; lying display up on the bench right of the board, body centre at x 215, y -262, probe pointing left at the patty, along y, 17 off the body's centre line toward x+, its tip at y -74. Real trials: tape marks at these positions. Real patty: one from a batch made as the reset notes say (8 oz 80/20 beef pressed in a 114 (4.5 in) ring, browned, cooked and held in a 160 F water bath), 100 +/- 5 across and 23 +/- 2 thick, 160 F through at the start.
 
 | Collider | Size (mm) | Centre at the start (mm; x, y, height above the bench) |
 | --- | --- | --- |
@@ -136,60 +144,27 @@ from a copy of the same file that only adds printing (and, for the wrong ways, c
 ## Scripted demonstration
 
 Reads (simulator state, which a scripted demo may use) aim the probe at the patty where it actually lies and correct
-each hand for how it holds its tool. Left hand (turner):
-
-| Seconds | Step |
-| --- | --- |
-| 0.0 to 2.5 | over the turner's handle |
-| 2.5 to 4.0 | pads down round the handle |
-| 4.0 to 5.0 | pinch the handle |
-| 5.0 to 6.5 | lift the turner |
-| 6.5 to 9.0 | blade over the patty's far half |
-| 9.0 to 10.5 | blade down on the patty |
-| 10.5 to 11.5 | hold it down |
-| 11.5 to 36.5 | keep holding |
-| 36.5 to 38.0 | lift the turner off |
-| 38.0 to 40.5 | back over its place |
-| 40.5 to 42.0 | lay it down |
-| 42.0 to 43.0 | let go |
-| 43.0 to 44.5 | rise clear |
-| 44.5 to 46.5 | park |
-| 46.5 to 49.5 | hold clear |
-
-Right hand (thermometer):
-
-| Seconds | Step |
-| --- | --- |
-| 0.0 to 2.5 | over the thermometer |
-| 2.5 to 4.0 | pads down round the body |
-| 4.0 to 5.0 | pinch the body |
-| 5.0 to 6.5 | lift it |
-| 6.5 to 12.0 | wait for the turner |
-| 12.0 to 15.0 | probe beside the edge, level |
-| 15.0 to 16.5 | probe at mid-height, short of the edge |
-| 16.5 to 18.0 | settle |
-| 18.0 to 19.0 | line the probe up on the patty's centre |
-| 19.0 to 20.5 | settle |
-| 20.5 to 24.5 | push it in to the centre |
-| 24.5 to 27.0 | hold for the reading |
-| 27.0 to 30.0 | draw it straight out |
-| 30.0 to 32.5 | back over its place |
-| 32.5 to 34.0 | lay it down |
-| 34.0 to 35.0 | let go |
-| 35.0 to 36.5 | rise clear |
-| 36.5 to 38.5 | park |
-| 38.5 to 41.5 | hold clear |
+each hand for how it holds its tool. Left hand (turner): pinches the handle (0-5 s), lifts the turner and lays the blade
+on the patty's far half (5-10.5 s), holds it down until 36.5 s, then lifts it off, lays it back, lets go and parks
+(36.5-49.5 s). Right hand (thermometer): pinches the body (0-5 s), lifts it and waits for the turner (5-12 s), brings
+the probe level to mid-height just short of the edge and lines it up on the patty's centre, settling between moves
+(12-20.5 s), pushes it in to the centre (20.5-24.5 s), holds for the reading (24.5-27 s), draws it straight out (27-30
+s), then lays the thermometer back, lets go and parks (30-41.5 s).
 
 ## Real-world trial
 
-Use a freshly cooked patty each trial. Lay tape marks round the patty, the turner and the thermometer. Score from a
-side photo at the moment of the reading (probe height and angle, the probe length still showing: depth = 110 mm minus
-that), the hole in the edge and both faces after withdrawal, and the tape marks. A probed patty can be cut through
-along the hole to confirm where the tip was. Keep hands away from the probe tip.
+Patties: one a trial, from a batch held in a 160 F (71 C) water bath, made, checked, handled and swapped as the reset
+notes say. Sources: USDA FSIS "Danger Zone" page (hot food held at or above 140 F; refrigerate within 2 hours),
+https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/danger-zone-40f-140f ; a
+sous-vide circulator, e.g. Anova Precision Cooker 3.0 (0-92 C, +/-0.1 C), $169,
+https://www.abt.com/Anova-Culinary-Precision-Cooker-3.0-Sous-Vide-AN525US00/p/187571.html. Lay tape marks round the
+patty, the turner and the thermometer. Score from a side photo at the moment of the reading (probe height and angle, the
+probe length still showing: depth = 110 mm minus that), the hole in the edge and both faces after withdrawal, and the
+tape marks. A probed patty can be cut through along the hole to confirm where the tip was. Keep hands away from the
+probe tip.
 
 ## Files
 
-- `take_burger_patty_temperature_through_the_side.py`: the scene, the penetration model, `score()` / `success()` and the scripted `demo()`.
-- `yam_parts.py`: compound rigid parts (boxes and cylinders) for YAM Arena task files.
-- `task.json`: the submission fields.
-- `test_take_burger_patty_temperature_through_the_side.py`: generated offline checks of the scorer.
+`take_burger_patty_temperature_through_the_side.py` (scene, penetration model, `score()` / `success()`, scripted
+`demo()`); `yam_parts.py` (kit: compound rigid parts); `task.json`;
+`test_take_burger_patty_temperature_through_the_side.py` (generated offline checks of the scorer).
