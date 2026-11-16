@@ -9,10 +9,18 @@ passes the head in one continuous stroke, and the card moves inside the reader's
 the counter, stripe face up, as cards are set down at a till or a front desk. A 0.76 mm card cannot be pinched off a
 flat surface by its edge, so it must first be got off the counter (the demo slides it until one end overhangs the
 counter's edge, as people do), then turned so the stripe faces the reader's head with its edge down, swiped, and
-stood in the empty card stand beside the reader. Swipes are daily work for cashiers (O*NET 41-2011.00) and hotel desk clerks (O*NET 43-4081.00): gift and
-prepaid cards, payment cards when the chip fails, hotel key cards, badges at time clocks.
+stood in the empty card stand beside the reader. Category: Societal relatability. Most people have swiped a card themselves: a payment
+card when the chip fails, a gift or prepaid card, a hotel key card, a badge at a time clock or a door.
 
 ## Revision: earlier review feedback and what changed
+
+Latest review: "Please move it to Societal relatability (swiping a card is something most people have done themselves,
+while cashiers now rarely swipe for customers), and simplify the real-world scoring: a swipe counts when the reader
+outputs the card's data on the first pass." Changes for it, text only: the category is now Societal relatability and
+the context says so; the scoring now states the real-trial rule first (the reader's data output on the first pass).
+The scene, the simulated scorer, the demo, the run limit and the recorded runs are unchanged.
+
+Earlier review and its changes:
 
 The earlier version of this task was not accepted. Its review said: "Card should start flat on the table to add the
 realistic challenge of picking it up."
@@ -196,8 +204,11 @@ mass). The head link's cylinder is the only moving collider besides the card.
 ## Scoring
 
 The scorer reads the card's simulated pose and velocity and the head's slide position at every 20 Hz control step.
-It never reads contact forces, the lamp, or any flag set by the demo. In a real trial the same quantities come from
-a side and a top video with a scale, and the reader's own output decides the read; the rules below are the reader's
+It never reads contact forces, the lamp, or any flag set by the demo.
+
+In a real trial the scoring is simple: a swipe is a good read when the reader outputs the card's data, and a clean
+read is the card's data output on the first pass. Nothing else about the swipe is judged; the stand and dropped-card
+rules are read from the video. The rules below are how the simulation decides the same thing, from the reader's
 documented conditions.
 
 **A swipe.** The head counts as touched when it is pushed back at least 0.38 mm (half a card's thickness). A swipe is
@@ -320,8 +331,6 @@ host's last read before each trial; the reader's LED and decoded data confirm ea
   constraints in human and robotic grasping", International Journal of Robotics Research, 2015; K. Hang, A. S. Morgan
   and A. M. Dollar, "Pre-grasp sliding manipulation of thin objects using soft, compliant, or underactuated hands",
   IEEE Robotics and Automation Letters, 2019.
-- O*NET 41-2011.00 Cashiers, https://www.onetonline.org/link/summary/41-2011.00; O*NET 43-4081.00 Hotel, Motel, and
-  Resort Desk Clerks, https://www.onetonline.org/link/summary/43-4081.00.
 
 ## Licence
 
