@@ -13,7 +13,22 @@ captions: "Peel off the back film of the screen protector", "Hold the tray handl
 flat on the screen without tilting", "Press & slide, then wait for 30 seconds", "Remove the sticker from the tray"; then
 the tray is lifted off. One published review: lifting the tray before the glass had stuck pulled the glass away with
 it. YouGov, "American consumers and cell phone accessories" (survey of 1,104 US adults, 28-29 November 2023): 46% use a
-screen protector or guard.
+screen protector or guard. ScreenProtectors.co.uk, "Why does my screen protector keep lifting at the edges?" (checked
+November 2026), https://www.screenprotectors.co.uk/answers/protector-lifting-edges/: an edge that has not stuck shows
+as "a band of rainbow or a bright halo" ("that's the air gap refracting"), and "look at the protector from a low angle
+in bright light".
+
+## Revision: review feedback and what changed
+
+Review: "The real score requires measuring a corner lift of at most 0.3 mm, which the specified ruler or photo does not
+practically establish. ... Replace the 0.3 mm corner-lift measurement with a clearly specified real-world adhesion
+check that can be judged from a photo or by direct inspection. Clarify the real kit's sticker-removal and waiting
+steps so the trial can be carried out as instructed." Changes, text only: the scoring now judges "glass on" on a real
+phone by the check people use for glass protectors, a photo from above at a low angle in a lamp's reflection showing
+no air gap (white, silvery or rainbow patch) touching an edge or corner, and keeps the simulated 0.3 mm rule, saying
+how the two correspond (Scoring). The reset notes now give the real trial's handling of the maker's 30 s wait and
+sticker removal: the robot does neither; the operator does both in a pause after the press. Fidelity says so. The
+scene, the strip and adhesive model, the scorer, the demo, the run limit and the recorded runs are unchanged.
 
 ## Run and score
 
@@ -85,14 +100,21 @@ Masses spread at uniform density over each part's colliders: phone 0.17 kg, tray
 
 ## Scoring
 
-Judged at the end; measure with a ruler or calliper and a photo. The glass is on when it lies flat on the screen (no corner lifted more than 0.3 mm). Its offset is the most any of its four corners lies from where it belongs (the border between the glass's edge and the phone's edge equal on opposite sides). 1.0: glass on, every corner within 1.5 mm, the tray off the phone (no part of it within 10 mm of the phone below 20 mm up), the hands at least 3 cm from the tray and the phone, everything still for 1 s. 0.5: glass on within 1.5 mm with the tray still on the phone, or glass on within 2 mm with the tray off. 0.25: glass on within 2 mm, tray still on. 0: anything else (glass still in the tray, lifted, tilted, or more than 2 mm off), or the phone pushed more than 30 mm from where it lay or turned over.
+Judged at the end; measure with a ruler or calliper and a photo. The glass is on when it is stuck flat on the screen. On a real phone: in a photo taken from above, with the screen off and a lamp reflected in it at a low angle, no air gap (a bright white, silvery or rainbow patch or band, where the glass is not stuck) touches any edge or corner of the glass; small bubbles wholly inside its edges do not count. In the simulation: no corner more than 0.3 mm above the screen (glass held flat there for 0.5 s sticks down flat). Its offset is the most any of its four corners lies from where it belongs (the border between the glass's edge and the phone's edge equal on opposite sides). 1.0: glass on, every corner within 1.5 mm, the tray off the phone (no part of it within 10 mm of the phone below 20 mm up), the hands at least 3 cm from the tray and the phone, everything still for 1 s. 0.5: glass on within 1.5 mm with the tray still on the phone, or glass on within 2 mm with the tray off. 0.25: glass on within 2 mm, tray still on. 0: anything else (glass still in the tray, lifted, tilted, or more than 2 mm off), or the phone pushed more than 30 mm from where it lay or turned over.
 
 How each condition is read in `score()` (in the phone's own frame, so a phone nudged or rocked on its camera plateau is
 judged the same):
 
 - **Glass on:** no corner of the glass's underside more than 0.3 mm above the screen (the display's
   surface, drawn 0.1 mm proud of the frame so the two faces render apart; and, a simulation
-  allowance, none more than 1 mm into it: pressed hard, the thin glass collider can sink a little).
+  allowance, none more than 1 mm into it: pressed hard, the thin glass collider can sink a little). How the real check
+  corresponds: in the simulation, glass that has lain within 0.3 mm of the screen for 0.5 s is stuck, and the adhesion
+  rule then holds it exactly flat on the screen, so at the end "within 0.3 mm" means stuck flat (the 0.3 mm only
+  absorbs the rigid contact's jitter). On a real phone stuck glass is wetted to the screen and shows no air gap, while
+  any part that has not stuck (a lifted corner, an edge held off by dust) shows as a bright white, silvery or rainbow
+  patch in a low-angle reflection, however thin the gap: so "no air gap touching an edge or corner" is the real
+  reading of the same condition. Bubbles wholly inside the edges are left out on both sides (the simulation has none;
+  the maker's next step pushes them out).
 - **Offset:** the largest distance, across the screen, of a glass corner from where it would be with the glass dead
   centre and square (1.8 mm border on the long sides, 1.8 mm at
   the ends). Full credit allows 1.5 mm: the tray's own play (0.4 mm round the phone, 0.3 mm round
@@ -157,7 +179,7 @@ up and puts it down where it started. Timeline:
 
 ## Simulation and the real kit
 
-Rigid bodies; glass, adhesive and films are one 0.4 mm plate. The strip sticker holding the glass in the tray is a 0.1 N lift at each end with a 1.5 mm stretch limit. Adhesion is a rule: flat on the screen for 0.5 s, the glass stays where it lies and the strip lets go, so Spigen's 30 s wait and peeling the strip off the tray are not done. Starts after the back-film peel. Tray sizes are estimates (rim height read off Spigen's install video, the rest guessed), as are the masses.
+Rigid bodies; glass, adhesive and films are one 0.4 mm plate. The strip sticker holding the glass in the tray is a 0.1 N lift at each end with a 1.5 mm stretch limit. Adhesion is a rule: flat on the screen for 0.5 s, the glass stays where it lies and the strip lets go, so the robot skips Spigen's 30 s wait and sticker step (in a real trial the operator does both in a pause). Starts after the back-film peel. Tray sizes (rim height from Spigen's video, the rest guessed) and masses are estimates.
 
 - How the strip sticker and the adhesive are modelled (`_Model` in the task file, run before every physics step): the
   glass hangs in the tray's recess, its top against the recess's ceiling, held there by a lift of 0.1 N at each
@@ -168,10 +190,11 @@ Rigid bodies; glass, adhesive and films are one 0.4 mm plate. The strip sticker 
   Pressed only at an end, the light hold lets the rigid glass go flat anyway (a real glass would bend and still
   stick); lifted before it was pressed flat, the glass stays in the tray and comes away with it.
 - Not simulated: the back film's peel (the trial starts after it); the maker's 30 s wait and its step "Remove the
-  sticker from the tray" before the tray is lifted (a film: here the strip lets go by itself once the glass has
-  stuck); the press is a press at the centre (Spigen's listing) rather than the video's press and slide along the
-  strip; after the trial, the front film's peel and pushing out bubbles; dust, the phone's side buttons (the real
-  tray's skirt clears them) and the screen's slight edge curve. The real tray is clear plastic; it is drawn dark grey.
+  sticker from the tray" before the tray is lifted (a film: here the strip lets go by itself once the glass has stuck;
+  in a real trial the operator does both during a pause after the press, as the reset notes say); the press is a press
+  at the centre (Spigen's listing) rather than the video's press and slide along the strip; after the trial, the front
+  film's peel and pushing out bubbles; dust, the phone's side buttons (the real tray's skirt clears them) and the
+  screen's slight edge curve. The real tray is clear plastic; it is drawn dark grey.
 - From the maker: the phone's size and mass. Read off frames of the maker's video (about 0.7 mm a pixel, with the
   phone's 147.6 mm length as the scale): the seated rim's top about 5-7 mm above the screen (modelled
   5.5 mm). Estimates, to measure on the real kit: the tray's pocket clearance (0.4 mm a side), wall
@@ -185,7 +208,7 @@ Rigid bodies; glass, adhesive and films are one 0.4 mm plate. The strip sticker 
 
 ## Reset
 
-Each trial uses up one pre-loaded tray: peel the glass off the screen and wipe the screen, then lay out a fresh tray (the kit has two; Spigen sells EZ Fit refill packs) with its back film peeled. Lay the phone and the tray at their taped marks.
+Each trial uses up one pre-loaded tray: peel the glass off the screen and wipe the screen, then lay out a fresh tray (the kit has two; Spigen sells EZ Fit refill packs) with its back film peeled. Lay the phone and the tray at their taped marks. Real trial: the maker's 30 s wait and sticker removal (its Steps 6-7) are done by the operator, not the robot. The operator pauses the robot as soon as the press has ended (the fingers that pressed have risen off the glass, the tray still seated on the phone), lets 30 s pass from the press, then, keeping the tray down on the phone with a fingertip, pulls the strip sticker off the tray by its tab and resumes the robot, which lifts the tray off. The pause does not count toward the run limit. If the tray leaves the phone before such a pause, the trial runs on without these steps and is scored as it ends. The simulation needs neither: its strip lets go by itself once the glass has stuck.
 
 A real trial needs no fixture: an iPhone 16 with no case, an EZ Fit kit for it, a desk. Wipe the screen and peel the
 tray's back film just before the trial starts.
