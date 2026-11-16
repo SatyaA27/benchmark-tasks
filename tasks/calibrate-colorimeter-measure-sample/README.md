@@ -1,24 +1,14 @@
 # Calibrate a colorimeter on the blank and measure a sealed sample
 
-The blank sets zero absorbance for the cuvette walls and solvent. A wrong reference or ridged faces on the beam gives a plausible but wrong concentration with no warning. The requested wavelength comes from the card. This tests reference-dependent measurement, beyond setting a device value or moving laboratory vessels.
+The blank sets zero absorbance for the cuvette walls and solvent. A wrong reference or ridged faces on the beam gives a plausible but wrong concentration with no warning. The requested wavelength comes from the card. Category Other, research-laboratory automation: reading a sample in a cuvette against a blank is a routine hand step at research and teaching lab benches (colorimetric protein assays, for one, are read this way), and a robot that runs such work unattended must load the instrument as people do: set the wavelength, seat the blank with its clear faces on the light path, close the lid, zero, then read the sample and return both cuvettes. These are the steps in a common teaching colorimeter's manual (README). This tests reference-dependent measurement, beyond setting a device value or moving laboratory vessels.
 
-Category: Impact on jobs. Reading a sample against a blank on a colorimeter or spectrophotometer is a task O*NET rates Core for these occupations (importance out of 100); US employment is from BLS OEWS, May 2025:
-
-| Occupation (BLS code) | O*NET task statement, Core | US workers |
-|---|---|---|
-| Clinical laboratory technologists and technicians (29-2010) | 29-2011.00, importance 93: "Operate, calibrate, or maintain equipment used in quantitative or qualitative analysis, such as spectrophotometers, calorimeters, flame photometers, or computer-controlled analyzers." | 332,940 |
-| Water and wastewater treatment plant and system operators (51-8031) | 51-8031.00, importance 97, its highest-rated task: "Collect and test water and sewage samples, using test equipment and color analysis standards." | 128,490 |
-| Chemists (19-2031) | 19-2031.00, importance 77: "Analyze organic or inorganic compounds to determine chemical or physical properties, composition, structure, relationships, or reactions, using chromatography, spectroscopy, or spectrophotometry techniques." | 82,770 |
-| Chemical technicians (19-4031) | 19-4031.00, importance 84: "Set up and conduct chemical experiments, tests, and analyses, using techniques such as chromatography, spectroscopy, physical or chemical separation techniques, or microscopy." | 57,540 |
-| Total | | 601,740 |
-
-BLS counts technologists (O*NET 29-2011.00) and technicians (29-2012.00) as one occupation, 29-2010; the technicians' Core tasks include "Conduct chemical analyses of body fluids, such as blood or urine, using microscope or automatic analyzer to detect abnormalities or diseases and enter findings into computer." and "Set up, maintain, calibrate, clean, and test sterility of medical laboratory equipment." Sources: O*NET OnLine task lists with their Core/Supplemental ratings, https://www.onetonline.org/link/details/29-2011.00 (likewise 29-2012.00, 51-8031.00, 19-2031.00, 19-4031.00); May 2025 national employment from the BLS data API, https://api.bls.gov/publicAPI/v1/timeseries/data/OEUN000000000000029201001 (likewise series OEUN000000000000051803101, OEUN000000000000019203101, OEUN000000000000019403101).
+Category: Other, as research-laboratory automation. Measuring a solution's absorbance against a blank in a cuvette is a routine hand step in research and teaching labs. Colorimetric protein assays, for example, are read this way: Bio-Rad's Quick Start Bradford Protein Assay manual notes that "the 1 ml assay may be performed in disposable cuvettes" and says "Set the spectrophotometer to 595 nm. Zero the instrument with the blank sample ... Measure the absorbance of the standards and unknown samples." (https://www.bio-rad.com/webroot/web/pdf/lsr/literature/4110065A.pdf). A robot that runs such work unattended has to load the instrument the way people do, which is what this task asks. The steps are those of the Vernier Colorimeter's manual (https://www.vernier.com/manuals/col-bta/), a common teaching instrument with the same four wavelengths (430, 470, 565 and 635 nm): "Press the < or > button on the Colorimeter to select the correct wavelength", insert the blank and "Line up one of the clear sides of the cuvette with the arrow", "Slide the Colorimeter lid closed", "Press the CAL button on the Colorimeter to begin the calibration process", then read the sample. The simulated instrument is not that product (its body, hood and panel are this task's own); the real trial uses the instrument in Real instrument: build, below.
 
 The two-arm split is the demonstration's choice: the left operates the panel and the right handles the hood and cuvettes. All assets are locally authored primitives and the included kits; no external assets or licences.
 
 ## Revision: earlier review feedback and what changed
 
-The latest review said: "Provide evidence to show that this is a core task of occupations totaling more than 500k US workers". This version adds that evidence and nothing else: the occupations, their O*NET task statements and their BLS employment, in task.json context and the Category paragraph above. The scene, scorer, tests, demo and media are those of the previous version.
+The latest review said: "The occupational evidence point remains open: the cited task statements and employment totals do not show how many workers routinely perform this specific manual colorimetry procedure. Please change the domain to Other and explain its relevance to research-laboratory automation, or provide evidence that the specific operation is routinely performed by over 500,000 workers. A new point not raised before: specify an affordable off-the-shelf colorimeter and adapt the setup to it, or provide the physical build files, optical and control components, and assembly instructions needed to reproduce the custom instrument for a few hundred dollars." This version takes the first route on importance: the category is now Other, and the context and the Category paragraph above explain the task's relevance to research-laboratory automation; the occupation table and employment total are gone. For reproducibility it adds Real instrument: build: the instrument as simulated, built for about $170 from named parts (light sources, light sensor, controller, display, switches), with the printed parts in colorimeter_build.scad, wiring, assembly and firmware behaviour. The scene, scorer, tests, demo and media are those of the previous version.
 
 Earlier reviews' points stay answered as before: the sample's dye identity, concentration, preparation and batch targets (Sample); no zero for a tilted or tipped cuvette, only for one lost off the table (Scoring); setup.png, the Dream-1 run and the demo all show layout 6, card 470 (Layouts).
 
@@ -74,11 +64,78 @@ Positions are on the table top, measured forward from the line through the two a
 
 All loose and moving parts have 1.2 static / 1.0 dynamic friction except the hood. The physical objects never move between the 16 layouts: only the number printed on the card, the lamp lit at the start, which cuvette is the blank and which faces are frosted change (see Layouts). setup.png, the Dream-1 run and the scripted demo all show layout 6 (CLI `--seed 0`).
 
+The real instrument and rack are built as in Real instrument: build.
+
 For exact reconstruction, all local coordinates below are in mm. Housing outer bounds x=+/-55,y=+/-80,z=0..65; bottom slab centre (0,0,15), size (110,160,30). Upper x strips fill x=-55..14.75 and 29.25..55, full y, z=30..65. The two remaining strips fill x=14.75..29.25 and y=-80..-47.25 or -32.75..80. Lead cylinders are centred at (well x +/-12.25,well y,65), axes y, or (well x,well y +/-12.25,65), axes x. Rack x strips fill x=-22..-7.75 and +7.75..22, y=+/-82,z=4..24. Remaining strips fill x=+/-7.75 and y=-82..-67.75,-52.25..52.25,67.75..82. Pocket lead cylinder axes are 12.75 mm from each pocket centre. These floor/wall unions make real openings. Cup bodies use the exact same three collider boxes, friction and contact offset for both identities.
 
 The attached hood slides on steel rails through its runners; its open ends along x prevent a skirt from crossing the cap. The housing is 110x160 mm to contain the 60 mm hood slide and the panel, with the well at world (.190,-.045) m and the open hood at (.130,-.045) m. Closed fingers fit between button caps with at least 8 mm clearance to either neighbour. Every cap is over 50 mm from the well's cuvette box. Button preload is .75 N, force at the 2 mm switch is 1.25 N. At .1 mm contact offsets the lead-ins have 1 mm well and 1.5 mm pocket side clearance. R5 mm surfaces guide released bodies inward, with conservative capture 5.9/6.4 mm per axis, including diagonal offsets.
 
 The printed card digits are 24 mm high with 3.6 mm strokes, with the header band above them along +x. At the left wrist look pose TCP (0.217895,0.225330,0.8975), yaw 0, their calibrated projected glyph heights are 17.292, 17.291 and 17.300 px at 320x176; in the top camera they are 4.462, 4.456 and 4.451 px. Heights are the shorter projected side of each digit, including camera rotation. The demo uses the wrist view. Every printed glyph on the card and instrument has text up along world +x and reading direction along world -y. At the card and panel viewing poses, each authored glyph's projected up and right axes are within 10 degrees of image up and image right.
+
+## Real instrument: build (about $170)
+
+No commercial colorimeter has this body, hood and panel, so the real trial uses this build. colorimeter_build.scad in
+this folder (OpenSCAD: set PART, render, export STL) makes the printed parts: the housing as a lower tray and an upper
+part (well, lip rods, rail pillars, optics pockets, panel holes), the hood, a button cap (print three), the LED holder
+and the rack. Their outlines are the simulation's (Physical setup and the reconstruction paragraph); print in PLA with
+supports, the housing teal and the hood navy.
+
+Bought (prices seen in November 2026):
+
+| Part | Use | Price and source |
+|---|---|---|
+| Thorlabs LED430L, 430 nm, TO-18 | 430 nm source | $14.62, https://www.thorlabs.com/thorproduct.cfm?partnumber=LED430L |
+| Thorlabs LED465E, 465 nm, 5 mm, pack of 5 | 470 nm source | $28.60, https://www.thorlabs.com/thorProduct.cfm?partNumber=LED465E |
+| Thorlabs LED560L, 562 nm, TO-18 | 565 nm source | $19.48, https://www.thorlabs.com/thorproduct.cfm?partnumber=LED560L |
+| Thorlabs LED630E, 639 nm, 5 mm, pack of 5 | 635 nm source | $17.29, https://www.thorlabs.com/item/LED630E |
+| Adafruit TSL2591 light-sensor board (product 1980) | detector | $6.95, https://www.adafruit.com/product/1980 |
+| Raspberry Pi Pico | controller | $4, https://www.raspberrypi.com/products/raspberry-pi-pico/ |
+| 0.36 in 4-digit seven-segment TM1637 module with a decimal point per digit, 30 x 14 mm face | absorbance display | about $5 (estimate), for example https://www.amazon.com/dp/B07TX7R73D |
+| Cherry MX2A Black key switches, 10 (press registers at 2.0 mm of 4.0 mm travel, 60 cN) | the three buttons | $3, https://unikeyboards.com/products/cherry-mx2a-black-linear-switch-10pcs ; specification https://www.cherry.de/en-us/product/mx2a-black |
+| PLA filament, teal and navy, 1 kg each | printed parts | $22.99 each (list), https://overture3d.com/products/overture-pla |
+| Two 4 mm steel rods 100 mm long, four 4 mm shaft collars, a lever microswitch, a ULN2003A driver, four green and one red/green 3 mm LEDs, resistors, 1 mm white PTFE sheet, wire, USB cable | rails, hood stops, hood switch, source drive, lamps, diffuser | about $25 (estimate) |
+
+Assembly:
+1. Optics: push the four source LEDs into the LED holder, put a 15 x 15 mm piece of the PTFE sheet against the source
+   slit as a diffuser, slide the holder up its wire channel and press it to the diffuser. Slide the TSL2591 board into
+   its slot with the sensor on the slit's centre. The light path runs front to back through the two 2 x 6 mm slits,
+   15 mm above the well floor, where the printed triangles mark it.
+2. Panel: clip the switches into their cutouts (1.5 mm skin) and press on the caps; CAP_BOSS in the file sets each cap's
+   underside 7 mm above the housing top, as simulated. Glue the lamps into their 3 mm holes and the display under its
+   window.
+3. Hood: thread each rod through its pillars with a collar, the hood runner and a second collar on it; set the collars
+   so the hood stops open with its centre 60 mm toward the robot from the well and closed centred over the well; glue
+   the rods. Glue the microswitch so the closing hood presses it in its last 1 mm. Glue steel washers on the roof beside
+   the stem until the hood weighs 55 g.
+4. Wiring (Pico pins): TSL2591 on GP4 (SDA) and GP5 (SCL), 3V3 and GND; display CLK GP6, DIO GP7; down, up and CAL
+   switches GP10, GP11, GP12 and the hood switch GP13, each to GND with the internal pull-up; the four wavelength lamps
+   GP16 to GP19 and the CAL lamp's green and red GP20 and GP21, each through 330 ohm; each source LED from the USB 5 V
+   through its resistor (about 47 ohm for 430 and 465 nm, 100 ohm for 562 and 639 nm: about 20 mA) to a ULN2003A
+   output, the inputs driven from GP2, GP3, GP8 and GP9.
+5. Tape the housing and the rack to the table at the positions in Physical setup.
+
+Firmware behaviour (the Instrument section's rules):
+- At power-up 430 nm is selected and lit, no reference is stored and the display shows dashes. Reset between trials:
+  unplug and replug, then set the layout's starting wavelength with the arrows.
+- Ten times a second the selected source is switched on and the sensor's full-spectrum channel read, then off and read
+  again; the signal I is the difference, so room light cancels. Gain and integration time are fixed per wavelength,
+  chosen once so that the blank reads 30-70 % of full scale.
+- A press is a switch closing (2.0 mm of travel, 20 ms debounce), re-armed when it opens. Down and up step through 430,
+  470, 565 and 635 nm, clamped at both ends with no wrap; every change clears the reference and moves the lit lamp.
+- CAL with the hood switch closed stores the mean of 10 signals as Iref for the current wavelength and lights CAL
+  green; with the hood open it flashes CAL red for 2 s and keeps the previous reference. A successful CAL ends a flash.
+- With the hood closed and a reference at the current wavelength the display shows A = log10(Iref / I), from the mean
+  of the last 5 signals, as sign and X.XX; otherwise dashes.
+
+Differences from the simulated instrument (none changes the scoring rules):
+- The sources peak at 430, 465, 562 and 639 nm under the panel's labels 430, 470, 565 and 635. The real targets come
+  from the batch check on this instrument (Sample), which takes up any source offset.
+- The switches register at 2.0 mm, as simulated, but need about 0.6 N there (simulated 1.25 N) and travel 4 mm (5 mm).
+- The instrument cannot sense a seated cuvette, so it accepts a CAL with the hood closed over an empty well; the real
+  trial's reference condition is checked on the trial video, as Scoring says.
+- The hood's runners wrap the rails (the simulation holds it on a slide joint); the digits are 9.1 mm high (simulated
+  10 mm); the rack is printed instead of steel.
+- Warm the instrument up for 5 minutes before the batch check and before trials.
 
 ## Sample
 
