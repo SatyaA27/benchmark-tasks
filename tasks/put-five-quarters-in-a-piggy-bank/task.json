@@ -1,0 +1,21 @@
+{
+  "title": "Put five quarters in a piggy bank: pinch each flat coin off the table and turn it on edge to fit the slot",
+  "category": "Societal relatability",
+  "keywords": [
+    "piggy bank",
+    "coins",
+    "US quarter",
+    "saving money",
+    "thin object grasp",
+    "slot insertion"
+  ],
+  "instruction": "Put the five coins in the piggy bank.",
+  "context": "Dropping spare change into a piggy bank is one of the first money habits children learn, and plenty of adults keep one on a shelf. It is easy for a person and hard for a two-finger gripper: a US quarter lying flat is only 1.75 mm thick, so it must be pinched by its rim right at the table's surface, then turned on edge in the fingers and lined up over a slot only 5 mm wide before it is let go. A coin carried flat lands across the slot and stays on the pig's back; one let go off line hits the slot's edge. The robot does it five times with one hand, and must not knock the loose ceramic bank over.",
+  "setup": "Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the table top. A Child to Cherish Large Piggy Bank (glazed pink ceramic, 203 long, 178 wide, 178 high, 0.91 kg; hollow body with a 5 mm wall; a 38 x 5 mm coin slot along the top of its back, its mouth 176 above the table; a rubber stopper in its belly) stands loose on its four feet with its body centred at x 320, y 200, its snout pointing forward and to the left, 70 degrees from straight ahead, so the slot runs along that line. Five US quarters (24.26 across, 1.75 thick, 5.67 g, cupronickel) lie flat on the bare wooden table, centres at (235, 60), (190, 95), (130, 150), (200, 20) and (120, 70). Nothing else is on the table; the bank is empty. The left arm can do the whole task; the right arm is not needed.",
+  "scoring": "Judged at the end of the run (in the real world: pull the stopper and count). 0.2 for each quarter inside the bank: its centre inside the hollow body and the whole coin below the slot's inner mouth, so a coin stuck in the slot does not count. 1.0 means all five are in. The score is 0 if the bank is ever tipped more than 20 degrees from upright (knocked over, or laid on its side so coins could be pushed in flat) or leaves the table. The run ends early with success once all five have been in for 1 second.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Pull the rubber stopper out of the bank's belly, tip the coins out and refit the stopper. Stand the bank on its marks and lay the five quarters flat on theirs, either face up.",
+  "fidelity": "Quarters at US Mint size and mass (plain 32-sided discs, no relief or reeding). Bank: maker's 8 x 7 x 7 in size, 1.5 in slot and 2.0 lb listing; its 5 mm slot width, 5 mm wall, body shape and all frictions are estimates. The hollow body is one rigid SDF mesh with the slot cut through its wall; legs, snout and ears are primitives on the same body. The scripted demo reads object poses; a model sees only the cameras.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-KBLTLF"
+}
