@@ -109,16 +109,99 @@ demonstration (no object jitter): full credit at 18.5 s, the vane's edge at the 
 
 ## Simulation and the real objects
 
-True-size rigid parts. Each vane has its own pins and the gang's detent; the rear link that turns real vanes together is left out. The fork's sprung prong is a plate on a sprung slide (1.5 N on a vane), with a numerical armature; its small barbs are left out. The oil is mass only. The clip starts clicked open, standing on its flat edge. Sizes, detent, spring, mass and frictions are estimates: no maker figures.
+True-size rigid parts. Each vane has its own pins and its own detent; the rear link that turns a car's vanes together is left out, in the simulation and in the built vent. The fork's sprung prong is a plate on a sprung slide (1.5 N on a vane), with a numerical armature; its small barbs are left out. The oil is mass only. The clip starts clicked open, standing on its flat edge.
 
-- Looked up: the Febreze CAR Vent Clip holds 2 mL of scented oil; its pack says to push the clip up until it clicks,
-  then clip it to the vent; the single pack with card weighs 13.6 g (so the clip is lighter: 7 g used). Vent-mount makers publish what real louvres must be for their
-  hooks: blades under 3.5-4.2 mm thick, 10-34 mm deep, at least 8 mm apart; our vanes are 2.0 thick, 17 deep and
-  13 apart.
-- Estimates, to measure on real parts (no maker publishes them): the clip's body and fork sizes, gap, mouth and
-  spreading force, its mass; the vent's sizes and pin position; the vanes' detent (0.03 N m) and masses; every
-  friction.
+- The vent: no car maker or parts seller we found publishes a centre vent's vane thickness, spacing and depth
+  (universal in-dash louvres list only bezel and cut-out sizes), so the vent is built to the simulated sizes and
+  detent (Building the vent). Vent-mount makers publish what real louvres must be for their hooks: blades under
+  3.5-4.2 mm thick, 10-34 mm deep, at least 8 mm apart; our vanes are 2.0 thick, 17 deep and 13 apart.
+- The clip, looked up: the Febreze CAR Vent Clip holds 2 mL of scented oil; the single pack with card weighs 13.6 g
+  (7 g used). The maker publishes no clip sizes. Its patent for this kind of vent-clip dispenser gives prongs 10 to 40 mm long (narrowest stated range 16 to
+  20), gaps 0.5 to 8 mm at their widest (3 to 5) and 0.5 to 3 mm at their narrowest (1 to 2). Our 20 mm prongs,
+  4.5 mm mouth and 1.6 mm gap lie inside the narrowest ranges; they stay estimates for the sold clip (checked: The
+  clip for real trials).
+- Estimates: the clip's body size, spreading force (1.5 N) and mass; every friction.
+
+## Building the vent
+
+Sizes in mm, taken from the task's module. Register coordinates: from the opening's centre on the face, x back into
+the dashboard, y along the vanes, z up. Parts (US prices looked up November 2026, about $110 in all):
+
+- Black ABS filament, 1.75 mm, 1 kg (Bambu Lab, $18.99; about 150 g used): https://us.store.bambulab.com/products/abs-filament
+- 3 x 16 mm stainless dowel pins, 80 (Walmart, $10.99; 8 used): https://www.walmart.com/ip/16651518561
+- Nitrile O-rings 3 mm ID x 1.5 mm (6 mm OD), 8 (Totally Seals, $1.00 each): https://www.totallyseals.com/en-us/products/3mm-x-1-5mm-nitrile-o-rings
+- Set-screw shaft collars, 3.05 mm bore, 8 mm OD, 4 mm wide, 10 (Walmart, $10.49; 8 used): https://www.walmart.com/ip/5275673485
+- M3 x 12 mm flat-head machine screws, 4 (Everbilt 837751, Home Depot, $1.95): https://www.homedepot.com/p/321071710
+- 1/2 in. (12 mm) MDF panel, 2 x 4 ft (ProWood 109097, Home Depot, $24.99 to $28.00): https://www.homedepot.com/p/202093821;
+  dark grey spray paint (Rust-Oleum Painter's Touch 2X Satin Charcoal Gray, Home Depot, $6.98):
+  https://www.homedepot.com/b/Paint-Spray-Paint/Rust-Oleum-Painters-Touch-2X/Gray/N-5yc1vZapz5Zbm2Z1z1a3o5
+- 6 in. digital caliper (Pittsburgh 63711, Harbor Freight, $24.99): https://www.harborfreight.com/6-in-digital-caliper-63711.html
+- For the checks: thread, a small bag, 80 US nickels (5.000 g each; or a kitchen scale) and a dime.
+
+Prints (black ABS, solid round the pins):
+
+1. Vanes, 4: blade 108 (y) x 17 (x) x 2.0 (z), front edge at x = 0; at each end a hub 6 across and 5 long (|y| 54
+   to 59) on the pin axis (x = 8.5, mid-thickness) with a 3.0 hole, 5 deep. Print standing on the front edge,
+   supports under the hubs. Caliper check: 2.0 +-0.1 thick, 17.0 +-0.2 deep, 108.0 +-0.3 long.
+2. Rear half, x 8.5 to 47: a block 140 (y) x 90 (z) with the 110 x 70 duct through it to a back wall at x 45 to 47;
+   seven fins 1.5 thick at y = -45, -30, -15, 0, 15, 30, 45, from x = 26 back to the back wall, joining the duct's
+   top and bottom (the simulated fins end at x = 34; nothing reaches past 26).
+3. Front plate, x 0 to 8.5: 140 x 90 with the 110 x 70 opening, square corners; four countersunk 3.4 holes at
+   y = +-62, z = +-38, over 2.5 holes in the rear half.
+
+Both halves carry half-bores on their joint face (x = 8.5) for each pin (z = -22.5, -7.5, 7.5, 22.5, both sides): 8
+across for |y| 55 to 60 (the hub's pocket), 3.2 for 60 to 63, 10 for 63 to 70 (O-ring and collar); in the rear half
+the 10 bore runs back to x = 47 as a slot, so the collar's set screw can be reached from behind.
+
+Assembly and the detent:
+
+1. Press a pin to the bottom of each hub's hole (a drop of super glue if loose); its outer end is then flush with
+   the register's side (|y| = 70). Thread an O-ring, then a collar, onto each pin.
+2. Lay the vanes in the rear half's half-bores and screw the front plate on.
+3. With a vane level, push each collar inward to squeeze its O-ring against the wall and tighten its set screw;
+   both ends alike, so the vane does not twist.
+4. Check: hang the bag from two thread loops round the vane's front edge, 10 mm in from each end (8.5 mm in front of
+   the pins). 330 g (66 nickels, 0.0275 N m) must leave the vane level for 10 s; 390 g (78 nickels, 0.0325 N m) must
+   turn it. The simulated 0.030 N m is 360 g there. Adjust the collars until both hold; recheck before each
+   session. The 100 g hold check puts about 0.017 N m on a vane, under the lower bound.
+5. Box from the MDF: front 600 x 190, top 600 x 138, sides 138 x 178, glued and screwed, open at back and bottom,
+   painted dark grey with the register's front. Cut a 140 x 90 hole in the front centred on the vent's centre
+   (y = -120, 130 above the table), push the register in from behind, fronts flush, and hot-glue it. Clamp the box
+   to the table, face at x = 240, ends at y = -300 and 300.
+
+A built vane weighs about 6 g with its pins (3 g simulated); its weight sits on the pin axis, so it adds no turning
+torque. The simulated +-30 degree stops are not built: a vane past 15 degrees already scores 0.
+
+## The clip for real trials
+
+Before the first trial, check the bought clip (clicked open). Gap between the prongs at the root: simulated 1.6,
+accepted 1.35 to 1.95: a US dime (1.35 thick) slides in to the root without force, a nickel (1.95) goes in only by
+spreading the sprung prong, as the 2.0 vane must. With the caliper, the mouth at the tips: 4.5, accepted 3.5 to 5.5;
+prong length from the clip's back: 20, accepted 18 to 22 (the fixed fins stand 26 behind the face). If the clip
+has four prongs (the patent's preferred form), check the pair that takes a horizontal vane. A clip outside these
+bands is not the simulated fork: use another. Then push it onto a vane by hand: it must pass the 100 g hold check.
+
+Scented oil (review note): clicking the clip open pierces the foil over the oil and the maker's FAQ covers oil
+leaking onto surfaces, so real trials use a used-up clip, not a fresh one: clicked open, dial on high, left until the
+scent is gone (the maker says up to 30 days on low), then squeezed hard by its flat sides in a paper towel: no oil
+mark. It is about 2 g lighter (2 mL of oil); the simulated 7 g is an estimate either way.
+
+Sources: maker's FAQ, https://circle.supersavvyme.co.uk/uk/projects/febreze/faq; patent US 12,708,692 B2,
+https://patents.google.com/patent/US12708692B2/en; a universal louvre listing (sizes of bezel and cut-out only),
+https://watsons-streetworks.com/product/trique-mfg-rectangular-a-c-vent/; coin mass and thickness,
+https://en.wikipedia.org/wiki/Nickel_(United_States_coin), https://en.wikipedia.org/wiki/Dime_(United_States_coin).
 
 ## Reset
 
 Pull the clip straight off its vane along the vane's plane, stand it on its flat bottom edge on its mark on the mat (within 1 cm), fork toward the dashboard, and set all four vanes level (within 1 degree). The same clip is reused; the vent is never removed. Zero object jitter.
+
+## Revision
+
+Review (not accepted): "Please specify a compatible, readily obtainable car vent, or provide build files and a parts
+list for the four-vane fixture, including how to reproduce its pivot friction. Check the freshener's fork and the
+selected vent's dimensions and forces against the real parts, and update the setup and simulation where needed so the
+real trial exercises the same insertion." Note: protect the shared rig from scented oil.
+
+Changes, text only: Building the vent (no obtainable car vent publishes its vane sizes); the fork checked against
+the maker's patent ranges and measured on the bought clip before the first trial; a used-up clip for real trials;
+setup and fidelity to match. The built vent matches the simulation: code, demonstration and runs are unchanged.
