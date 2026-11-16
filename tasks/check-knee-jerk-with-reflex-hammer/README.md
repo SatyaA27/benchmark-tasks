@@ -14,6 +14,18 @@ Patellar Tendon Reflex", Can J Neurol Sci 2013;40:836-841 (100 adults; the knee'
 hammer's tapping speed: a mean of 0.2 deg of knee extension when the hammer was dropped from 15 deg, and about 2, 5
 and 8 deg from 30, 45 and 60 deg; latency 0.10-0.13 s).
 
+## Revision: review feedback and what changed
+
+Review: "No source or build instructions are provided for the life-size hinged leg trainer with the specified knee
+landmarks. ... Please identify an affordable, obtainable leg trainer that provides the specified hinged knee and
+anatomical landmarks, or provide drawings and assembly instructions for making one. Include enough dimensions and
+materials to reproduce the strike surface and leg motion for repeated real trials." Changes, text only: the new section
+"Building the leg trainer" gives the trainer's drawing in words (materials with sources and prices, about $150 in all;
+its outside sizes and lower-leg mass taken from the module; assembly; checks for the landmarks, the 2.0 kg lower leg and
+its free swing), and the setup says the trainer is built to it. The fidelity notes now list the trainer's sizes and
+lower-leg mass as built to the module rather than estimated. The scene, the reflex rule, the scorer, the demo, the run
+limit and the recorded runs are unchanged.
+
 ## Run and score
 
 From this task folder, with the official YAM Arena environment installed:
@@ -34,13 +46,93 @@ partial and shortcut layouts (the reflex model's readouts are given as fixtures 
 
 ## The scene
 
-Left and right are the robot's. Positions are in metres from the midpoint between the two arm bases: x forward, y to the robot's left; heights are above the bench top. Leg trainer: a life-size adult right-leg trainer cut at mid-thigh, lying on its back on the bench with its foot away to the robot's front right (the leg's line points 60 degrees right of straight ahead). Its thigh stub is clamped to the bench and rests on an 80 mm foam roll (250 mm long, fixed) 90 mm above the knee; the knee's hinge is at (0.338, -0.062), 150 mm up; the knee is bent about 18 degrees (the thigh rises 8 degrees toward the knee, the shin falls 10 degrees to the heel) and the heel rests on the bench. The lower leg and foot (2 kg) swing freely on the knee's hinge, lightly damped, and lie on the heel under their own weight. Kneecap: 50 mm across, its front 62 mm above the knee's axis. Patellar tendon: a strip 28 mm wide running 45 mm down the shin from the kneecap's lower pole (12 mm below the knee's axis) to the tibial tubercle, a bump 6 mm proud of it. The strike band is the middle of the tendon: 17 to 47 mm below the knee's axis along the shin and within 15 mm of the tendon's midline; its centre is at (0.358, -0.096), 189 mm up. Reflex hammer: an ADC Taylor percussion hammer, 190 mm long and about 70 g: a flat chrome handle 12 mm wide and 3 mm thick, and a triangular red rubber head 50 mm long, 28 mm tall and 13 mm thick, its broad striking end on one side of the handle and its apex on the other. It stands head-down in a rigid desk cup (80 mm inside, 60 mm tall, fixed to the bench) centred at (0.215, -0.400), the handle's end up at 194 mm, the head's broad end toward the robot. Both arms start in their ready pose.
+Left and right are the robot's. Positions are in metres from the midpoint between the two arm bases: x forward, y to the robot's left; heights are above the bench top. Leg trainer: a life-size adult right-leg trainer cut at mid-thigh, built from PVC tube, foam rings and wood to the drawing in the README (Building the leg trainer; about $150 of materials), lying on its back on the bench with its foot away to the robot's front right (the leg's line points 60 degrees right of straight ahead). Its thigh stub is clamped to the bench and rests on an 80 mm foam roll (250 mm long, fixed) 90 mm above the knee; the knee's hinge is at (0.338, -0.062), 150 mm up; the knee is bent about 18 degrees (the thigh rises 8 degrees toward the knee, the shin falls 10 degrees to the heel) and the heel rests on the bench. The lower leg and foot (2 kg) swing freely on the knee's hinge, lightly damped, and lie on the heel under their own weight. Kneecap: 50 mm across, its front 62 mm above the knee's axis. Patellar tendon: a strip 28 mm wide running 45 mm down the shin from the kneecap's lower pole (12 mm below the knee's axis) to the tibial tubercle, a bump 6 mm proud of it. The strike band is the middle of the tendon: 17 to 47 mm below the knee's axis along the shin and within 15 mm of the tendon's midline; its centre is at (0.358, -0.096), 189 mm up. Reflex hammer: an ADC Taylor percussion hammer, 190 mm long and about 70 g: a flat chrome handle 12 mm wide and 3 mm thick, and a triangular red rubber head 50 mm long, 28 mm tall and 13 mm thick, its broad striking end on one side of the handle and its apex on the other. It stands head-down in a rigid desk cup (80 mm inside, 60 mm tall, fixed to the bench) centred at (0.215, -0.400), the handle's end up at 194 mm, the head's broad end toward the robot. Both arms start in their ready pose.
 
 Every collider is a box, a sphere or a cylinder (sizes in the module). The leg trainer is one articulation: its thigh,
 kneecap and clamp are one fixed body; the lower leg and foot (one 2.0 kg body) turn on the knee's hinge with
 0.3 N m s/rad of passive damping and rest on the heel pad under their own weight, the shin
 10.2 deg below level and the knee bent 18.2 deg. The scored strike band's centre is at
 (357.7, -96.2, 188.6) mm (x, y, height above the bench).
+
+## Building the leg trainer
+
+The trainer is built, not bought. Its outside (the thigh's and shin's profile, the kneecap, tendon and tubercle, the
+foot and heel, the knee's height, the roll) and the lower leg's mass are the module's (`LEG`, `ROLL` and the constants
+above them); the tubes, hinge and ballast inside are how to build it. Distances "along the thigh" or "along the shin"
+are measured on the tube's centre line from the knee bolt's centre; heights are square to the bench. Tools: a saw, a
+utility knife, a drill with a 5/16 in bit, sandpaper, a ruler, a square and a kitchen scale.
+
+Materials (about $150; sources and prices below): 1 in (25.4 mm) XPS foam board, three 2 x 2 ft panels; 2 in Schedule
+40 PVC pipe (60.3 mm outside, 52.5 mm inside) and 1-1/2 in Schedule 40 PVC pipe (48.3 mm outside), 2 ft of each, and a
+2 in PVC cap; one 2 in (50.8 mm) and one 1 in (25.4 mm) birch craft ball; about 1 m of pine 2x4 (38 x 89 mm); one
+bottle of steel BBs (6,000, 2.1 kg); polyurethane construction adhesive that bonds XPS, PVC and wood (PL Premium); a
+5/16 x 3-1/2 in bolt, a nylon lock nut and two 1/16 in nylon washers; a 1-1/2 in two-hole pipe strap, wood screws; duct
+tape; two C-clamps.
+
+1. Knee hinge (a clevis). Shin tube: the 2 in pipe, 432 mm long. At its knee end saw away everything more than 20 mm
+   above or below its centre line over the first 50 mm, leaving two side tongues, and drill a 5/16 in hole across both
+   tongues on the centre line, 25 mm from the end. Thigh tube: the 1-1/2 in pipe, 400 mm long; drill the same hole
+   across it 24 mm from its knee end and round that end, seen from the side, to a half circle of 24 mm radius about the
+   hole. Put the thigh tube's end between the tongues with a nylon washer on each side and join them with the bolt and
+   lock nut, snug but free: the shin tube must swing on it under its own weight. The rounded end turns inside the shin
+   tube's clearance, so the knee turns freely from nearly straight to well past its rest angle.
+2. Foam body. Cut 25.4 mm XPS rings, their holes the tubes' outside diameters (48 mm thigh, 60 mm shin) and their outer
+   diameters the module's profile at each ring's middle. Thigh, 11 rings from 35 to 314 mm along it, starting at the
+   knee: 103, 108, 112, 116, 120, 122, 125, 128, 130, 132, 132 mm. Shin, 12 rings from 25 to 330 mm along it: 82, 85,
+   91, 97, 104, 104, 101, 95, 89, 82, 76, 70 mm; beyond 330 mm the bare 60 mm tube is the ankle (the module's 58 to 64
+   mm). Glue the rings on, sand the steps into a smooth taper (within 3 mm of these diameters) and cover with one layer
+   of duct tape. The knee between the thigh's and the shin's first rings stays bare so the hinge can turn.
+3. Landmarks (the strike surface). Kneecap: the 2 in ball sawn flat 5 mm below its centre (a dome 50 mm across), glued
+   on a 10 mm pine spacer on the thigh tube so that, with the leg in place, its centre is 12 mm toward the hip from the
+   bolt's centre and its front 62 mm above it. Patellar tendon: a pine block 45 mm long, 28 mm wide and 10 mm thick, set
+   into the shin's first two rings from 12 to 57 mm along the shin on its front midline (its first 13 mm overhang the
+   bare knee), its front face 45 mm above the shin tube's centre line. Tibial tubercle: the 1 in ball half sunk into the
+   foam, its centre 64 mm along the shin and its top 51 mm above the centre line (6 mm proud of the tendon). Tape over
+   all three. With a fine marker, mark the strike band on the tendon: lines across at 17 and 47 mm along the shin, and
+   15 mm either side of the midline.
+4. Foot, heel and the lower leg's mass. Foot: a pine block 200 mm tall, 90 mm wide and 50 mm thick (two 2x4 offcuts
+   glued face to face, sawn to 50 mm), toes up, its face toward the knee 407 mm along the shin, reaching from 25 mm
+   below the shin's centre line to 175 mm above it. The shin tube, cut so that with its cap on it reaches the foot, is
+   glued into the cap, and the cap is screwed to the foot. Heel: a pine block 60 mm along the shin, 64 mm across and 41
+   mm tall, glued and screwed under the foot from 415 to 475 mm along the shin; its far bottom edge, 475 mm along the
+   shin and 66 mm below its centre line, is what rests on the bench. Ballast: stand the lower leg on its foot, push a
+   tight 52 mm XPS plug down the tube to 190 mm from the bolt hole, pour in BBs (about 0.8 kg, filling to about 110 mm;
+   an estimate) and push a second plug down hard on them so they cannot shift. Adjust the BBs until the lower leg
+   (tube, foam, tendon, tubercle, foot and heel, without the bolt) weighs 2.00 +/- 0.05 kg on the kitchen scale and
+   balances across a pencil 240 +/- 10 mm from the bolt hole (the module's 2.0 kg; its centre of mass, from the
+   colliders at uniform density, is 242 mm along the shin), then glue the second plug.
+5. Thigh support and roll. Glue two 110 mm 2x4 offcuts face to face into a block 76 mm tall; clamp it to the bench
+   under the thigh tube's bare end (the tube runs on 60 mm past its last ring) and strap the tube to it with the pipe
+   strap. Roll: ten 80 mm XPS discs glued into a roll 250 mm long, taped to the bench across the leg, its centre 90 mm
+   toward the hip from the bolt's centre (measured along the bench). Shim under the block until the bolt's centre is
+   150 +/- 2 mm above the bench; the thigh then rises 8 deg toward the knee, as modelled.
+
+Checks, before each session: the bolt's centre is 150 +/- 2 mm above the bench and the kneecap's front 62 mm above
+that; with the heel resting, the shin lies 10 deg below level and the band's centre is 189 +/- 3 mm above the bench;
+the heel lifted 40 mm and let go drops straight back onto the bench (in the simulation, with its 2.0 kg lower leg and
+light knee damping, in about 0.1 s), and a hinge stiff enough to hold it up is loosened; the band's marks are
+visible. Nothing in the trainer is used up by a trial; re-tape a scuffed shin.
+
+Build sources (prices seen online in November 2026): XPS: Owens Corning FOAMULAR NGX 1 in x 2 ft x 2 ft project
+panel, $9.97 to $10.98 each or $28.98 for three,
+https://www.homedepot.com/p/Owens-Corning-FOAMULAR-NGX-1-in-x-2-ft-x-2-ft-R-5-Project-Panel-XPS-Rigid-Foam-Board-Insulation-9WE/315401957.
+PVC: Charlotte Pipe 2 in x 2 ft Schedule 40, $8.36,
+https://www.homedepot.com/b/Plumbing-Pipe-Fittings-Pipe-PVC-Pipe-PVC-Schedule-40-Pipe/2-ft/N-5yc1vZbueoZ1z10ytm, and
+1-1/2 in x 2 ft, $5.38 to $5.93,
+https://www.homedepot.com/p/Charlotte-Pipe-1-1-2-in-x-2-ft-PVC-DWV-Schedule-40-Pipe-PVC071120200HA/100581718;
+dimensions (ASTM D1785: 2 in 2.375 in outside, 2.067 in inside; 1-1/2 in 1.900 in outside),
+https://www.engineeringtoolbox.com/pvc-cpvc-pipes-dimensions-d_795.html. Balls: Woodpeckers birch, 2 in bag of 25,
+$29.81,
+https://www.walmart.com/ip/2-inch-Wooden-Round-Ball-Bag-25-Unfinished-Natural-Hardwood-Balls-Smooth-Birch-Crafts-DIY-Projects-2-Diameter-Woodpeckers/513620294,
+and 1 in bag of 100, $17.00,
+https://www.walmart.com/ip/1-inch-Wooden-Round-Ball-Bag-100-Unfinished-Natural-Hardwood-Balls-Smooth-Birch-Crafts-DIY-Projects-1-Diameter-Woodpeckers/196186236.
+BBs: Daisy PrecisionMax 6,000-count bottle, 4.6 lb, $17.90,
+https://www.daisy.com/product/PrecisionMax-6000-ct-BB-Bottle-Model-60?itemnumber=980060-001. Adhesive: Loctite PL
+Premium 10 oz, $7.48, https://www.flooranddecor.com/tile-caulk-installation-materials/loctite-10oz.-pl-premium-construction-adhesive-101005379.html
+(bonds foam insulation, PVC and wood:
+https://www.acehardware.com/departments/paint-and-supplies/tape-glues-and-adhesives/construction-adhesives/1015395).
+Estimates, not looked up: the 2x4, cap, bolt, nut, washers, strap and screws, duct tape and two C-clamps, about $30
+together.
 
 ## The reflex rule (code, not a simulated muscle)
 
@@ -105,20 +197,21 @@ on the thigh 200 mm above the knee, steadying it, as in the clinical technique.
 
 ## Simulation and the real trial
 
-Rigid bodies, 240 Hz physics, 20 Hz control. No muscle or nerve is simulated: the knee jerk is a rule in the task's code (a timed knee-extension speed fired by a brisk tap on the tendon band), its speed thresholds set from Tham et al. 2013. The leg, skin and rubber head are rigid primitives; the thigh, roll and cup are fixed. Estimates: the hammer's mass and sizes, the trainer's sizes, lower-leg mass and knee damping, and the band's size.
+Rigid bodies, 240 Hz physics, 20 Hz control. No muscle or nerve is simulated: the knee jerk is a rule in the task's code (a timed knee-extension speed fired by a brisk tap on the tendon band), its speed thresholds set from Tham et al. 2013. The leg, skin and rubber head are rigid primitives; the thigh, roll and cup are fixed. Estimates: the hammer's mass and sizes, the knee's damping and the band's size; the trainer is built to the module's sizes and 2 kg lower leg (README).
 
 - No muscle, spinal reflex or soft tissue is simulated: the knee jerk is the rule above, written in the task's code,
   with its thresholds set from the clinical sources (the speed for a visible jerk) and marked here as estimates.
-- The leg trainer is rigid (spheres along thigh and shin, boxes for the tendon, the heel pad and the foot); a real trainer's skin
-  gives a little under the hammer, which the simulation does not.
-- Estimates, to measure on the real hammer and trainer: the hammer's mass (0.07 kg), head
-  (50 x 28 x 13 mm) and handle (12 x 3 mm); the
-  trainer's sizes and its lower leg's mass (2.0 kg); the tendon band's size; the roll's diameter.
+- The simulated trainer is rigid (spheres along thigh and shin, boxes for the tendon, the heel pad and the foot); the
+  built trainer's taped foam gives a little under the hammer away from its wooden kneecap, tendon and tubercle, which the
+  simulation does not.
+- Estimates: the hammer's mass (0.07 kg), head (50 x 28 x 13 mm) and handle (12 x 3 mm), to measure on the real
+  hammer; the tendon band's size; the knee's damping. The trainer's sizes, its roll and its lower leg's mass (2.0 kg)
+  are not estimates for the real trial: it is built to them (Building the leg trainer).
 - Real trial: a life-size leg trainer has no reflex, so the tap is judged by the same rule from a 240 fps side video
   (the head's travel over the last 4 frames before touching gives its speed; the frame of first touch shows where the
-  face landed against a 30 mm band marked on the trainer's skin below the kneecap; the frames until it lifts off give
-  the contact time). An instrumented reflex hammer (a force sensor in the head) can replace the video for speed and
-  contact time.
+  face landed against the 30 mm band marked on the trainer's tendon (Building the leg trainer, step 3); the frames until
+  it lifts off give the contact time). An instrumented reflex hammer (a force sensor in the head) can replace the video
+  for speed and contact time.
 
 ## Files
 
