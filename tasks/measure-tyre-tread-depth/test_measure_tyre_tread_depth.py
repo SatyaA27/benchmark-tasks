@@ -75,7 +75,7 @@ START_POSES = {
     'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.0254}},
 }
 GOAL_POSES = {
-    'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00396875}},
+    'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.008334375}},
 }
 START, GOAL = layout(START_POSES), layout(GOAL_POSES)
 
@@ -116,42 +116,42 @@ def test_success_waits_for_the_objects_to_settle(monkeypatch):
 CASES = [
     ('untouched start, probe fully out, never on the tyre', START_POSES, {
     }, 0, {}),
-    ('back on its rest reading 5/32, but never seated on the tread (stem pushed in somewhere else)', GOAL_POSES, {
+    ('back on its rest reading 10.5/32, but never seated on the tread (stem pushed in somewhere else)', GOAL_POSES, {
     }, 0, {'TEST_SEATED': 'False'}),
-    ('back on its rest reading 5/32 + 0.6 mm (inside one graduation)', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00456875}},
+    ('back on its rest reading 10.5/32 + 0.6 mm (inside one graduation)', GOAL_POSES, {
+        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.008934375}},
     }, 1, {'TEST_SEATED': 'True'}),
-    ('back on its rest reading 5/32 - 0.6 mm (inside one graduation)', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00336875}},
+    ('back on its rest reading 10.5/32 - 0.6 mm (inside one graduation)', GOAL_POSES, {
+        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.007734375}},
     }, 1, {'TEST_SEATED': 'True'}),
-    ('probe on the wear bar, reads 3/32 (never seated on a groove floor)', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00238125}},
+    ('probe on the wear bar, reads 8.5/32 (never seated on a groove floor)', GOAL_POSES, {
+        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.006746874999999999}},
     }, 0, {'TEST_SEATED': 'False'}),
-    ('seated earlier, then the stem knocked in to 3/32 while taking it off', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00238125}},
+    ('seated earlier, then the stem knocked in to 8.5/32 while taking it off', GOAL_POSES, {
+        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.006746874999999999}},
     }, 0, {'TEST_SEATED': 'True'}),
-    ('foot tipped 6 degrees, reads 7/32', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.00555625}},
+    ('foot tipped 6 degrees, reads 12.5/32', GOAL_POSES, {
+        'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.009921875}},
     }, 0, {'TEST_SEATED': 'True'}),
     ('probe on a rib, pushed fully home, reads 0', GOAL_POSES, {
         'gauge': {'pos': (0.165, -0.215, 0.7835), 'joints': {'stem': 0.0}},
     }, 0, {'TEST_SEATED': 'False'}),
     ('measured right, lying on the bench beside its rest', GOAL_POSES, {
-        'gauge': {'pos': (0.105, -0.135, 0.7525), 'tilt_deg': 90, 'tilt_axis': 'x', 'joints': {'stem': 0.00396875}},
+        'gauge': {'pos': (0.105, -0.135, 0.7525), 'tilt_deg': 90, 'tilt_axis': 'x', 'joints': {'stem': 0.008334375}},
     }, 0.5, {'TEST_SEATED': 'True'}),
     ('measured right, on its rest but turned end for end', GOAL_POSES, {
-        'gauge': {'pos': (0.115, -0.215, 0.7835), 'yaw_deg': 180, 'joints': {'stem': 0.00396875}},
+        'gauge': {'pos': (0.115, -0.215, 0.7835), 'yaw_deg': 180, 'joints': {'stem': 0.008334375}},
     }, 0.5, {'TEST_SEATED': 'True'}),
     ('measured right, on its rest but still pinched by the right hand', GOAL_POSES, {
     }, 0.5, {'TEST_SEATED': 'True', 'TEST_GRIPPERS': '{"right": (REST_START + np.array([GRIP_X, 0.0, GRIP_UP]), 0.1), "left": (PARK["left"], 1.0)}'}),
     ('measured right, still held up in the hand off the tyre', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.8435), 'joints': {'stem': 0.00396875}},
+        'gauge': {'pos': (0.165, -0.215, 0.8435), 'joints': {'stem': 0.008334375}},
     }, 0.5, {'TEST_SEATED': 'True'}),
     ('measured right but dropped off the bench', GOAL_POSES, {
-        'gauge': {'pos': (0.165, -0.215, 0.0475), 'joints': {'stem': 0.00396875}},
+        'gauge': {'pos': (0.165, -0.215, 0.0475), 'joints': {'stem': 0.008334375}},
     }, 0, {'TEST_SEATED': 'True'}),
     ('still seated on the tread, probe on the groove floor', GOAL_POSES, {
-        'gauge': {'pos': (0.2405, -0.287, 0.838), 'yaw_deg': -3.274, 'quat': (0.0, 0.0, -0.02856754146089611, 0.9995918645001468), 'joints': {'stem': 0.00396875}},
+        'gauge': {'pos': (0.2405, -0.287, 0.838), 'yaw_deg': -3.274, 'quat': (0.0, 0.0, -0.02856754146089611, 0.9995918645001468), 'joints': {'stem': 0.008334375}},
     }, 0, {'TEST_SEATED': 'True'}),
 ]
 

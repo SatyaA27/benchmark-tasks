@@ -1,10 +1,10 @@
 """Measure a tyre's tread depth with a pen tread-depth gauge: the probe on the groove's bottom and the gauge's foot
 seated flat across the tread on both sides of the groove, then the gauge back on its rest with the reading kept.
 
-A wheel off a car (a Michelin Defender2 205/55R16 tyre on a 16 x 6.5 steel wheel, 630 mm across) lies flat on the
-bench in front of the right arm, its tread a vertical band facing the robot. The tread is worn to 5/32 in (3.97 mm)
-in its four circumferential grooves; molded wear bars, 2/32 in (1.6 mm) tall, cross every groove at six places, one
-of them at the point nearest the robot. A Milton S-448 pen tread-depth gauge (aluminium barrel, T-shaped foot, a
+A wheel (a new Michelin Defender2 205/55R16 tyre on a 16 x 6.5 steel wheel, 630 mm across) lies flat on the bench
+in front of the right arm, its tread a vertical band facing the robot. Its four circumferential grooves are at the
+tyre's published new depth, 10.5/32 in (8.33 mm); molded wear bars, 2/32 in (1.6 mm) tall, cross every groove at six
+places, one of them at the point nearest the robot. A Milton S-448 pen tread-depth gauge (aluminium barrel, T-shaped foot, a
 probe on a sliding stem held by friction, read in 32nds of an inch where the stem leaves the barrel's top) lies on a
 small wooden rest, its probe pushed fully out (1 in). Metres; x forward from the arm bases, y left, z up.
 """
@@ -88,10 +88,10 @@ def _restore_stem(env):
 # wheel's axis; the tyre lies flat, so its section width is vertical; angle phi measured from +x)
 R_O = 0.315  # Defender2 205/55R16: 24.8 in overall diameter
 SECTION = 0.213  # 8.4 in section width (on a 6.5 in rim): the height of the flat-lying tyre
-TREAD_Z = (0.024, 0.189)  # the tread band (estimate)
-RIBS = ((0.024, 0.0535), (0.0615, 0.0855), (0.0955, 0.1175), (0.1275, 0.1515), (0.1595, 0.189))  # (estimates)
+TREAD_Z = (0.0215, 0.1915)  # the tread band: 6.7 in (170 mm) tread width (published), centred on the section
+RIBS = ((0.0215, 0.0535), (0.0615, 0.0855), (0.0955, 0.1175), (0.1275, 0.1515), (0.1595, 0.1915))  # (estimates)
 GROOVES = ((0.0535, 0.0615), (0.0855, 0.0955), (0.1175, 0.1275), (0.1515, 0.1595))  # 8, 10, 10, 8 mm (estimates)
-DEPTH = 5 * IN32  # 5/32 in left in every groove: 3.97 mm
+DEPTH = 10.5 * IN32  # a new tyre: 10.5/32 in (8.33 mm) in every groove (the published new tread depth)
 BAR_H = 2 * IN32  # wear bars stand 2/32 in (1.59 mm) off the groove floor (FMVSS 139 indicators)
 BAR_LEN = 0.008  # each bar's length along the groove (estimate)
 BAR_PHI = tuple(180.0 + 60.0 * k for k in range(6))  # six places round the tyre, one facing the robot
@@ -480,7 +480,7 @@ def score_terms(objects):
 
 def score(objects):
     """1.0: the gauge was seated on the tread with its probe on a groove's floor, its reading is within 1/32 in of
-    the groove's 5/32 in, and it lies back on its rest, let go and still for 1 s. 0.5: seated and the reading within
+    the groove's 10.5/32 in, and it lies back on its rest, let go and still for 1 s. 0.5: seated and the reading within
     1/32 in, the gauge off the tyre but not (yet) back on its rest, let go or not. 0 otherwise, or if it fell off the
     bench."""
     t = score_terms(objects)
