@@ -26,6 +26,233 @@ from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
 SCENE = "station"
 
+
+# ---------------------------------------------------------------- scorer (first; the scene, the pencil's path and the
+# scripted demonstration follow). The primary score is score(): its only line credit comes from line_credit(), which
+# gives 0 when the line's longest gap (line_gap(), Marks.gap()) is over GAP_MAX = 2 mm. continuity_gate_selftest()
+# below runs that on four sets of marks through score() itself.
+STATIONS = 0.007 + 0.010 * np.arange(14)   # measured from the shelf's front edge
+N_STATIONS = len(STATIONS)
+MARK_ABOVE, MARK_BELOW = 0.0002, 0.0020    # the lead marks within 0.2 mm above to 2 mm below the top face
+STATION_SPREAD = 0.0010                    # crossings of one station further apart than this: unmarked
+DOT_HALF = 0.00025                         # a single touch reads at a station within this distance (line credit
+                                           # still needs it to be part of one unbroken line: GAP_MAX)
+TIERS = ((1.0, N_STATIONS, 0.0005), (0.5, 12, 0.0010), (0.25, 10, 0.0020))
+GATE_MIN = 0.0015                          # the line must bend at least this much where the wall bends
+GAP_MAX = 0.0020                           # line credit needs one line from edge to edge, through the marks read at
+                                           # the stations, with no unmarked stretch longer than this (line_credit)
+GAP_SEARCH = 0.0050                        # marks further apart than this are never joined (the gap is then "over 5 mm")
+SHOVE_MAX = 0.030
+FALL_DEPTH = 0.020
+CLEAR_GAP = 0.002
+
+
+def score(objects):
+    record_path(objects)
+    wall, shelf, compass = objects["wall"], objects["shelf"], objects["compass"]
+    k = current_layout()
+    strokes = TEST_STROKES if TEST_STROKES is not None else _STROKES
+    shoved = float(np.linalg.norm((np.asarray(shelf.origin) - shelf_origin(k))[:2])) > SHOVE_MAX
+    violation = any([ever("shelf_shoved", shoved),
+                     ever("shelf_off_table", shelf.origin[2] < TOP - FALL_DEPTH),
+                     ever("compass_dropped", compass.origin[2] < TOP - FALL_DEPTH)])
+    cap, _ = line_credit(strokes, k)
+    finished = (put_down(compass, shelf, wall) and released(compass) and released(shelf)
+                and compass.resting() and shelf.resting(max_speed=0.002, max_spin=0.05))
+    still_s = held_for("finished", finished and cap >= 1.0 and not violation)
+    if violation:
+        return 0.0
+    if cap >= 1.0:
+        return 1.0 if still_s >= STILL_S else 0.75
+    return cap
+
+
+def success(objects):
+    return score(objects) >= 1.0
+
+
+def line_credit(strokes, k):
+    """(line credit, the line's longest gap): line_quality's credit when the line read at the stations runs from the
+    front edge to the back edge with no gap longer than GAP_MAX; otherwise 0."""
+    crossers = []
+    readings = station_readings(strokes, crossers)
+    gap = line_gap(strokes, set().union(*(c for r, c in zip(readings, crossers) if r is not None)))
+    cap = line_quality(strokes, k)[0] if gap <= GAP_MAX + 1e-12 else 0.0
+    return cap, gap
+
+
+def line_gap(strokes, through=()):
+    """The longest gap of the line through these strokes (Marks.gap); the live record keeps its own Marks."""
+    return (_MARKS if strokes is _STROKES else Marks(strokes)).gap(through)
+
+
+def continuity_gate_selftest(k=0):
+    """The continuity gate on the primary score, offline (test_continuity_gate.py runs it for every layout; a trial
+    never calls it). Each set of marks for layout k has every station on target and the bend met, so line_quality()
+    alone would give full line credit; the compass hangs on its stand, hands away. score() itself scores each.
+    Returns [(marks, longest gap in mm, line credit, score)]; an AssertionError if any differs from `expected`."""
+    if _RUN["t"] is not None:
+        raise RuntimeError("offline only: it sets TEST_STROKES and TEST_LAYOUT")
+    cases = (  # (marks, the pencil strokes, expected line credit = expected score)
+        ("touches on target at all 14 stations, no line between", station_dots(k), 0.0),
+        ("line on target, pencil lifted over 2.1 mm", broken_strokes(k, 0.0021), 0.0),
+        ("line on target, pencil lifted over 1.9 mm", broken_strokes(k, 0.0019), 1.0),
+        ("line on target from edge to edge, unbroken", nominal_strokes(k), 1.0),
+    )
+    global TEST_STROKES, TEST_LAYOUT
+    saved, results = (TEST_STROKES, TEST_LAYOUT), []
+    try:
+        TEST_LAYOUT = k
+        for marks, strokes, expected in cases:
+            TEST_STROKES = strokes
+            assert line_quality(strokes, k)[0] == 1.0, marks
+            cap, gap = line_credit(strokes, k)
+            primary = score(goal_objects(k))
+            assert cap == expected and primary == expected, (marks, gap, cap, primary)
+            results.append((marks, round(gap * 1000, 2), cap, primary))
+    finally:
+        TEST_STROKES, TEST_LAYOUT = saved
+    return results
+
+
+class Marks:
+    """The pencil marks on the shelf's top face, for the line's gap. A stroke is drawn as straight pieces between its
+    recorded points (a one-point stroke is a dot). Each new piece is measured once against the earlier strokes, so
+    the live record costs one pass over the marks per control step."""
+
+    def __init__(self, strokes=()):
+        self.pieces, self.owner, self.n = np.zeros((64, 4)), np.zeros(64, dtype=int), 0
+        self.span, self.near, self.tip = {}, {}, {}
+        for i, stroke in enumerate(strokes):
+            for point in np.asarray(stroke, dtype=float).reshape(-1, 2):
+                self.add(i, point)
+
+    def add(self, stroke, point):
+        """Point appended to stroke (shelf-local x, y)."""
+        p = np.asarray(point, dtype=float)
+        a = self.tip.get(stroke, p)
+        self.tip[stroke] = p
+        lo, hi = min(a[0], p[0]), max(a[0], p[0])
+        span = self.span.setdefault(stroke, [lo, hi])
+        span[0], span[1] = min(span[0], lo), max(span[1], hi)
+        pieces, owner = self.pieces[:self.n], self.owner[:self.n]
+        near = ((owner != stroke) & (np.minimum(pieces[:, 0], pieces[:, 2]) <= hi + GAP_SEARCH)
+                & (np.maximum(pieces[:, 0], pieces[:, 2]) >= lo - GAP_SEARCH))
+        if near.any():
+            other = pieces[near]
+            d = _segment_distance(np.broadcast_to(a, (len(other), 2)), np.broadcast_to(p, (len(other), 2)),
+                                  other[:, :2], other[:, 2:])
+            for j in np.unique(owner[near]):
+                key = (min(int(j), stroke), max(int(j), stroke))
+                self.near[key] = min(self.near.get(key, math.inf), float(d[owner[near] == j].min()))
+        if self.n == len(self.owner):
+            self.pieces = np.concatenate((self.pieces, np.zeros_like(self.pieces)))
+            self.owner = np.concatenate((self.owner, np.zeros_like(self.owner)))
+        self.pieces[self.n], self.owner[self.n] = np.r_[a, p], stroke
+        self.n += 1
+
+    def gap(self, through=()):
+        """The line's longest gap (metres). Follow the marks across the shelf from its front edge to its back edge,
+        through every stroke in `through` (the marks read at the stations), stepping from one mark to another across
+        unmarked board; the gap is the longest step needed on the route that makes it smallest, counting the step from
+        the front edge to the first mark and from the last mark to the back edge. A step is the straight-line distance
+        on the board between the two marks' nearest points. One unbroken stroke from edge to edge has gap 0; inf means
+        no route with steps of at most GAP_SEARCH."""
+        front, back = "front", "back"
+        need = {front, back, *through}
+        edges = [(d, i, j) for (i, j), d in self.near.items()]
+        for i, (lo, hi) in self.span.items():
+            edges += [(lo + SHELF_D / 2, front, i), (SHELF_D / 2 - hi, i, back)]
+        parent = {}
+
+        def root(x):
+            while parent.setdefault(x, x) != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+        for w, u, v in sorted(edges, key=lambda e: e[0]):
+            if w > GAP_SEARCH + 1e-12:
+                break
+            parent[root(u)] = root(v)
+            if len({root(x) for x in need}) == 1:
+                return max(float(w), 0.0)
+        return math.inf
+
+
+def station_readings(strokes, crossers=None):
+    """Each station's reading: the line's distance from the shelf's end, or None if unmarked or ambiguous.
+    crossers, if a list, gets each station's set of crossing strokes (by index)."""
+    out = []
+    for s in STATIONS:
+        xs, ys, hit = -SHELF_D / 2 + s, [], set()
+        for n, stroke in enumerate(strokes):
+            p = np.asarray(stroke, dtype=float).reshape(-1, 2)
+            if len(p) == 0:
+                continue
+            if len(p) == 1:
+                if abs(p[0, 0] - xs) <= DOT_HALF:
+                    ys.append(p[0, 1])
+                    hit.add(n)
+                continue
+            a, b = p[:-1], p[1:]
+            lo, hi = np.minimum(a[:, 0], b[:, 0]), np.maximum(a[:, 0], b[:, 0])
+            along = (lo <= xs) & (xs <= hi)
+            if along.any():
+                hit.add(n)
+            for i in np.flatnonzero(along):
+                dx = b[i, 0] - a[i, 0]
+                if abs(dx) < 1e-9:
+                    ys.extend((a[i, 1], b[i, 1]))
+                else:
+                    ys.append(a[i, 1] + (xs - a[i, 0]) / dx * (b[i, 1] - a[i, 1]))
+        if crossers is not None:
+            crossers.append(hit)
+        if not ys:
+            out.append(None)
+            continue
+        d = SHELF_L / 2 - np.asarray(ys)
+        # crossings within 1 mm read as one band, at its centre; further apart, the station is unmarked
+        out.append(None if d.max() - d.min() > STATION_SPREAD + 1e-12 else float((d.max() + d.min()) / 2))
+    return out
+
+
+def line_quality(strokes, k):
+    """(credit cap from the line alone, readings, errors, the wall-following gate)."""
+    readings, t = station_readings(strokes), targets(k)
+    errors = [None if r is None else abs(r - tt) for r, tt in zip(readings, t)]
+    dev_t, (a, b, c) = GATES[k]
+    gate = False
+    if None not in (readings[a], readings[b], readings[c]):
+        ra, rb, rc = readings[a], readings[b], readings[c]
+        dev = rb - (ra + (rc - ra) * (STATIONS[b] - STATIONS[a]) / (STATIONS[c] - STATIONS[a]))
+        gate = bool(dev * dev_t > 0 and abs(dev) >= GATE_MIN - 1e-12)
+    cap = 0.0
+    if gate:
+        for credit, count, tol in TIERS:
+            if sum(e is not None and e <= tol + 1e-12 for e in errors) >= count:
+                cap = credit
+                break
+    return cap, readings, errors, gate
+
+
+def _point_to_segment(p, s0, s1):
+    d = s1 - s0
+    dd = np.einsum("ij,ij->i", d, d)
+    u = np.clip(np.einsum("ij,ij->i", p - s0, d) / np.where(dd > 0, dd, 1.0), 0.0, 1.0)
+    return np.linalg.norm(p - (s0 + u[:, None] * d), axis=1)
+
+
+def _segment_distance(a0, a1, b0, b1):
+    """Distance between the 2D segments a0-a1 and b0-b1, pair by pair (0 where they cross)."""
+    dist = np.minimum.reduce([_point_to_segment(a0, b0, b1), _point_to_segment(a1, b0, b1),
+                              _point_to_segment(b0, a0, a1), _point_to_segment(b1, a0, a1)])
+
+    def side(o, p, q):
+        return (p[:, 0] - o[:, 0]) * (q[:, 1] - o[:, 1]) - (p[:, 1] - o[:, 1]) * (q[:, 0] - o[:, 0])
+    crossing = (side(b0, b1, a0) * side(b0, b1, a1) < 0) & (side(a0, a1, b0) * side(a0, a1, b1) < 0)
+    return np.where(crossing, 0.0, dist)
+
+
 # Release-and-stillness block, verbatim from the parts kit's docs (release_stillness_block.py).
 # The task module must define: import math; import numpy as np; from yam_arena.constants import FINGER_OPEN;
 # and SCENE ("station" or "tabletop"). Paste after the imports.
@@ -273,8 +500,6 @@ OBJECTS = [WALL, SHELF, COMPASS, STAND]
 PRESSED_PARTS = ("shelf",)
 
 # ---------------------------------------------------------------- layouts and the target line
-STATIONS = 0.007 + 0.010 * np.arange(14)   # measured from the shelf's front edge
-N_STATIONS = len(STATIONS)
 TEST_LAYOUT = None
 ACTIVE_LAYOUT = 0                          # set from the seed at every reset (seed mod 4)
 
@@ -307,20 +532,6 @@ def _gate_triple(k):
 
 GATES = tuple(_gate_triple(k) for k in range(len(LAYOUT_FRONT_X)))
 
-# ---------------------------------------------------------------- scoring constants
-MARK_ABOVE, MARK_BELOW = 0.0002, 0.0020    # the lead marks within 0.2 mm above to 2 mm below the top face
-STATION_SPREAD = 0.0010                    # crossings of one station further apart than this: unmarked
-DOT_HALF = 0.00025                         # a single touch reads at a station within this distance (line credit
-                                           # still needs it to be part of one unbroken line: GAP_MAX)
-TIERS = ((1.0, N_STATIONS, 0.0005), (0.5, 12, 0.0010), (0.25, 10, 0.0020))
-GATE_MIN = 0.0015                          # the line must bend at least this much where the wall bends
-GAP_MAX = 0.0020                           # line credit needs one line from edge to edge, through the marks read at
-                                           # the stations, with no unmarked stretch longer than this (line_credit)
-GAP_SEARCH = 0.0050                        # marks further apart than this are never joined (the gap is then "over 5 mm")
-SHOVE_MAX = 0.030
-FALL_DEPTH = 0.020
-CLEAR_GAP = 0.002
-
 
 def lead_point(compass):
     """World position of the pencil lead's lowest point."""
@@ -333,159 +544,6 @@ def marking(compass, shelf):
     on = bool(-MARK_BELOW <= q[2] - SHELF_T <= MARK_ABOVE
               and abs(q[0]) <= SHELF_D / 2 and abs(q[1]) <= SHELF_L / 2)
     return on, q
-
-
-def station_readings(strokes, crossers=None):
-    """Each station's reading: the line's distance from the shelf's end, or None if unmarked or ambiguous.
-    crossers, if a list, gets each station's set of crossing strokes (by index)."""
-    out = []
-    for s in STATIONS:
-        xs, ys, hit = -SHELF_D / 2 + s, [], set()
-        for n, stroke in enumerate(strokes):
-            p = np.asarray(stroke, dtype=float).reshape(-1, 2)
-            if len(p) == 0:
-                continue
-            if len(p) == 1:
-                if abs(p[0, 0] - xs) <= DOT_HALF:
-                    ys.append(p[0, 1])
-                    hit.add(n)
-                continue
-            a, b = p[:-1], p[1:]
-            lo, hi = np.minimum(a[:, 0], b[:, 0]), np.maximum(a[:, 0], b[:, 0])
-            along = (lo <= xs) & (xs <= hi)
-            if along.any():
-                hit.add(n)
-            for i in np.flatnonzero(along):
-                dx = b[i, 0] - a[i, 0]
-                if abs(dx) < 1e-9:
-                    ys.extend((a[i, 1], b[i, 1]))
-                else:
-                    ys.append(a[i, 1] + (xs - a[i, 0]) / dx * (b[i, 1] - a[i, 1]))
-        if crossers is not None:
-            crossers.append(hit)
-        if not ys:
-            out.append(None)
-            continue
-        d = SHELF_L / 2 - np.asarray(ys)
-        # crossings within 1 mm read as one band, at its centre; further apart, the station is unmarked
-        out.append(None if d.max() - d.min() > STATION_SPREAD + 1e-12 else float((d.max() + d.min()) / 2))
-    return out
-
-
-def line_quality(strokes, k):
-    """(credit cap from the line alone, readings, errors, the wall-following gate)."""
-    readings, t = station_readings(strokes), targets(k)
-    errors = [None if r is None else abs(r - tt) for r, tt in zip(readings, t)]
-    dev_t, (a, b, c) = GATES[k]
-    gate = False
-    if None not in (readings[a], readings[b], readings[c]):
-        ra, rb, rc = readings[a], readings[b], readings[c]
-        dev = rb - (ra + (rc - ra) * (STATIONS[b] - STATIONS[a]) / (STATIONS[c] - STATIONS[a]))
-        gate = bool(dev * dev_t > 0 and abs(dev) >= GATE_MIN - 1e-12)
-    cap = 0.0
-    if gate:
-        for credit, count, tol in TIERS:
-            if sum(e is not None and e <= tol + 1e-12 for e in errors) >= count:
-                cap = credit
-                break
-    return cap, readings, errors, gate
-
-
-def _point_to_segment(p, s0, s1):
-    d = s1 - s0
-    dd = np.einsum("ij,ij->i", d, d)
-    u = np.clip(np.einsum("ij,ij->i", p - s0, d) / np.where(dd > 0, dd, 1.0), 0.0, 1.0)
-    return np.linalg.norm(p - (s0 + u[:, None] * d), axis=1)
-
-
-def _segment_distance(a0, a1, b0, b1):
-    """Distance between the 2D segments a0-a1 and b0-b1, pair by pair (0 where they cross)."""
-    dist = np.minimum.reduce([_point_to_segment(a0, b0, b1), _point_to_segment(a1, b0, b1),
-                              _point_to_segment(b0, a0, a1), _point_to_segment(b1, a0, a1)])
-
-    def side(o, p, q):
-        return (p[:, 0] - o[:, 0]) * (q[:, 1] - o[:, 1]) - (p[:, 1] - o[:, 1]) * (q[:, 0] - o[:, 0])
-    crossing = (side(b0, b1, a0) * side(b0, b1, a1) < 0) & (side(a0, a1, b0) * side(a0, a1, b1) < 0)
-    return np.where(crossing, 0.0, dist)
-
-
-class Marks:
-    """The pencil marks on the shelf's top face, for the line's gap. A stroke is drawn as straight pieces between its
-    recorded points (a one-point stroke is a dot). Each new piece is measured once against the earlier strokes, so
-    the live record costs one pass over the marks per control step."""
-
-    def __init__(self, strokes=()):
-        self.pieces, self.owner, self.n = np.zeros((64, 4)), np.zeros(64, dtype=int), 0
-        self.span, self.near, self.tip = {}, {}, {}
-        for i, stroke in enumerate(strokes):
-            for point in np.asarray(stroke, dtype=float).reshape(-1, 2):
-                self.add(i, point)
-
-    def add(self, stroke, point):
-        """Point appended to stroke (shelf-local x, y)."""
-        p = np.asarray(point, dtype=float)
-        a = self.tip.get(stroke, p)
-        self.tip[stroke] = p
-        lo, hi = min(a[0], p[0]), max(a[0], p[0])
-        span = self.span.setdefault(stroke, [lo, hi])
-        span[0], span[1] = min(span[0], lo), max(span[1], hi)
-        pieces, owner = self.pieces[:self.n], self.owner[:self.n]
-        near = ((owner != stroke) & (np.minimum(pieces[:, 0], pieces[:, 2]) <= hi + GAP_SEARCH)
-                & (np.maximum(pieces[:, 0], pieces[:, 2]) >= lo - GAP_SEARCH))
-        if near.any():
-            other = pieces[near]
-            d = _segment_distance(np.broadcast_to(a, (len(other), 2)), np.broadcast_to(p, (len(other), 2)),
-                                  other[:, :2], other[:, 2:])
-            for j in np.unique(owner[near]):
-                key = (min(int(j), stroke), max(int(j), stroke))
-                self.near[key] = min(self.near.get(key, math.inf), float(d[owner[near] == j].min()))
-        if self.n == len(self.owner):
-            self.pieces = np.concatenate((self.pieces, np.zeros_like(self.pieces)))
-            self.owner = np.concatenate((self.owner, np.zeros_like(self.owner)))
-        self.pieces[self.n], self.owner[self.n] = np.r_[a, p], stroke
-        self.n += 1
-
-    def gap(self, through=()):
-        """The line's longest gap (metres). Follow the marks across the shelf from its front edge to its back edge,
-        through every stroke in `through` (the marks read at the stations), stepping from one mark to another across
-        unmarked board; the gap is the longest step needed on the route that makes it smallest, counting the step from
-        the front edge to the first mark and from the last mark to the back edge. A step is the straight-line distance
-        on the board between the two marks' nearest points. One unbroken stroke from edge to edge has gap 0; inf means
-        no route with steps of at most GAP_SEARCH."""
-        front, back = "front", "back"
-        need = {front, back, *through}
-        edges = [(d, i, j) for (i, j), d in self.near.items()]
-        for i, (lo, hi) in self.span.items():
-            edges += [(lo + SHELF_D / 2, front, i), (SHELF_D / 2 - hi, i, back)]
-        parent = {}
-
-        def root(x):
-            while parent.setdefault(x, x) != x:
-                parent[x] = parent[parent[x]]
-                x = parent[x]
-            return x
-        for w, u, v in sorted(edges, key=lambda e: e[0]):
-            if w > GAP_SEARCH + 1e-12:
-                break
-            parent[root(u)] = root(v)
-            if len({root(x) for x in need}) == 1:
-                return max(float(w), 0.0)
-        return math.inf
-
-
-def line_gap(strokes, through=()):
-    """The longest gap of the line through these strokes (Marks.gap); the live record keeps its own Marks."""
-    return (_MARKS if strokes is _STROKES else Marks(strokes)).gap(through)
-
-
-def line_credit(strokes, k):
-    """(line credit, the line's longest gap): line_quality's credit when the line read at the stations runs from the
-    front edge to the back edge with no gap longer than GAP_MAX; otherwise 0."""
-    crossers = []
-    readings = station_readings(strokes, crossers)
-    gap = line_gap(strokes, set().union(*(c for r, c in zip(readings, crossers) if r is not None)))
-    cap = line_quality(strokes, k)[0] if gap <= GAP_MAX + 1e-12 else 0.0
-    return cap, gap
 
 
 def _boxes_apart(a, b, gap):
@@ -565,31 +623,6 @@ def _diagnostic(objects, on, q):
           f"marked={sum(r is not None for r in readings)} worst_err_mm={'-' if worst is None else round(worst * 1000, 2)} "
           f"gate={int(gate)} gap_mm={'over 5' if gap > GAP_SEARCH else round(gap * 1000, 2)} "
           f"cap={cap}", flush=True)
-
-
-# ---------------------------------------------------------------- scorer
-def score(objects):
-    record_path(objects)
-    wall, shelf, compass = objects["wall"], objects["shelf"], objects["compass"]
-    k = current_layout()
-    strokes = TEST_STROKES if TEST_STROKES is not None else _STROKES
-    shoved = float(np.linalg.norm((np.asarray(shelf.origin) - shelf_origin(k))[:2])) > SHOVE_MAX
-    violation = any([ever("shelf_shoved", shoved),
-                     ever("shelf_off_table", shelf.origin[2] < TOP - FALL_DEPTH),
-                     ever("compass_dropped", compass.origin[2] < TOP - FALL_DEPTH)])
-    cap, _ = line_credit(strokes, k)
-    finished = (put_down(compass, shelf, wall) and released(compass) and released(shelf)
-                and compass.resting() and shelf.resting(max_speed=0.002, max_spin=0.05))
-    still_s = held_for("finished", finished and cap >= 1.0 and not violation)
-    if violation:
-        return 0.0
-    if cap >= 1.0:
-        return 1.0 if still_s >= STILL_S else 0.75
-    return cap
-
-
-def success(objects):
-    return score(objects) >= 1.0
 
 
 # ---------------------------------------------------------------- offline fixtures (tests only; the demo never uses them)

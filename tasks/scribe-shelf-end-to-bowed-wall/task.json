@@ -17,5 +17,5 @@
   "reset_notes": "Use zero object jitter. The trial seed mod 4 picks the layout (README). Erase the line or use a fresh face or board; lay the shelf flat with its end touching the wall at the layout's position; hang the compass on its stand, point leg toward the wall. The compass stays locked at 10.0: check it with a caliper each session. The scorer's pencil record and its 1 s window start fresh each trial.",
   "fidelity": "Rigid bodies. The pencil marks wherever its tip is within 0.2 mm above to 2 mm below the board's top face (no force threshold); drawn dots (faint in the 320 x 176 videos) cover only the 17 mm next to the end; the score uses the recorded path. The wall face is a triangle mesh with 2 mm facets; the point does not dig into the paint. The compass is one rigid body locked at 10 mm; its leg, pin and grip sizes and all frictions are estimates. Stand and wall are fixed to the table.",
   "scores": "Dream-1 run: 0.0; demo: 1.0",
-  "media": "M-ZWSNGV"
+  "media": "M-6V5CS2"
 }

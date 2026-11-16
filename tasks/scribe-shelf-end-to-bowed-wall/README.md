@@ -10,34 +10,27 @@ Category: Impact on jobs. Done by carpenters (O*NET 47-2031.00: "Measure and mar
 
 ## Scoring
 
-Millimetres. All of it is in `scribe_shelf_end_to_bowed_wall.py`.
+Millimetres. The scorer is the first code in `scribe_shelf_end_to_bowed_wall.py`, right after the imports (lines 30-253).
 
 **Stations.** Fourteen lines square to the shelf's end, at 7, 17, 27, ... 137 from its front edge. At each, the reading is the pencil line's distance from the shelf's end to the centre of the line. Crossings of a station within 1 of each other read as one band, at its centre; more than 1 apart, the station is unmarked. A single touch counts at a station within 0.25 of it. **Target:** 10.0 (the compass setting) minus the gap between the wall and the shelf's end there (tables below).
 
 **Bend.** Each layout has three gate stations (table below). No line credit unless all three are marked and the middle reading lies at least 1.5 off the straight line through the outer two, on the target's side. A ruler line fails this on every layout.
 
-**One unbroken line (the continuity gate).** The line must run from the front edge to the back edge (0 to 140 across the shelf's depth) with no gap longer than 2.0. Follow it through the marks read at the stations; wherever it breaks, measure the unmarked stretch straight across the board from the end of one mark to the nearest point of the next. The stretches from the front edge to the line's start and from its end to the back edge count too. The longest stretch is the gap. The route may step through any mark on the board but must take in every mark read at a station. Why 2.0: a scribed line is drawn in one pass and the cut follows it by eye; a good line breaks only where the lead skips, for a millimetre or so. 2.0 is four HB line widths and a fifth of the station spacing. Single touches at the stations leave 7 to 10 unmarked: no line credit.
+**One unbroken line (the continuity gate).** The line must run from the front edge to the back edge (0 to 140 across the shelf's depth) with no gap longer than 2.0. Follow it through the marks read at the stations; wherever it breaks, measure the unmarked stretch straight across the board from the end of one mark to the nearest point of the next. The stretches from the front edge to the line's start and from its end to the back edge count too. The longest stretch is the gap. The route may step through any mark on the board but must take in every mark read at a station. Why 2.0: a scribed line is drawn in one pass and the cut follows it by eye; a good line breaks only where the lead skips, for a millimetre or so. 2.0 is four HB line widths and a fifth of the station spacing.
 
-How the code enforces it (module line numbers). `GAP_MAX = 0.0020` (line 317) is the threshold; `Marks.gap()` (line 448) measures the gap as above. `line_credit()` (line 481) applies the gate, so a gap over 2.0 gives line credit 0 whatever the stations read:
+In the code: `GAP_MAX = 0.0020` (line 42); `score()` (line 50), the primary score, takes its only line credit from `line_credit()` (line 59), which gives 0 when the gap is over GAP_MAX (line 80); `line_gap()` (84) and `Marks.gap()` (154) measure the gap; `success()` (70) is a score of 1.0.
 
-```python
-    gap = line_gap(strokes, set().union(*(c for r, c in zip(readings, crossers) if r is not None)))  # 486
-    cap = line_quality(strokes, k)[0] if gap <= GAP_MAX + 1e-12 else 0.0                            # 487
-```
+**Continuity gate test.** `continuity_gate_selftest()` (line 89, beside the scorer) scores four sets of marks through `score()`. `test_continuity_gate.py` runs it and the cases below on all four layouts: 41 passed (`python -m pytest -v -p no:cacheprovider test_continuity_gate.py`). Every set has all 14 stations on target and the bend met, so without the gate each would get line credit 1.0; the compass hangs on its stand, hands away.
 
-`score()` (line 571) takes its line credit only from there:
+| Test | Marks | Gap | Line credit = score |
+|---|---|---|---|
+| `test_isolated_station_marks_get_zero_line_credit` | a touch at each station, nothing between | over 5 | 0 |
+| `test_a_gap_over_2_mm_gets_zero_line_credit` | line lifted 2.1 mid-line; starting 2.5 in; stopping 2.5 short | 2.10-2.11; 2.5; 2.5 | 0 |
+| `test_a_continuous_line_within_tolerance_gets_full_line_credit` | one line on target; 0.4 off either way | 0 | 1.0 |
+| `test_a_gap_of_2_mm_or_less_keeps_full_line_credit` | line lifted 1.9; lifted to measure exactly 2.0 | 1.90-1.91; 2.0 | 1.0 |
+| `test_the_task_modules_selftest` | touches; 2.1 lift; 1.9 lift; one line | over 5; 2.1; 1.9; 0 | 0; 0; 1.0; 1.0 |
 
-```python
-    cap, _ = line_credit(strokes, k)                     # 580
-    ...
-    if violation:                                        # 584: sticky failure
-        return 0.0
-    if cap >= 1.0:
-        return 1.0 if still_s >= STILL_S else 0.75
-    return cap                                           # 588
-```
-
-Test: `test_the_continuity_gate_alone_takes_the_line_credit` (`test_red_team.py`): three sets of marks that meet everything but continuity (on-target touches at the 14 stations; a 2.1 skip; a line starting 2.5 in) get 1.0 from `line_quality()` alone, score 0, and score 1.0 with the gate lifted.
+With the gate taken out of `line_credit()`, or with `score()` using `line_quality()`'s credit directly, 20 of the 41 fail.
 
 | Line credit | One unbroken line (gap at most 2.0), the bend met, and stations within tolerance of their targets |
 |---|---|
@@ -99,7 +92,7 @@ The model run uses `--policy dream`. The trial seed is the CRC-32 of "eval_seed:
 
 Objects, sizes, materials and positions: task.json's setup, which gives the wall's profile. The offset every 5 mm from the wall's front end, as cut: 0.29 0.49 0.78 1.16 1.64 2.19 2.77 3.30 3.71 3.94 3.96 3.74 3.33 2.79 2.17 1.55 0.98 0.48 0.06 -0.27 -0.54 -0.75 -0.92 -1.04 -1.12 -1.16 -1.14 -1.06 -0.93 -0.73 -0.47 -0.14 0.25 0.70 1.20 1.72 2.23 2.71 3.10 3.39 3.55 3.55 3.42 3.17 2.86 2.54 2.27 2.08 1.96 1.88 1.76 1.55 1.26. In simulation the face is an exact triangle mesh through points every 2 mm; every collider is defined in the module.
 
-The scripted demonstration (`demo()`) holds the shelf down with the right hand's fingertips and scribes with the left at 10 mm/s, the point commanded 4 mm into the wall (a preload: the wall stops it); on the GPU every layout drew one stroke from 0.4 to 1.3 in from the front edge to 0.5 to 1.1 short of the back edge. Its targets come from the seed's layout; it reads the compass's pose once, after the stroke, to hang it back, and reads no contact or score.
+The scripted demonstration (`demo()`) holds the shelf down with the right hand's fingertips and scribes with the left at 10 mm/s, the point commanded 4 mm into the wall (a preload: the wall stops it); on the GPU every layout drew one stroke from 0.4 to 1.3 in from the front edge to 0.5 to 1.1 short of the back edge.
 
 Fidelity (beyond task.json's note): the grip is square because a round rigid grip crept in the rigid simulated pads.
 
