@@ -3,13 +3,14 @@
 A DayMark IT111081 seven-slot label dispenser (white plastic, 445 mm wide, 191 mm deep, 114 mm tall, a metal
 dispenser bar along its front top edge) stands on the counter with its front 290 mm in front of the arm bases. Its
 seven bays hold DayMark DissolveMark 2" x 2" (51 x 51 mm) day-of-the-week label rolls, Monday at the left to Sunday at
-the right as the robot faces it, each in its day's colour (Monday blue, Tuesday yellow, Wednesday red, Thursday green,
-Friday brown, Saturday orange, Sunday black). In each bay the label strip runs from its roll forward over a flat deck
+the right as the robot faces it, each in its day's colour (Monday blue, Tuesday yellow, Wednesday red, Thursday brown,
+Friday green, Saturday orange, Sunday black) with the day's name printed in white across its header; a printed strip
+under each bay names its day (MON ... SUN). In each bay the label strip runs from its roll forward over a flat deck
 to the bar, 100 mm above the counter, where the liner turns sharply down; each roll's first label already stands
-15 mm out past the bar's edge. A Cambro 2SFSCW 2 qt CamSquare polycarbonate tub of cut lettuce (184 x 184 x 98 mm)
-with its snap lid on (190 mm square, top 106 mm above the counter) stands on the counter to the right, in front of
-the dispenser. Today is Wednesday: the Wednesday label goes on the tub's lid. Metres; x forward from the arm bases,
-y left, z up.
+15 mm out past the bar's edge. A Cambro 2SFSCW 2 qt CamSquare polycarbonate food tub (184 x 184 x 98 mm; for
+repeatable trials it holds a sealed bag of plastic beads with the mass of the prepped food) with its snap lid on
+(190 mm square, top 106 mm above the counter) stands on the counter to the right, in front of the dispenser. Today is
+Wednesday: the Wednesday label goes on the tub's lid. Metres; x forward from the arm bases, y left, z up.
 
 Each front label is simulated as four quarters (12.7 x 51 mm) joined by stiff hinges, so it peels, carries and lies
 down as a stiff paper label does. A label's adhesive is simulated by a rule applied at every control step: a quarter
@@ -24,6 +25,7 @@ import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from yam_parts import Part, box, cyl  # noqa: E402
+import yam_parts as _yam_parts  # noqa: E402
 import yam_joints as _yam_joints  # noqa: E402
 from yam_joints import Hinge, Link, Mechanism  # noqa: E402
 from yam_arena.constants import FINGER_CLOSED, FINGER_OPEN  # noqa: E402
@@ -46,8 +48,8 @@ TOP = TABLE_TOP[SCENE]
 DAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 TODAY = "wednesday"
 DAY_COLOR = {"monday": (0.12, 0.35, 0.80), "tuesday": (0.97, 0.82, 0.10), "wednesday": (0.83, 0.10, 0.12),
-             "thursday": (0.12, 0.60, 0.22), "friday": (0.45, 0.27, 0.12), "saturday": (0.96, 0.50, 0.08),
-             "sunday": (0.08, 0.08, 0.09)}
+             "thursday": (0.45, 0.27, 0.12), "friday": (0.12, 0.60, 0.22), "saturday": (0.96, 0.50, 0.08),
+             "sunday": (0.08, 0.08, 0.09)}  # DayMark's day colours (Thursday brown, Friday green)
 DISP_W, DISP_D, DISP_H = 0.445, 0.191, 0.114
 END_WALL, DIVIDER = 0.008, 0.003
 BAY_W = (DISP_W - 2 * END_WALL - 6 * DIVIDER) / 7  # 58.7 mm: a 51 mm label with 3.9 mm either side
@@ -104,7 +106,8 @@ def seg_centre_local(i):
 
 # ---------------------------------------------------------------- the tub (free)
 # Cambro 2SFSCW135 CamSquare 2 qt: 7 1/4" x 7 1/4" x 3 7/8" (184 x 184 x 98 mm), polycarbonate, 257 g; with its SFC2
-# snap lid (polyethylene; 190 mm square and 8 mm above the rim, estimates) and about 350 g of cut lettuce (estimate).
+# snap lid (polyethylene; 190 mm square and 8 mm above the rim, estimates) and 350 g of contents: for repeatable trials
+# a sealed bag of plastic stuffing beads laid flat on its floor, standing in for prepped food of that mass.
 TUB_XY = (0.165, -0.170)
 TUB_BODY = (0.184, 0.184, 0.098)
 LID_SIDE, LID_TOP = 0.190, 0.106  # the lid's top face above the counter
@@ -354,9 +357,8 @@ def _label(day):
         if i >= 2:  # the white write-on panel
             shapes.append(box((x0 + SEG_L / 2 - (0.002 if i == 3 else -0.002), 0, t + 0.00005),
                               (SEG_L - 0.004, LABEL_W - 0.008, 0.0001), WHITE))
-        if i == 1:  # the day's name band, darker
-            shapes.append(box((x0 + SEG_L / 2, 0, t + 0.00005), (SEG_L - 0.005, LABEL_W - 0.012, 0.0001),
-                              tuple(0.8 * c for c in col)))
+        if i == 1:  # the header's name band (the day's name is printed on it: day_prints)
+            shapes.append(box((x0 + SEG_L / 2, 0, t + 0.00005), (SEG_L - 0.005, LABEL_W - 0.012, 0.0001), col))
         return shapes
 
     links = [Link(SEG_NAMES[i], quarter(i),
@@ -391,23 +393,145 @@ def _root_on_base():
         art.CreateEnabledSelfCollisionsAttr().Set(mech.self_collide)
         art.CreateSolverPositionIterationCountAttr().Set(32)
         art.CreateSolverVelocityIterationCountAttr().Set(4)
+        if mech.name.startswith("label_"):
+            _author_prints(prim.GetStage(), f"{prim_path}/q1", day_prints(mech.name))
         return prim
 
     spawn._daydot_root_on_base = True
     _yam_joints._spawn_mechanism = spawn
 
 
+# ---------------------------------------------------------------- printed day names (visual only: no collider, no mass)
+# A DissolveMark 2 x 2 in day label carries its day's name in white capitals across a header in the day's colour
+# (here quarters 0-1, the name on quarter 1); under each bay a printed paper strip on the dispenser's front names the
+# bay's day in black capitals (MON ... SUN). Both are flat quads of a 5 x 7 dot font laid just above the surface,
+# added to the spawned bodies; they never touch the physics, the adhesive rule or the scorer.
+FONT = {
+    "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
+    "D": ("11110", "10001", "10001", "10001", "10001", "10001", "11110"),
+    "E": ("11111", "10000", "10000", "11110", "10000", "10000", "11111"),
+    "F": ("11111", "10000", "10000", "11110", "10000", "10000", "10000"),
+    "H": ("10001", "10001", "10001", "11111", "10001", "10001", "10001"),
+    "I": ("01110", "00100", "00100", "00100", "00100", "00100", "01110"),
+    "M": ("10001", "11011", "10101", "10101", "10001", "10001", "10001"),
+    "N": ("10001", "10001", "11001", "10101", "10011", "10001", "10001"),
+    "O": ("01110", "10001", "10001", "10001", "10001", "10001", "01110"),
+    "R": ("11110", "10001", "10001", "11110", "10100", "10010", "10001"),
+    "S": ("01111", "10000", "10000", "01110", "00001", "00001", "11110"),
+    "T": ("11111", "00100", "00100", "00100", "00100", "00100", "00100"),
+    "U": ("10001", "10001", "10001", "10001", "10001", "10001", "01110"),
+    "W": ("10001", "10001", "10001", "10101", "10101", "10101", "01010"),
+    "Y": ("10001", "10001", "01010", "00100", "00100", "00100", "00100"),
+}
+PRINT_WHITE, INK = (0.97, 0.97, 0.96), (0.04, 0.04, 0.05)
+NAME_DOT = 0.00086  # label header: 0.86 mm dots, capitals 6.0 mm tall ("WEDNESDAY" 45.6 mm long on the 50.8 mm label)
+NAME_LIFT = 0.00015  # the print's height above the face it is on
+STRIP_DOT = (0.0030, 0.0051)  # dispenser strip: dots 3.0 mm wide, 5.1 mm tall: capitals 15 x 36 mm, words 51 mm
+STRIP_Z = 0.0062  # the strip's capitals stand from here (above the counter) to 42 mm, below the colour tab
+STRIP_LIFT = 0.0003  # in front of the dispenser's front face
+
+
+def text_runs(text, dot_w, dot_h):
+    """The lit dots of `text`, merged along each dot row: [(u0, u1, v0, v1)] with u along the line from its start and
+    v up from the letters' foot; and the line's length. One dot of space between letters."""
+    runs = []
+    for k, ch in enumerate(text):
+        for row, bits in enumerate(FONT[ch]):
+            c = 0
+            while c < 5:
+                if bits[c] == "1":
+                    c0 = c
+                    while c < 5 and bits[c] == "1":
+                        c += 1
+                    runs.append(((6 * k + c0) * dot_w, (6 * k + c) * dot_w, (6 - row) * dot_h, (7 - row) * dot_h))
+                else:
+                    c += 1
+    return runs, (6 * len(text) - 1) * dot_w
+
+
+def print_quads(centre, along, up, text, dot_w, dot_h):
+    """Corners (n, 4, 3) of `text` centred on `centre` in a plane: `along` = reading direction, `up` = the letters'
+    up. Each quad overlaps the next row by 2 % of a dot so the strokes show no seam."""
+    along, up = np.asarray(along, float), np.asarray(up, float)
+    runs, length = text_runs(text, dot_w, dot_h)
+    o = np.asarray(centre, float) - along * length / 2 - up * 3.5 * dot_h
+    e = 0.02 * dot_h
+    return np.array([[o + along * u + up * v for u, v in ((u0, v0 - e), (u1, v0 - e), (u1, v1 + e), (u0, v1 + e))]
+                     for u0, u1, v0, v1 in runs])
+
+
+def day_prints(body):
+    """[(name, quads, colour)] printed on a spawned body, in that body's own frame: 'dispenser' (the strips under the
+    bays and each roll's next label) or 'label_<day>' (its header quarter q1, whose frame sits at its hinge)."""
+    read, flat_up, face_up = (0.0, -1.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, 1.0)  # reading left to right, robot's view
+    if body == "dispenser":
+        out = []
+        nxt = LABEL_L - PROTRUDE + 0.0032  # the next label on each strip (as in _dispenser)
+        for k, day in enumerate(DAYS):
+            y = (3 - k) * PITCH
+            out.append((f"strip_{day}", print_quads((-STRIP_LIFT, y, STRIP_Z + 3.5 * STRIP_DOT[1]), read, face_up,
+                                                    day[:3].upper(), *STRIP_DOT), INK))
+            out.append((f"next_{day}", print_quads((nxt + 1.5 * SEG_L, y, H_DECK + 0.0002 + NAME_LIFT), read, flat_up,
+                                                   day.upper(), NAME_DOT, NAME_DOT), PRINT_WHITE))
+        return out
+    if body.startswith("label_"):
+        hinge = np.array([SEG_L, 0.0, LABEL_T / 2])  # q1's frame
+        centre = np.array([1.5 * SEG_L, 0.0, LABEL_T + 0.0001 + NAME_LIFT]) - hinge
+        return [("name", print_quads(centre, read, flat_up, body[len("label_"):].upper(), NAME_DOT, NAME_DOT),
+                 PRINT_WHITE)]
+    return []
+
+
+def _author_prints(stage, body_path, prints):
+    """Author each print as one USD mesh of flat quads under the body (no collision API, no mass)."""
+    import isaaclab.sim as sim_utils
+    from pxr import Gf, UsdGeom, Vt
+    from yam_arena.station import linear_rgb
+    for name, quads, colour in prints:
+        path = f"{body_path}/print_{name}"
+        pts = np.asarray(quads, float).reshape(-1, 3)
+        mesh = UsdGeom.Mesh.Define(stage, path)
+        mesh.CreatePointsAttr().Set(Vt.Vec3fArray([Gf.Vec3f(*map(float, p)) for p in pts]))
+        mesh.CreateFaceVertexCountsAttr().Set(Vt.IntArray([4] * len(quads)))
+        mesh.CreateFaceVertexIndicesAttr().Set(Vt.IntArray(list(range(len(pts)))))
+        lo, hi = pts.min(0), pts.max(0)
+        mesh.CreateExtentAttr().Set(Vt.Vec3fArray([Gf.Vec3f(*map(float, lo)), Gf.Vec3f(*map(float, hi))]))
+        mesh.CreateSubdivisionSchemeAttr().Set("none")
+        mesh.CreateDoubleSidedAttr().Set(True)
+        material = f"{body_path}/print_material_{name}"
+        look = sim_utils.PreviewSurfaceCfg(diffuse_color=linear_rgb(colour), roughness=0.5)
+        look.func(material, look)
+        sim_utils.bind_visual_material(path, material, stage=stage)
+
+
+def _print_on_spawn():
+    """Add the dispenser's printed strips and next labels when it is spawned (the kit's part spawner, wrapped)."""
+    original = _yam_parts._spawn_part
+    if getattr(original, "_daydot_prints", False):
+        return
+
+    def spawn(prim_path, cfg, *args, **kwargs):
+        prim = original(prim_path, cfg, *args, **kwargs)
+        if getattr(cfg, "part_name", "") == "dispenser":
+            _author_prints(prim.GetStage(), str(prim_path), day_prints("dispenser"))
+        return prim
+
+    spawn._daydot_prints = True
+    _yam_parts._spawn_part = spawn
+
+
 _root_on_base()
+_print_on_spawn()
 
 
 def _tub():
-    lettuce = (0.62, 0.78, 0.50)  # cut lettuce seen through the clear polycarbonate
-    lid = (0.66, 0.76, 0.86)  # translucent polyethylene, seen against the lettuce
+    body = (0.74, 0.78, 0.80)  # clear polycarbonate over the white bag of beads
+    lid = (0.66, 0.76, 0.86)  # translucent polyethylene
     bx, by, bz = TUB_BODY
-    s = [box((0, 0, bz / 2), (bx, by, bz), lettuce),
+    s = [box((0, 0, bz / 2), (bx, by, bz), body),
          box((0, 0, LID_TOP - 0.010), (LID_SIDE, LID_SIDE, 0.016), lid),  # the lid's skirt round the rim
          box((0, 0, LID_TOP - 0.0015), (2 * PANEL_HALF, 2 * PANEL_HALF, 0.003), lid)]  # its flat top panel
-    return Part("tub", (TUB_XY[0], TUB_XY[1], TOP), s, mass=TUB_MASS, color=lettuce, friction=(0.5, 0.4),
+    return Part("tub", (TUB_XY[0], TUB_XY[1], TOP), s, mass=TUB_MASS, color=body, friction=(0.5, 0.4),
                 contact_offset=0.002)
 
 

@@ -1,6 +1,28 @@
 # Date a prepped food tub: peel a day label off the dispenser at its bar and press it flat onto the tub's lid
 
-Put today's label on the lid of the tub of cut lettuce. Today is Wednesday.
+Put today's label on the lid of the food tub. Today is Wednesday.
+
+## Revision: review feedback and what changed
+
+Review: "The simulated labels and tabs have colours but no readable weekdays, and the lettuce's type, temperature and
+handling are unspecified. ... Please add readable weekday markings to the simulated labels or dispenser so the model
+can identify Wednesday from its observations, as it can with the specified real day labels. Also specify the lettuce
+type, temperature and handling for repeatable trials, or replace the sealed contents with a repeatable inert ballast
+of the same mass." Changes:
+
+- Day names (see "Day names in the camera images"): every label in the scene (the first on each roll and the next
+  behind it) carries its day's full name in white capitals 6 mm tall on its coloured header, as the real DissolveMark
+  labels do, and a printed paper strip under each bay names its day in black capitals 36 mm tall (MON ... SUN), large
+  enough to read in the wrist camera's frames. Both are visual only (no collider, no mass).
+- The tub holds an inert ballast of the same mass instead of food: 350 g of plastic stuffing beads sealed in a quart
+  freezer bag laid flat on its floor (setup); it is drawn as clear plastic. The instruction says "the food tub".
+- Thursday and Friday now have DayMark's colours (brown and green; they were swapped).
+- Flag (adhesive on the pads): for real trials wrap each gripper pad in one layer of low-tack painter's masking tape,
+  replaced when it turns tacky (the lower pad touches the tab's sticky underside); DissolveMark adhesive also washes
+  off in water.
+
+Physics, colliders, masses, the adhesive rule, the scorer and the demo's motion are unchanged; the demo, the wrong
+way, the Dream-1 run and the media were redone for this version.
 
 ## Scoring
 
@@ -13,7 +35,7 @@ From this task folder, with the official YAM Arena environment installed:
 ```sh
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
   -E task=date_a_food_tub_with_a_day_label.py -E object_jitter=0 -E control_hz=20 \
-  --instruction "Put today's label on the lid of the tub of cut lettuce. Today is Wednesday." \
+  --instruction "Put today's label on the lid of the food tub. Today is Wednesday." \
   --scorer task_score --max-steps 1800 --epochs 1 --store-frames --log-dir ./demo-run
 ```
 
@@ -66,11 +88,23 @@ A label's adhesive cannot be simulated by contact, so the task file applies it a
 
 | Object | What it is | Simulated as |
 |---|---|---|
-| `dispenser` | DayMark IT111081 seven-slot label dispenser, 445 x 191 x 114 mm, front face at x 290 mm, centre line y -71.7 mm | fixed: floor, walls, 6 dividers, front panel, metal bar and deck (top 100 mm up), seven rolls (r 30 mm) with the next label on each strip |
-| `label_<day>` x 7 | DayMark DissolveMark 2 x 2 in day label, first on each roll, 15 mm out past the bar | floating 4-body articulation: quarters 12.7 x 50.8 x 0.8 mm, 5 g, hinges 0.02 N m/rad (damping 0.0003, armature 5e-06 kg m^2), friction 0.6/0.5; rooted on its tab quarter; not shifted by the start jitter |
-| `tub` | Cambro 2SFSCW 2 qt CamSquare with its SFC2 lid and cut lettuce, centred (165, -170) mm | free rigid body, 0.687 kg: body 184 x 184 x 98 mm, lid skirt 190 mm square, flat top panel 186 mm square 106 mm up |
+| `dispenser` | DayMark IT111081 seven-slot label dispenser, 445 x 191 x 114 mm, front face at x 290 mm, centre line y -71.7 mm | fixed: floor, walls, 6 dividers, front panel, metal bar and deck (top 100 mm up), seven rolls (r 30 mm) with the next label on each strip; printed (visual only, no collider): the day strip under each bay and each next label's name |
+| `label_<day>` x 7 | DayMark DissolveMark 2 x 2 in day label, first on each roll, 15 mm out past the bar | floating 4-body articulation: quarters 12.7 x 50.8 x 0.8 mm, 5 g, hinges 0.02 N m/rad (damping 0.0003, armature 5e-06 kg m^2), friction 0.6/0.5; rooted on its tab quarter; not shifted by the start jitter; header (quarters 0-1) in the day's colour, the day's name printed in white on quarter 1 (visual only) |
+| `tub` | Cambro 2SFSCW 2 qt CamSquare with its SFC2 lid and a sealed bag of 350 g of plastic beads, centred (165, -170) mm | free rigid body, 0.687 kg (spread evenly through it; the real beads lie on the floor, which only lowers its centre of mass): body 184 x 184 x 98 mm, lid skirt 190 mm square, flat top panel 186 mm square 106 mm up |
 
-Bay centres (y, mm): Monday 113.4, Tuesday 51.7, Wednesday -10, Thursday -71.7, Friday -133.4, Saturday -195.1, Sunday -256.9. Colours: Monday blue, Tuesday yellow, Wednesday red, Thursday green, Friday brown, Saturday orange, Sunday black.
+Bay centres (y, mm): Monday 113.4, Tuesday 51.7, Wednesday -10, Thursday -71.7, Friday -133.4, Saturday -195.1, Sunday -256.9. Colours: Monday blue, Tuesday yellow, Wednesday red, Thursday brown, Friday green, Saturday orange, Sunday black (DayMark's day colours).
+
+### Day names in the camera images
+
+The strip's capitals stand 6-42 mm above the counter on the dispenser's front face, under the colour tab, each word
+51 mm long and centred on its bay; the labels' names lie across the header quarter next to the tab (quarter 1).
+Measured in this version's images. In the setup image (the top camera at 1280 x 704) the strip's WED is about 12 px
+tall and 45 px wide, legible though the front face is in shade; the labels' names are about 4 px tall there. In the
+320 x 176 frames the policy receives, the top camera shows the strip about 3 px tall, too small to read (as a real
+top camera at that distance would show the real labels). The left wrist camera reads them on the way to the tab: in
+the demonstration's 320 x 176 wrist frames the strip's TUE WED THU stands 22-40 px tall from 2.0 to 3.5 s, clearly
+readable; at 1.5 s the names on the nearest labels are 6-10 px tall (MONDAY, TUESDAY readable), while WEDNESDAY on
+its own label, further off and at a slant, is 3-4 px.
 
 ## Demo (39.0 s)
 
@@ -121,8 +155,11 @@ stands.
 
 A wrong way, run in the simulation: the same demonstration aimed one bay to the left takes Tuesday's label. Tuesday's
 label comes off its backing and is laid and pressed on the lid; Wednesday's stays on its roll. It scores 0 throughout
-(another day's label taken; today's label still on its backing). A Dream-1 run of 1,800 steps scored 0: it did not
-draw Wednesday's label off its backing.
+(another day's label taken; today's label still on its backing).
+
+Re-run for this version (day names printed; same physics and motion): the demonstration again scored 1.0, reaching
+0.25, 0.5 and 1.0 at the same control steps as before (168, 385, 665); the wrong way again scored 0; a Dream-1 run of
+1,800 steps scored 0 (its hands went toward the right-hand bays; Wednesday's label stayed on its backing).
 
 ## Why the shortcuts fail
 
@@ -135,11 +172,22 @@ draw Wednesday's label off its backing.
 
 ## Estimates (to be measured on the real items)
 
-The dispenser's inner layout (bay width, bar and deck height 100 mm, roll size), the lid's size and height, the lettuce's
-mass, the peel force from the backing (~0.1 N per 25 mm) and the pressed label's hold on the lid (1.0 N per quarter),
+The dispenser's inner layout (bay width, bar and deck height 100 mm, roll size), the lid's size, height and mass (80 g), the peel force from the backing (~0.1 N per 25 mm) and the pressed label's hold on the lid (1.0 N per quarter),
 the frictions, and the label's bending stiffness. The label is simulated 0.8 mm thick and 5 g (real about 0.1 mm and 0.3 g).
 
 ## Files
 
 `date_a_food_tub_with_a_day_label.py` (scene, adhesive rule, scorer, demo), `yam_parts.py` and `yam_joints.py` (rigid compound parts and passive
 jointed parts), `task.json`, and the generated test `test_date_a_food_tub_with_a_day_label.py`.
+
+## Sources
+
+- Day labels (2 x 2 in DissolveMark, header with the day's name, write-on lines) and colours: DayMark DissolveMark
+  brochure, https://www.webstaurantstore.com/documents/PDF/brochure/dissolvemark_brochure_daymark.pdf ; Wednesday
+  roll (red, 250 labels, about $14), https://chefstoys.com/products/daymark-1100533-wednesday-dissolve-labels-2-x-2-roll-of-250-2226 ;
+  Thursday brown, https://www.amazon.com/DayMark-Dissolvable-Label-Thursday-Brown/dp/B009YM37FK ; Friday green,
+  https://www.hubert.com/product/72364/DayMark-ToughMark-GreenWhite-Day-Of-The-Week-Labels-Friday---2-Square
+- Ballast: Fairfield Poly-Fil Poly-Pellets, 32 oz bag, about $20,
+  https://www.amazon.com/Fairfield-PP2B-Poly-Pellets-Weighted-Stuffing/dp/B0077AQ0W8 ; Ziploc Freezer quart bags,
+  7 x 7 7/16 in (177 x 188 mm), https://ziploc.com/en-us/products/bags/freezer/medium , about $6.50 for 50,
+  https://www.walmart.com/ip/Ziploc-Brand-Freezer-Bags-with-Grip-n-Seal-Technology-Quart-50-Count/256636026
