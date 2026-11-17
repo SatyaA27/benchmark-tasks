@@ -15,16 +15,17 @@ from yam_parts import PartState  # noqa: E402  (the task folder is on the path a
 
 EPISODES = itertools.count(10**6)  # never reuse an episode number across tests
 AWAY = {"left": (np.array([0.13, 0.11, 0.90]), 1.0), "right": (np.array([0.20, -0.25, 0.95]), 1.0)}
+WRITING = 1.5  # N: the lead's force on the board in these tests unless a test sets another (F_MIN is 0.5)
 
 
 @pytest.fixture(autouse=True)
 def isolate():
     saved = dict(T._RUN)
     T._RUN.update(env=None, t=0.0, step=0, episode=next(EPISODES))
-    T.TEST_GRIPPERS, T.TEST_STROKES, T.TEST_LAYOUT = AWAY, None, None
+    T.TEST_GRIPPERS, T.TEST_STROKES, T.TEST_LAYOUT, T.TEST_FORCE = AWAY, None, None, WRITING
     T.reset_path()
     yield
-    T.TEST_GRIPPERS = T.TEST_STROKES = T.TEST_LAYOUT = None
+    T.TEST_GRIPPERS = T.TEST_STROKES = T.TEST_LAYOUT = T.TEST_FORCE = None
     T.ACTIVE_LAYOUT = 0
     T.reset_path()
     T._RUN.clear()
@@ -144,6 +145,92 @@ def test_pencil_hovering_or_too_deep_does_not_mark():
     for x, y in T.ideal_line(0)[50:100]:
         step(scene(0, compass_at(0, (x, y), depth=0.0025)))    # 2.5 mm into the board
     assert T._STROKES == []
+
+
+def _hang_score_and_strokes(k=0):
+    return hang_and_wait(k, 1.3)[-1], len(T._STROKES), sum(len(s) for s in T._STROKES)
+
+
+@pytest.mark.parametrize("k", range(4))
+def test_pencil_hovering_0_1_mm_over_the_line_records_nothing(k):
+    """Wrong way: the whole line, on target, with the lead 0.1 mm above the board (inside the old 0.2 mm allowance)
+    and no force on it: nothing is recorded, nothing drawn, score 0. Pressed with 1.5 N, the same path scores 1.0."""
+    T.ACTIVE_LAYOUT = k
+    T.TEST_FORCE = 0.0
+    for x, y in T.ideal_line(k):
+        step(scene(k, compass_at(k, (x, y), depth=-0.0001), compass_vel=(0.01, 0.0, 0.0)))
+    assert _hang_score_and_strokes(k) == (0.0, 0, 0)
+    T._RUN.update(t=0.0, step=0, episode=next(EPISODES))
+    T.TEST_FORCE = WRITING
+    for x, y in T.ideal_line(k):
+        step(scene(k, compass_at(k, (x, y), depth=0.0)))
+    assert _hang_score_and_strokes(k)[0] == 1.0
+
+
+@pytest.mark.parametrize("force, expected", [(0.0, 0.0), (0.3, 0.0), (0.49, 0.0), (0.5, 1.0), (1.0, 1.0), (3.0, 1.0)])
+def test_the_lead_must_touch_and_press_at_least_0_5_newton(force, expected):
+    """Wrong way (skim): the whole line on target with the lead touching the board but pressing under F_MIN = 0.5 N
+    records nothing and scores 0; at 0.5 N and above it marks and scores 1.0."""
+    T.TEST_FORCE = force
+    scribe(0, T.ideal_line(0))
+    score, n_strokes, n_points = _hang_score_and_strokes()
+    assert score == expected
+    assert (n_strokes, n_points) == ((0, 0) if expected == 0.0 else (1, len(T.ideal_line(0))))
+
+
+@pytest.mark.parametrize("height_mm, marks", [(0.2, False), (0.1, False), (0.06, False), (0.04, True), (0.0, True),
+                                              (-1.0, True), (-1.9, True), (-2.1, False)])
+def test_a_pressing_lead_marks_only_on_the_face(height_mm, marks):
+    """Even with writing force reported, the lead marks only from 0.05 mm above (contact tolerance) to 2 mm below the
+    top face; the old 0.2 mm stand-off is gone."""
+    x, y = T.ideal_line(0)[100]
+    on, _ = T.marking(scene(0, compass_at(0, (x, y), depth=-height_mm / 1000))["compass"],
+                      scene(0, compass_at(0, (x, y)))["shelf"])
+    assert on is marks
+
+
+def test_force_dropping_under_the_threshold_mid_line_breaks_it():
+    """Writing force on the whole line (points 0.5 mm apart) except a few points from 70 mm, where the lead only skims
+    (0.2 N): 6 skimmed points leave a 3.5 mm gap, so no line credit (score 0); 2 leave 1.5 mm, still one line (1.0)."""
+    line = T.ideal_line(0)
+    for skimmed, expected in ((6, 0.0), (2, 1.0)):
+        T._RUN.update(t=0.0, step=0, episode=next(EPISODES))
+        for i, (x, y) in enumerate(line):
+            T.TEST_FORCE = 0.2 if 140 <= i < 140 + skimmed else WRITING
+            step(scene(0, compass_at(0, (x, y)), compass_vel=(0.01, 0.0, 0.0)))
+        T.TEST_FORCE = WRITING
+        assert len(T._STROKES) == 2
+        assert hang_and_wait(0, 1.3)[-1] == expected
+
+
+def test_lead_force_reads_only_contacts_at_the_lead():
+    """The runtime's per-physics-step sum: contacts within 2 mm of the lead's lowest point count; a contact at the
+    steel point or on a leg (the compass lying on the board) does not."""
+    origin, rot = np.array([0.2, 0.1, 0.9]), np.eye(3)
+    tip = origin + T.LEAD_CENTRE - [0, 0, T.LEAD_R]
+    point = origin + T.POINT_CENTRE - [0, 0, T.POINT_R]
+    leg = origin + np.array([0.0, -0.0015, -0.06])
+    assert T.lead_contact_force([0.8, 0.4], [tip, tip + [0.0005, 0, 0]], origin, rot) == pytest.approx(1.2)
+    assert T.lead_contact_force([2.0, 3.0], [point, leg], origin, rot) == 0.0
+    assert T.lead_contact_force([], np.zeros((0, 3)), origin, rot) == 0.0
+    turned = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]], float)   # compass lying on its side: lead elsewhere
+    assert T.lead_contact_force([1.0], [tip], origin, turned) == 0.0
+
+
+def test_lead_force_is_the_mean_over_the_control_steps_physics_steps():
+    import scribe_runtime as R
+    saved = dict(R._LEAD)
+    try:
+        R._LEAD.update(token=("e", 1), sum=0.0, n=0, value=0.0)
+        for f in [0.0] * 6 + [1.2] * 6:          # touching down half way through the control step
+            R._LEAD["sum"] += f
+            R._LEAD["n"] += 1
+        assert R.lead_force(("e", 2)) == pytest.approx(0.6)
+        assert R.lead_force(("e", 2)) == pytest.approx(0.6)   # the same step again: same value
+        assert R.lead_force(("e", 3)) == 0.0                 # nothing read since: 0
+    finally:
+        R._LEAD.clear()
+        R._LEAD.update(saved)
 
 
 def test_single_touches_at_the_stations_score_nothing():

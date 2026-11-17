@@ -8,9 +8,15 @@ Category: Impact on jobs. Done by carpenters (O*NET 47-2031.00: "Measure and mar
 
 **Layouts by seed.** The wall never changes; layout = trial seed mod 4 sets where along it the shelf lies, so each trial copies a different stretch of wall. A line copied from one layout scores 0 on the other three, and no straight line scores on any.
 
+## Revision: the pencil must touch and press
+
+Review TK-C9HWSV: "Construct validity (not met): The simulated pencil records a line up to 0.2 mm above the board with no force threshold, allowing marking without the physical work of writing. ... Require contact and a realistic minimum writing force to record a mark, retaining the existing continuity and profile-accuracy checks."
+
+Changed: the pencil marks only while its lead touches the board (lowest point at most 0.05 above the top face, the contact tolerance; it was 0.2) AND presses on it with at least **0.5 N**, the simulator's contact force between the lead and the board, read every physics step (`marking()` line 79, `lead_force()` 89, the reader `_track()` 342). 0.5 N is a light writing force: pen-tip force on paper averages 0.95 N (SD 0.29) in 8-year-olds, 0.77 N (SD 0.36) with handwriting difficulties (Lin et al. 2022). Stations, targets, bend, continuity gate and tiers are unchanged. In a real trial the check is the pencil line visible on the board.
+
 ## Scoring
 
-Millimetres. The scorer is the first code in `scribe_shelf_end_to_bowed_wall.py`, right after the imports (lines 30-253).
+Millimetres. The scorer is the first code in `scribe_shelf_end_to_bowed_wall.py`, right after the imports (lines 30-281).
 
 **Stations.** Fourteen lines square to the shelf's end, at 7, 17, 27, ... 137 from its front edge. At each, the reading is the pencil line's distance from the shelf's end to the centre of the line. Crossings of a station within 1 of each other read as one band, at its centre; more than 1 apart, the station is unmarked. A single touch counts at a station within 0.25 of it. **Target:** 10.0 (the compass setting) minus the gap between the wall and the shelf's end there (tables below).
 
@@ -18,9 +24,9 @@ Millimetres. The scorer is the first code in `scribe_shelf_end_to_bowed_wall.py`
 
 **One unbroken line (the continuity gate).** The line must run from the front edge to the back edge (0 to 140 across the shelf's depth) with no gap longer than 2.0. Follow it through the marks read at the stations; wherever it breaks, measure the unmarked stretch straight across the board from the end of one mark to the nearest point of the next. The stretches from the front edge to the line's start and from its end to the back edge count too. The longest stretch is the gap. The route may step through any mark on the board but must take in every mark read at a station. Why 2.0: a scribed line is drawn in one pass and the cut follows it by eye; a good line breaks only where the lead skips, for a millimetre or so. 2.0 is four HB line widths and a fifth of the station spacing.
 
-In the code: `GAP_MAX = 0.0020` (line 42); `score()` (line 50), the primary score, takes its only line credit from `line_credit()` (line 59), which gives 0 when the gap is over GAP_MAX (line 80); `line_gap()` (84) and `Marks.gap()` (154) measure the gap; `success()` (70) is a score of 1.0.
+In the code: `GAP_MAX = 0.0020` (line 47); `score()` (line 55), the primary score, takes its only line credit from `line_credit()` (line 64), which gives 0 when the gap is over GAP_MAX (line 108); `line_gap()` (112) and `Marks.gap()` (182) measure the gap; `success()` (75) is a score of 1.0.
 
-**Continuity gate test.** `continuity_gate_selftest()` (line 89, beside the scorer) scores four sets of marks through `score()`. `test_continuity_gate.py` runs it and the cases below on all four layouts: 41 passed (`python -m pytest -v -p no:cacheprovider test_continuity_gate.py`). Every set has all 14 stations on target and the bend met, so without the gate each would get line credit 1.0; the compass hangs on its stand, hands away.
+**Continuity gate test.** `continuity_gate_selftest()` (line 117, beside the scorer) scores four sets of marks through `score()`. `test_continuity_gate.py` runs it and the cases below on all four layouts: 41 passed (`python -m pytest -v -p no:cacheprovider test_continuity_gate.py`). Every set has all 14 stations on target and the bend met, so without the gate each would get line credit 1.0; the compass hangs on its stand, hands away.
 
 | Test | Marks | Gap | Line credit = score |
 |---|---|---|---|
@@ -31,6 +37,8 @@ In the code: `GAP_MAX = 0.0020` (line 42); `score()` (line 50), the primary scor
 | `test_the_task_modules_selftest` | touches; 2.1 lift; 1.9 lift; one line | over 5; 2.1; 1.9; 0 | 0; 0; 1.0; 1.0 |
 
 With the gate taken out of `line_credit()`, or with `score()` using `line_quality()`'s credit directly, 20 of the 41 fail.
+
+**Pencil force test** (`test_red_team.py`, step by step through `score()`): the whole line on target, lead 0.1 above the board, no force: nothing recorded, 0, on all four layouts (at 1.5 N: 1.0); on the face at 0.3 or 0.49 N: 0; at 0.5 or 3.0 N: 1.0; 0.2 N over 3.5 of the line breaks it (0); contacts at the steel point or a leg add no force. Without the force condition 4 of these fail.
 
 | Line credit | One unbroken line (gap at most 2.0), the bend met, and stations within tolerance of their targets |
 |---|---|
@@ -50,9 +58,9 @@ With the gate taken out of `line_credit()`, or with `score()` using `line_qualit
 
 **Sticky failures** (0 for the rest of the trial): the shelf moved more than 30 across the table from its start; the shelf or the compass more than 20 below the table top. Success is a score of 1.0.
 
-**In simulation.** The scorer records the lead's lowest point every control step, in the shelf's frame, while it marks (0.2 above to 2 below the top face, over the board). Consecutive marking steps make one stroke; a lift or an unseen step starts another. Readings are where strokes cross the stations; for the gap, a stroke is the straight pieces between its points. The drawn graphite dots are only a picture.
+**In simulation.** The scorer records the lead's lowest point every control step, in the shelf's frame, while the pencil marks: the lead on the top face (0.05 above to 2 below it, over the board) pressing with at least 0.5 N (PhysX contact force at the lead, read every physics step, averaged per control step). Consecutive marking steps make one stroke; a lift, a step under 0.5 N or an unseen step starts another. Readings are where strokes cross the stations; for the gap, a stroke is the straight pieces between its points. The drawn graphite dots follow the same rule and are only a picture.
 
-**In a real trial.** Before it, take the layout's targets from the table (or measure the wall's gap at each station with feeler gauges). After it, tick the 14 stations with a combination square. Find the gap under a 10x loupe with a steel rule graduated in 0.5 (front-edge stretch, every break, back-edge stretch); over 2.0, the line credit is 0. Otherwise read each station: rule's zero on a square block held to the shelf's end, centre of the line to 0.1.
+**In a real trial.** The line is the graphite visible on the board under the loupe; where the pencil rode above it or skimmed too lightly to leave a line, there is a gap. Before the trial, take the layout's targets from the table (or measure the wall's gap at each station with feeler gauges). After it, tick the 14 stations with a combination square. Find the gap under a 10x loupe with a steel rule graduated in 0.5 (front-edge stretch, every break, back-edge stretch); over 2.0, the line credit is 0. Otherwise read each station: rule's zero on a square block held to the shelf's end, centre of the line to 0.1.
 
 ## Layouts and targets
 
@@ -86,17 +94,17 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
   --scorer task_score --max-steps 2400 --store-frames --log-dir ./demo-run
 ```
 
-The model run uses `--policy dream`. The trial seed is the CRC-32 of "eval_seed:scene_seed:epoch"; with one epoch, `--seed 1` gives layout 0, `--seed 3` layout 1, `--seed 0` layout 2, `--seed 2` layout 3. CPU checks: `python -m pytest -q -p no:cacheprovider` here, with yam_arena installed. Runtime: at most 2,400 steps (120 s); the demonstration's plan is 38.6 s, plus 1 s to success.
+The model run uses `--policy dream`. The trial seed is the CRC-32 of "eval_seed:scene_seed:epoch"; with one epoch, `--seed 1` gives layout 0, `--seed 3` layout 1, `--seed 0` layout 2, `--seed 2` layout 3. CPU checks: `python -m pytest -q -p no:cacheprovider` here, with yam_arena installed. Runtime: at most 2,400 steps (120 s); the demonstration's plan is 39.0 s, plus 1 s to success.
 
 ## Setup, demonstration, fidelity
 
 Objects, sizes, materials and positions: task.json's setup, which gives the wall's profile. The offset every 5 mm from the wall's front end, as cut: 0.29 0.49 0.78 1.16 1.64 2.19 2.77 3.30 3.71 3.94 3.96 3.74 3.33 2.79 2.17 1.55 0.98 0.48 0.06 -0.27 -0.54 -0.75 -0.92 -1.04 -1.12 -1.16 -1.14 -1.06 -0.93 -0.73 -0.47 -0.14 0.25 0.70 1.20 1.72 2.23 2.71 3.10 3.39 3.55 3.55 3.42 3.17 2.86 2.54 2.27 2.08 1.96 1.88 1.76 1.55 1.26. In simulation the face is an exact triangle mesh through points every 2 mm; every collider is defined in the module.
 
-The scripted demonstration (`demo()`) holds the shelf down with the right hand's fingertips and scribes with the left at 10 mm/s, the point commanded 4 mm into the wall (a preload: the wall stops it); on the GPU every layout drew one stroke from 0.4 to 1.3 in from the front edge to 0.5 to 1.1 short of the back edge.
+The scripted demonstration (`demo()`) holds the shelf down with the right hand's fingertips and scribes with the left at 10 mm/s, the lead commanded 1 into the board and the point 4 into the wall (preloads: the board and the wall stop them). The pressed lead trails the hand by about 6 and springs forward only when lifted, too lightly to mark, so the hand runs 7 past the back edge (3 on layout 3, the arm's reach). GPU, seed 0 (layout 2): one line from 1.5 to 139.8 plus a touch at 0.5, 0.50-1.67 N, longest gap 1.19, score 1.0. Wrong way, lead commanded 0.5 above the board: 62 touches under 0.5 N recorded nothing, two at 0.52-0.54 N single points; no line, score 0.
 
 Fidelity (beyond task.json's note): the grip is square because a round rigid grip crept in the rigid simulated pads.
 
-Sources: General Tools 843/1 pencil compass and scriber (0.75 x 3.00 x 6.75 in, 0.05 lb), https://generaltools.com/products/pencil-compass-and-scriber-adjustable-up-to-8-inches; 1x6 board 19 x 140 mm (PS 20); eastern white pine, USDA Wood Handbook (FPL-GTR-190) table 5-3.
+Sources: General Tools 843/1 pencil compass and scriber (0.75 x 3.00 x 6.75 in, 0.05 lb), https://generaltools.com/products/pencil-compass-and-scriber-adjustable-up-to-8-inches; 1x6 board 19 x 140 mm (PS 20); eastern white pine, USDA Wood Handbook (FPL-GTR-190) table 5-3; writing force: Lin et al. 2022, "Pen-grip kinetics in children with and without handwriting difficulties", PLoS ONE 17: e0270466, table 2, https://doi.org/10.1371/journal.pone.0270466.
 
 ## Files and licence
 

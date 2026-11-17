@@ -30,10 +30,15 @@ SCENE = "station"
 # ---------------------------------------------------------------- scorer (first; the scene, the pencil's path and the
 # scripted demonstration follow). The primary score is score(): its only line credit comes from line_credit(), which
 # gives 0 when the line's longest gap (line_gap(), Marks.gap()) is over GAP_MAX = 2 mm. continuity_gate_selftest()
-# below runs that on four sets of marks through score() itself.
+# below runs that on four sets of marks through score() itself. The pencil marks only while its lead touches the
+# board AND presses on it with at least F_MIN = 0.5 N of contact force (marking(), lead_force(), right after success()).
 STATIONS = 0.007 + 0.010 * np.arange(14)   # measured from the shelf's front edge
 N_STATIONS = len(STATIONS)
-MARK_ABOVE, MARK_BELOW = 0.0002, 0.0020    # the lead marks within 0.2 mm above to 2 mm below the top face
+MARK_ABOVE, MARK_BELOW = 0.00005, 0.0020   # the lead's lowest point within 0.05 mm above (contact tolerance only)
+                                           # to 2 mm below the top face, over the board ...
+F_MIN = 0.5                                # ... AND the lead pressing on the board with at least this force (N)
+LEAD_ZONE = 0.002                          # board contacts within this of the lead's lowest point are the lead's
+TEST_FORCE = None                          # offline tests only: the lead's force (N) in place of the simulator's
 STATION_SPREAD = 0.0010                    # crossings of one station further apart than this: unmarked
 DOT_HALF = 0.00025                         # a single touch reads at a station within this distance (line credit
                                            # still needs it to be part of one unbroken line: GAP_MAX)
@@ -69,6 +74,29 @@ def score(objects):
 
 def success(objects):
     return score(objects) >= 1.0
+
+
+def marking(compass, shelf):
+    """(True, the lead's shelf-local position) while the pencil marks: the lead's lowest point is on the shelf's top
+    face (at most MARK_ABOVE above it, over the board) AND the lead presses on it with at least F_MIN newtons."""
+    q = shelf.to_local(lead_point(compass))
+    force = lead_force()   # read every control step, touching or not
+    touching = bool(-MARK_BELOW <= q[2] - SHELF_T <= MARK_ABOVE
+                    and abs(q[0]) <= SHELF_D / 2 and abs(q[1]) <= SHELF_L / 2)
+    return touching and force >= F_MIN, q
+
+
+def lead_force():
+    """The lead's normal force on the shelf this control step (N): PhysX's compass-shelf contact forces within
+    LEAD_ZONE of the lead's lowest point, summed every physics step (_track() below) and averaged over the step."""
+    if TEST_FORCE is not None:
+        return float(TEST_FORCE)
+    return scribe_runtime.lead_force((_RUN["episode"], _RUN["step"]))
+
+
+def lead_point(compass):
+    """World position of the pencil lead's lowest point."""
+    return compass.to_world(LEAD_CENTRE) - np.array([0.0, 0.0, LEAD_R])
 
 
 def line_credit(strokes, k):
@@ -251,6 +279,144 @@ def _segment_distance(a0, a1, b0, b1):
         return (p[:, 0] - o[:, 0]) * (q[:, 1] - o[:, 1]) - (p[:, 1] - o[:, 1]) * (q[:, 0] - o[:, 0])
     crossing = (side(b0, b1, a0) * side(b0, b1, a1) < 0) & (side(a0, a1, b0) * side(a0, a1, b1) < 0)
     return np.where(crossing, 0.0, dist)
+
+
+# ---------------------------------------------------------------- the lead's contact force (simulator side)
+# After every physics step (240 Hz) PhysX's contact report between the compass and the shelf (a rigid contact view
+# filtered to that pair) is read, and the normal forces of the contacts within LEAD_ZONE of the lead's lowest point
+# (the compass's PhysX pose that step) are summed into scribe_runtime._LEAD; lead_force() averages them over each
+# control step. Contacts elsewhere on the compass (the steel point, a leg) do not count. If the report cannot be read,
+# the force stays 0, the pencil marks nothing and a SCRIBE_FORCE error line is printed.
+import importlib.abc  # noqa: E402
+import importlib.util  # noqa: E402
+
+_PHYSX_MGR = "isaaclab_physx.physics.physx_manager"
+
+
+def lead_contact_force(f, p, pos, rot):
+    """One physics step: the summed normal force (N) of the compass-shelf contacts (forces f, world points p) within
+    LEAD_ZONE of the lead's lowest point, the compass at world position pos with rotation rot."""
+    f, p = np.abs(np.asarray(f, float).reshape(-1)), np.asarray(p, float).reshape(-1, 3)
+    tip = np.asarray(pos, float) + np.asarray(rot, float) @ LEAD_CENTRE - np.array([0.0, 0.0, LEAD_R])
+    return float(f[np.linalg.norm(p - tip, axis=1) <= LEAD_ZONE].sum()) if len(f) else 0.0
+
+
+def _np(x):
+    x = getattr(x, "torch", x)
+    if hasattr(x, "detach"):
+        return x.detach().cpu().numpy()
+    try:
+        import warp as wp
+        if isinstance(x, wp.array):
+            return wp.to_torch(x).detach().cpu().numpy()
+    except Exception:  # noqa: BLE001
+        pass
+    return np.asarray(x.numpy() if hasattr(x, "numpy") and not isinstance(x, np.ndarray) else x)
+
+
+def _physx_pose(env, name):
+    """(world position, rotation) of a free part straight from PhysX this physics step (quaternion x, y, z, w)."""
+    t = _np(env.unwrapped.scene[name].root_physx_view.get_transforms()).reshape(-1)[:7].astype(np.float64)
+    x, y, z, w = t[3:7] / np.linalg.norm(t[3:7])
+    return t[:3], np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                            [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                            [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
+def _contact_view(lead, mgr):
+    sv = mgr.get_physics_sim_view()
+    if sv is None:
+        raise RuntimeError("no physics simulation view yet")
+    paths = dict(lead["paths"])
+    if "compass" not in paths or "shelf" not in paths:
+        from isaaclab.sim.utils.stage import get_current_stage
+        for prim in get_current_stage().Traverse():
+            for name in ("compass", "shelf"):
+                if prim.GetPath().pathString.endswith("/env_0/" + name):
+                    paths[name] = prim.GetPath().pathString
+    lead["view"] = sv.create_rigid_contact_view([paths["compass"]], filter_patterns=[[paths["shelf"]]],
+                                                max_contact_data_count=64)
+    print(f"SCRIBE_FORCE contact report: {paths['compass']} against {paths['shelf']}", flush=True)
+
+
+def _track(dt):
+    """After one physics step: add the lead's contact force on the board to this control step's sum."""
+    lead = scribe_runtime._LEAD
+    if not lead["armed"] or lead["env"] is None:
+        return
+    try:
+        if lead["view"] is None:
+            _contact_view(lead, lead["mgr"])
+        forces, points, _, _, counts, starts = lead["view"].get_contact_data(dt=dt)
+        n, s0 = int(_np(counts).reshape(-1)[0]), int(_np(starts).reshape(-1)[0])
+        f, p = _np(forces).reshape(-1)[s0:s0 + n], _np(points).reshape(-1, 3)[s0:s0 + n]
+        pos, rot = _physx_pose(lead["env"], "compass")
+    except Exception as e:  # noqa: BLE001 - reported once; the force stays 0, so nothing marks
+        if lead["err"] is None:
+            lead["err"] = repr(e)
+            print(f"SCRIBE_FORCE error: {e!r}", flush=True)
+        return
+    lead["sum"] += lead_contact_force(f, p, pos, rot)
+    lead["n"] += 1
+
+
+def _patch_manager(mod):
+    """Isaac Lab's PhysxManager: contact processing on, and _track after every physics step."""
+    mgr = mod.PhysxManager
+    if getattr(mgr.step, "_scribe_hooked", False):
+        return
+    base_cfg, base_step = mgr._configure_physics.__func__, mgr.step.__func__
+
+    def _configure_physics(cls):
+        base_cfg(cls)
+        try:
+            import carb
+            carb.settings.get_settings().set_bool("/physics/disableContactProcessing", False)
+        except Exception:  # noqa: BLE001
+            pass
+
+    def step(cls):
+        base_step(cls)
+        scribe_runtime._LEAD["mgr"] = cls
+        try:
+            dt = float(cls.get_physics_dt())
+        except Exception:  # noqa: BLE001
+            dt = 1.0 / 240.0
+        _track(dt)
+
+    step._scribe_hooked = True
+    mgr._configure_physics, mgr.step = classmethod(_configure_physics), classmethod(step)
+
+
+class _MgrFinder(importlib.abc.MetaPathFinder):
+    """Patches PhysxManager when it is first imported (it needs the simulator app, so not at task import)."""
+    _scribe_mgr_finder = True
+
+    def find_spec(self, fullname, path, target=None):
+        if fullname != _PHYSX_MGR:
+            return None
+        sys.meta_path.remove(self)
+        try:
+            spec = importlib.util.find_spec(fullname)
+        finally:
+            sys.meta_path.insert(0, self)
+        if spec is None or spec.loader is None:
+            return None
+        orig_exec = spec.loader.exec_module
+
+        def exec_module(module):
+            orig_exec(module)
+            _patch_manager(module)
+
+        spec.loader.exec_module = exec_module
+        return spec
+
+
+def _install_force_reader():
+    if _PHYSX_MGR in sys.modules:
+        _patch_manager(sys.modules[_PHYSX_MGR])
+    elif not any(getattr(f, "_scribe_mgr_finder", False) for f in sys.meta_path):
+        sys.meta_path.insert(0, _MgrFinder())
 
 
 # Release-and-stillness block, verbatim from the parts kit's docs (release_stillness_block.py).
@@ -533,19 +699,6 @@ def _gate_triple(k):
 GATES = tuple(_gate_triple(k) for k in range(len(LAYOUT_FRONT_X)))
 
 
-def lead_point(compass):
-    """World position of the pencil lead's lowest point."""
-    return compass.to_world(LEAD_CENTRE) - np.array([0.0, 0.0, LEAD_R])
-
-
-def marking(compass, shelf):
-    """(True, shelf-local x, y) while the lead touches the shelf's top face."""
-    q = shelf.to_local(lead_point(compass))
-    on = bool(-MARK_BELOW <= q[2] - SHELF_T <= MARK_ABOVE
-              and abs(q[0]) <= SHELF_D / 2 and abs(q[1]) <= SHELF_L / 2)
-    return on, q
-
-
 def _boxes_apart(a, b, gap):
     lo_a, hi_a, lo_b, hi_b = (np.asarray(v, dtype=float) for v in (a.low, a.high, b.low, b.high))
     return bool(np.any(lo_a > hi_b + gap) or np.any(lo_b > hi_a + gap))
@@ -567,7 +720,11 @@ def reset_path():
     global _MARKS
     _STROKES.clear()
     _MARKS = Marks()
-    _PATH.update(episode=_RUN["episode"], token=None, marking=False, start=None)
+    _PATH.update(episode=_RUN["episode"], token=None, marking=False, start=None, forces=[],
+                 stats=dict(marked=0, light=0, near_02=0, f_max=0.0, h_max_marked=-1.0))
+
+
+reset_path()
 
 
 def record_path(objects):
@@ -585,9 +742,11 @@ def record_path(objects):
     if _PATH["start"] is None:
         _PATH["start"] = np.asarray(shelf.origin, dtype=float).copy()
     on, q = marking(compass, shelf)
+    if on and not (_PATH["marking"] and contiguous):
+        _STROKES.append([])
+        _PATH["forces"] = []
+    _note(on, q)
     if on:
-        if not (_PATH["marking"] and contiguous):
-            _STROKES.append([])
         _STROKES[-1].append((float(q[0]), float(q[1])))
         _MARKS.add(len(_STROKES) - 1, q[:2])
     elif _PATH["marking"]:
@@ -595,6 +754,20 @@ def record_path(objects):
     _PATH["marking"], _PATH["token"] = on, token
     if token[1] % 20 == 0:
         _diagnostic(objects, on, q)
+
+
+def _note(on, q):
+    """Diagnostic only (log lines; the score never reads it): the lead's force while marking, steps it touched too
+    lightly to mark, and steps the pre-revision rule (lead within 0.2 mm above the face, no force) would have marked."""
+    s, f, h = _PATH["stats"], lead_force(), float(q[2] - SHELF_T)
+    over = abs(q[0]) <= SHELF_D / 2 and abs(q[1]) <= SHELF_L / 2
+    s["near_02"] += bool(over and -MARK_BELOW <= h <= 0.0002)
+    s["light"] += bool(over and -MARK_BELOW <= h <= MARK_ABOVE and not on)
+    s["f_max"] = max(s["f_max"], f)
+    if on:
+        s["marked"] += 1
+        s["h_max_marked"] = max(s["h_max_marked"], h)
+        _PATH["forces"].append(f)
 
 
 def point_gap(compass):
@@ -606,8 +779,9 @@ def point_gap(compass):
 def _stroke_report(objects):
     p = np.asarray(_STROKES[-1]) if _STROKES and _STROKES[-1] else np.zeros((0, 2))
     if len(p):
+        f = np.asarray(_PATH["forces"] or [0.0])
         print(f"SCRIBE_STROKE t={_RUN['t']:.2f} n={len(p)} x_mm={p[0, 0] * 1000:.1f}..{p[-1, 0] * 1000:.1f} "
-              f"layout={current_layout()}", flush=True)
+              f"layout={current_layout()} force_N min={f.min():.2f} mean={f.mean():.2f} max={f.max():.2f}", flush=True)
 
 
 def _diagnostic(objects, on, q):
@@ -622,7 +796,9 @@ def _diagnostic(objects, on, q):
           f"shelf_moved_mm=({moved[0] * 1000:.2f},{moved[1] * 1000:.2f}) strokes={len(_STROKES)} "
           f"marked={sum(r is not None for r in readings)} worst_err_mm={'-' if worst is None else round(worst * 1000, 2)} "
           f"gate={int(gate)} gap_mm={'over 5' if gap > GAP_SEARCH else round(gap * 1000, 2)} "
-          f"cap={cap}", flush=True)
+          f"cap={cap} lead_force_N={lead_force():.2f} " + " ".join(
+              f"{k}={round(v * 1000, 3) if k.startswith('h_') else round(v, 2)}" for k, v in _PATH["stats"].items()),
+          flush=True)
 
 
 # ---------------------------------------------------------------- offline fixtures (tests only; the demo never uses them)
@@ -686,15 +862,26 @@ def goal_objects(k=0):
 
 
 # ---------------------------------------------------------------- scripted demo (positions follow the seed's layout)
+# The pencil must press to mark (F_MIN). The arm is a joint PD with gravity compensation, about 1.0 N/mm stiff
+# vertically at the hand at the front edge and 0.5 N/mm at full reach, and the compass weighs 0.26 N. Pressing harder
+# drags harder: on the GPU, 2.5 mm (1.0-2.9 N on the lead) turned the compass 6.5 degrees in the pinch, and 1.0 mm
+# deepening to 1.8 mm (0.85-1.97 N) left the lead lagging so far that the line ended 4.7 mm short of the back edge.
+# So the press stays at 1 mm, about 0.9-1.4 N (the stiffness model scaled to those readings).
 PRESS_DOWN = 0.0010      # lead commanded this far into the shelf's top face
 PRESS_WALL = 0.004       # point commanded this far into the wall
 STROKE_STEP = 0.004      # waypoint spacing along the stroke
 STROKE_STEP_S = 0.40     # seconds per step (10 mm/s)
-# The lead lands and ends about 2.3-3.8 mm behind the hand on the GPU (the arm's steady error, larger at full reach,
-# and the compass leaning under a degree in the pinch), so the hand runs from 4 mm to 3 mm past the back edge: the
-# lead lands 0.2-1.7 mm in from the front edge (inside the 2 mm the line may leave unmarked there) and ends at or
-# near the back edge.
-STROKE_X0, STROKE_X1 = 0.004, SHELF_D + 0.003
+# The lead lands 0.2-1.7 mm in from the front edge (inside the 2 mm the line may leave unmarked there). Pressing, it
+# trails the hand by about 6 mm at the back edge on the GPU (the arm's steady error, larger at full reach, and the
+# compass leaning under 2 degrees in the pinch), and it springs forward only when lifted, too lightly to mark. So the
+# hand runs to 7 mm past the back edge (layout 2 on the GPU: the lead stopped 2.7 mm short with the hand 3 mm past);
+# on layout 3 only 3 mm past, which already puts the hand 0.357 m out, at the arm's 0.36 m reach.
+STROKE_X0 = 0.004
+STROKE_PAST = (0.007, 0.007, 0.007, 0.003)   # how far past the back edge the hand runs, by layout
+
+
+def stroke_x1(k):
+    return SHELF_D + STROKE_PAST[k]
 LIFT_OFF_FORK = 0.010
 OUT_OF_FORK = 0.035
 AISLE_X = 0.108          # between the stand (x <= 0.105) and the shelf's front edge (x >= 0.120)
@@ -789,16 +976,16 @@ def demo():
     add("left", 1.0, lambda k: tcp_on_wall(k, STROKE_X0, -0.002), "pencil down", keep=True)
     add("left", 0.8, lambda k: tcp_on_wall(k, STROKE_X0, PRESS_WALL), "point onto the wall", keep=True)
     add("left", 0.4, lambda k: tcp_on_wall(k, STROKE_X0, PRESS_WALL), "settle", keep=True)
-    n = int(round((STROKE_X1 - STROKE_X0) / STROKE_STEP))
+    n = int(round((SHELF_D + max(STROKE_PAST) - STROKE_X0) / STROKE_STEP))
     for i in range(1, n + 1):
-        add("left", STROKE_STEP_S, lambda k, s=STROKE_X0 + i * (STROKE_X1 - STROKE_X0) / n: tcp_on_wall(k, s, PRESS_WALL),
+        add("left", STROKE_STEP_S, lambda k, f=i / n: tcp_on_wall(k, STROKE_X0 + f * (stroke_x1(k) - STROKE_X0), PRESS_WALL),
             "scribe")
-    add("left", 0.6, lambda k: tcp_on_wall(k, STROKE_X1, PRESS_WALL), "dwell")
+    add("left", 0.6, lambda k: tcp_on_wall(k, stroke_x1(k), PRESS_WALL), "dwell")
     up = PRESS_DOWN + 0.003                   # lead 3 mm clear of the board before the point leaves the wall
-    add("left", 0.5, lambda k: tcp_on_wall(k, STROKE_X1, PRESS_WALL) + [0, 0, up], "pencil up")
-    add("left", 0.6, lambda k: tcp_on_wall(k, STROKE_X1 - 0.010, -0.003) + [0, 0, up], "point off the wall")
+    add("left", 0.5, lambda k: tcp_on_wall(k, stroke_x1(k), PRESS_WALL) + [0, 0, up], "pencil up")
+    add("left", 0.6, lambda k: tcp_on_wall(k, stroke_x1(k) - 0.010, -0.003) + [0, 0, up], "point off the wall")
     t_off = clock["left"]
-    add("left", 0.8, lambda k: tcp_on_wall(k, STROKE_X1 - 0.010, -0.003) + [0, 0, Z_OVER_SHELF - Z_DRAW], "lift")
+    add("left", 0.8, lambda k: tcp_on_wall(k, stroke_x1(k) - 0.010, -0.003) + [0, 0, Z_OVER_SHELF - Z_DRAW], "lift")
     add("left", 2.2, beside, "carry back")
     add("left", 0.8, hung(over_out), "in front of the fork")
     add("left", 0.8, hung(out + [0, 0, 0.006 - LIFT_OFF_FORK]), "down to the fork")
@@ -825,3 +1012,4 @@ def demo():
 import scribe_runtime  # noqa: E402
 
 scribe_runtime.install(sys.modules.get(__name__) or globals())
+_install_force_reader()

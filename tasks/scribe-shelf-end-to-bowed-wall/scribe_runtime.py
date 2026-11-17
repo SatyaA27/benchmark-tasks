@@ -4,11 +4,14 @@
    every object back, the shelf's root pose is written for that layout (the same calls the simulator uses for its
    seeded object jitter); the simulator's settle steps then run as usual. No fixed body moves.
 2. Pencil line: a pre-authored grid of invisible graphite dots on the shelf's top face near its end. Each control
-   step, dots within one dot radius of the lead's path are made visible while the lead touches the face. The
+   step, dots within one dot radius of the lead's path are made visible while the pencil marks (the task module's
+   marking(): the lead on the face and pressing with at least F_MIN). The
    graphics only change visibility; the scorer never reads them (it keeps its own record of the lead's path).
 3. The wall's routed face gets a matte white paint look (the mesh kit's default look is metallic).
 4. The compass's knurled top grip (its collider 0) gets its own friction, GRIP_FRICTION; the kit gives a part one
    material for all its colliders, and the rest of the compass keeps the brass-plated steel values.
+5. The lead's force on the board: the task module's _track() adds each physics step's lead contact force to _LEAD
+   (one record for every load of the task module); lead_force() averages it per control step.
 """
 import functools
 import importlib.abc
@@ -22,11 +25,22 @@ _CFG = None
 _ROOTS = {}
 _TOKEN = object()
 _INK = {"token": None, "prev": None, "prev_step": None}
+_LEAD = {"armed": False, "mgr": None, "view": None, "env": None, "paths": {}, "err": None, "sum": 0.0, "n": 0,
+         "token": None, "value": 0.0}
 
 DOT_PITCH = 0.0005
 DOT_R = 0.00035
 STRIP = (0.0005, 0.0170)     # ink strip: this far from the shelf's end (metres)
 INK_LIFT = 0.00012           # dots float this far above the top face
+
+
+def lead_force(token):
+    """The lead's mean normal force on the board (N) over the physics steps since the previous control step; the
+    first call for a control step (token) closes that window, later calls for the same step return the same value."""
+    if token != _LEAD["token"]:
+        _LEAD["value"] = _LEAD["sum"] / _LEAD["n"] if _LEAD["n"] else 0.0
+        _LEAD.update(token=token, sum=0.0, n=0)
+    return _LEAD["value"]
 
 
 def dot_grid(cfg):
@@ -59,6 +73,7 @@ def _material(stage, path, color, roughness=0.9):
 def spawn_ink(stage, root):
     from pxr import Gf, UsdGeom, UsdShade, Vt
     start = time.perf_counter()
+    _LEAD["paths"][_CFG["SHELF"].name] = root
     parent = root + "/Ink"
     UsdGeom.Xform.Define(stage, parent)
     mat = _material(stage, parent + "/Material", (0.16, 0.16, 0.18))
@@ -90,6 +105,9 @@ def matte_wall(stage, root):
 
 def knurled_grip(stage, root):
     import isaaclab.sim as sim_utils
+    from pxr import PhysxSchema
+    PhysxSchema.PhysxContactReportAPI.Apply(stage.GetPrimAtPath(root)).CreateThresholdAttr().Set(0.0)  # item 5
+    _LEAD["paths"][_CFG["COMPASS"].name] = root
     static, dynamic = _CFG["GRIP_FRICTION"]
     path = root + "/grip_material"
     cfg = sim_utils.RigidBodyMaterialCfg(static_friction=static, dynamic_friction=dynamic)
@@ -235,8 +253,10 @@ def install(module):
         seed = kwargs.get("seed")
         _CFG["ACTIVE_LAYOUT"] = 0 if seed is None else int(seed) % len(_CFG["LAYOUT_FRONT_X"])
         reset_ink()
+        _LEAD["armed"] = False
         result = inner_reset(self, *args, **kwargs)
         reset_ink()
+        _LEAD.update(env=self._env, sum=0.0, n=0, token=None, value=0.0, armed=True)
         _CFG["reset_path"]()
         return result
 
