@@ -15,7 +15,8 @@ Wednesday: the Wednesday label goes on the tub's lid. Metres; x forward from the
 Each front label is simulated as four quarters (12.7 x 51 mm) joined by stiff hinges, so it peels, carries and lies
 down as a stiff paper label does. A label's adhesive is simulated by a rule applied at every control step: a quarter
 still on the liner is held to it until it has been drawn past the bar's edge or peeled 1.5 mm up; a quarter that
-lies flat on the lid and is pressed by a fingertip is stuck, and pulled onto the lid, until it is peeled 2 mm up.
+lies flat on the lid sticks only while a fingertip really touches its top face and presses it with at least 1 N
+(PhysX's contact report: press_force(), next_state()); it is then pulled onto the lid until it is peeled 2 mm up.
 """
 import math
 import pathlib
@@ -123,8 +124,14 @@ LID_HOLD = 1.0  # N pulling each stuck quarter onto the lid (and the lid back up
 LID_ON_LO, LID_ON_HI = -0.0008, 0.0012  # a quarter lies on the lid: every corner of its underside this close
 LID_ON_DEG = 6.0  # ... and within this of the lid's plane
 LID_OFF = 0.002  # a stuck quarter comes unstuck once a corner is peeled this far up (or off the panel)
-PRESS_ABOVE, PRESS_BELOW = 0.0015, 0.0025  # a fingertip on a quarter's top face: this far above to this far into it
-PRESS_EDGE = 0.001
+# A quarter sticks only under a real fingertip press: PhysX must report a fingertip contact on its top face whose
+# surfaces touch (apart by no more than CONTACT_TOL; there is no stand-off) and the contacts' force normal to the
+# face, averaged over the control step, must reach PRESS_MIN. PRESS_MIN: the probe-tack test for pressure-sensitive
+# adhesives (ASTM D2979) bonds the adhesive under 100 gf/cm2 (9.8 kPa) of contact pressure; over a fingertip's contact
+# patch of about 1 cm2 (estimate) that is 1 N.
+CONTACT_TOL = 0.00005  # 0.05 mm
+PRESS_MIN = 1.0  # N
+PRESS_NORMAL = 0.5  # a contact presses the face if its normal is within 60 degrees of the face's
 PULLED = 0.010  # another day's label counts as taken once moved this far
 RELEASE_CLEAR = 0.030  # hands this far from the label (TCP to its box) count as let go
 
@@ -183,19 +190,38 @@ def peeled_off_lid(geom_i, tub_origin, tub_R):
     return bool(np.any(np.abs(local[:, :2]) > PANEL_HALF) or (local[:, 2] - LID_TOP).max() > LID_OFF)
 
 
-def pressed_by(geom_i, tips):
-    """A fingertip point on the quarter's top face (inside its outline, touching or pressing into it)."""
-    if tips is None or len(tips) == 0:
-        return False
+def press_force(geom_i, forces, points, normals, gaps):
+    """One physics step: the fingertips' pressing force on a quarter (N) from PhysX's fingertip-quarter contacts
+    (normal force, point and normal in the scene frame, gap between the two surfaces; negative = pressed in). A
+    contact counts only if the surfaces touch (gap <= CONTACT_TOL) on the quarter's top side; its force counts by
+    its part along the face's normal (a push on the label's edge presses nothing)."""
+    f = np.abs(np.asarray(forces, float).reshape(-1))
+    if not len(f):
+        return 0.0
     _c, R, _corners, top = geom_i
-    rel = (np.asarray(tips, float) - top) @ R
-    inside = (np.abs(rel[:, 0]) <= SEG_L / 2 + PRESS_EDGE) & (np.abs(rel[:, 1]) <= LABEL_W / 2 + PRESS_EDGE)
-    touching = (rel[:, 2] <= PRESS_ABOVE) & (rel[:, 2] >= -PRESS_BELOW)
-    return bool(np.any(inside & touching))
+    rel = (np.asarray(points, float).reshape(-1, 3) - top) @ R
+    along = np.abs(np.asarray(normals, float).reshape(-1, 3) @ R[:, 2])
+    ok = (np.asarray(gaps, float).reshape(-1) <= CONTACT_TOL) & (rel[:, 2] >= -LABEL_T / 2) & (along >= PRESS_NORMAL)
+    return float((f * along)[ok].sum())
+
+
+def next_state(state, day, geom_i, tub_origin, tub_R, press):
+    """The adhesive rule for one quarter, one control step. press: the fingertips' pressing force on its top face
+    (N), the mean of press_force() over the control step's physics steps. No contact, or less than PRESS_MIN: it
+    does not stick, however close a fingertip is."""
+    if state == LINER and not on_liner_now(day, geom_i):
+        state = FREE
+    if state == FREE and lies_on_lid(geom_i, tub_origin, tub_R) and press >= PRESS_MIN:
+        return STUCK
+    if state == STUCK and peeled_off_lid(geom_i, tub_origin, tub_R):
+        return FREE
+    return state
 
 
 # ---------------------------------------------------------------- run state (set by the hooks at the end of the file)
 _RUN = {"env": None, "t": None, "step": 0, "episode": 0}
+_PRESS = {"armed": False, "mgr": None, "view": None, "env": None, "paths": {}, "err": None, "n": 0,
+          "sum": np.zeros((7, 4)), "value": np.zeros((7, 4))}  # pressing force per (day, quarter): see _track
 _ADH = {}  # day -> [state per quarter]
 _EVER = {}  # latched outcomes this episode: (day, "pulled"/"folded"), "tub_tipped"
 
@@ -395,6 +421,10 @@ def _root_on_base():
         art.CreateSolverVelocityIterationCountAttr().Set(4)
         if mech.name.startswith("label_"):
             _author_prints(prim.GetStage(), f"{prim_path}/q1", day_prints(mech.name))
+            for seg in SEG_NAMES:  # PhysX reports every contact on a quarter (read by _track)
+                body = prim.GetStage().GetPrimAtPath(f"{prim_path}/{seg}")
+                PhysxSchema.PhysxContactReportAPI.Apply(body).CreateThresholdAttr().Set(0.0)
+            _PRESS["paths"][mech.name] = str(prim.GetPath())
         return prim
 
     spawn._daydot_root_on_base = True
@@ -559,23 +589,6 @@ def _ids(asset, key, names, finder):
     return _IDS[k]
 
 
-def fingertips(base, origin):
-    """Points just inside both fingers' tips (both arms), as the fingers stand now."""
-    pts = []
-    for side in ("left", "right"):
-        robot = base.scene[f"{side}_robot"]
-        gi = _ids(robot, side, ("gripper",), robot.find_bodies)[0]
-        ji = _ids(robot, side, ("joint7",), robot.find_joints)[0]
-        pose = _np(robot.data.body_link_pose_w)[0, gi]
-        R, p = _rot(pose[3:7]), pose[:3] - origin
-        half = abs(float(_np(robot.data.joint_pos)[0, ji]))
-        for sx in (-1.0, 1.0):
-            for dy in (-0.006, 0.0, 0.006):
-                for dz in (0.1465, 0.143):
-                    pts.append(p + R @ np.array([sx * (half + 0.0017), dy, dz]))
-    return np.array(pts)
-
-
 def _set_wrench(asset, body_ids, forces, torques=None):
     import torch
 
@@ -616,7 +629,7 @@ def adhesion_step(env):
     """Apply the adhesive rule once per control step: update every quarter's state and its holding force."""
     base = env.unwrapped
     origin = _np(base.scene.env_origins)[0]
-    tips = fingertips(base, origin)
+    press = press_now()
     tub = base.scene["tub"]
     tp = _np(tub.data.root_link_pose_w)[0]
     to, tR = tp[:3] - origin, _rot(tp[3:7])
@@ -631,15 +644,10 @@ def adhesion_step(env):
         states = _ADH[day]
         forces = np.zeros((NSEG, 3))
         for i, g in enumerate(geom):
-            if states[i] == LINER and not on_liner_now(day, g):
-                states[i] = FREE
-                _event(day, i, "off the liner")
-            if states[i] == FREE and lies_on_lid(g, to, tR) and pressed_by(g, tips):
-                states[i] = STUCK
-                _event(day, i, "pressed onto the lid")
-            elif states[i] == STUCK and peeled_off_lid(g, to, tR):
-                states[i] = FREE
-                _event(day, i, "peeled off the lid")
+            was, f = states[i], float(press[DAYS.index(day), i])
+            states[i] = next_state(was, day, g, to, tR, f)
+            if states[i] != was:
+                _event(day, i, f"{was} -> {states[i]} (fingertip press {f:.2f} N)")
             if states[i] == LINER:
                 forces[i] = (0.0, 0.0, -LINER_HOLD)
             elif states[i] == STUCK:
@@ -663,6 +671,155 @@ def adhesion_step(env):
 
 def _event(day, i, what):
     print(f"DAYDOT_EVENT t={_RUN['t']:.2f} {day} quarter {i}: {what}", flush=True)
+
+
+# ---------------------------------------------------------------- the fingertips' pressing force (simulator side)
+# After every physics step (240 Hz) PhysX's contact report between the labels' quarters and the four fingertip bodies
+# (a rigid contact view) is read and press_force() of each touched quarter (at its pose that step) is added to
+# _PRESS; press_now() gives each quarter's mean over the control step. If the report cannot be read the force stays
+# 0, nothing sticks and a DAYDOT_PRESS error line is printed.
+import importlib.abc  # noqa: E402
+import importlib.util  # noqa: E402
+
+_PHYSX_MGR = "isaaclab_physx.physics.physx_manager"
+TIP_LINKS = ("tip_left", "tip_right")
+
+
+def press_now():
+    """Each quarter's mean pressing force (N) over the physics steps since the last control step: (7 days, 4)."""
+    _PRESS["value"] = _PRESS["sum"] / _PRESS["n"] if _PRESS["n"] else np.zeros((len(DAYS), NSEG))
+    _PRESS["sum"], _PRESS["n"] = np.zeros((len(DAYS), NSEG)), 0
+    return _PRESS["value"]
+
+
+def _arr(x):
+    """A PhysX view's output (torch tensor, warp array or numpy) as a numpy array."""
+    x = getattr(x, "torch", x)
+    if hasattr(x, "detach"):
+        return x.detach().cpu().numpy()
+    try:
+        import warp as wp
+        if isinstance(x, wp.array):
+            return wp.to_torch(x).detach().cpu().numpy()
+    except Exception:  # noqa: BLE001
+        pass
+    return np.asarray(x.numpy() if hasattr(x, "numpy") and not isinstance(x, np.ndarray) else x)
+
+
+def _contact_view(mgr, base):
+    sv = mgr.get_physics_sim_view()
+    if sv is None:
+        raise RuntimeError("no physics simulation view yet")
+    paths = dict(_PRESS["paths"])
+    tips = []
+    for arm in ("left_robot", "right_robot"):  # the two fingertip bodies of each arm
+        links = base.scene[arm].root_physx_view.link_paths
+        links = links[0] if links and isinstance(links[0], (list, tuple)) else links
+        tips += [p for p in links if p.rsplit("/", 1)[-1] in TIP_LINKS]
+    sensors = [f"{paths[label_name(day)]}/{seg}" for day in DAYS for seg in SEG_NAMES]
+    if len(tips) != 4:
+        raise RuntimeError(f"expected 4 fingertip bodies, found {tips}")
+    _PRESS["view"] = sv.create_rigid_contact_view(sensors, filter_patterns=[tips] * len(sensors),
+                                                  max_contact_data_count=512)
+    print(f"DAYDOT_PRESS contact report: {len(sensors)} quarters against {tips}", flush=True)
+
+
+def _track(dt):
+    """After one physics step: add each quarter's fingertip pressing force to this control step's sum."""
+    if not _PRESS["armed"] or _PRESS["env"] is None:
+        return
+    try:
+        base = _PRESS["env"].unwrapped
+        if _PRESS["view"] is None:
+            _contact_view(_PRESS["mgr"], base)
+        forces, points, normals, gaps, counts, starts = _PRESS["view"].get_contact_data(dt=dt)
+        counts = _arr(counts).reshape(len(DAYS) * NSEG, -1).astype(int)
+        starts = _arr(starts).reshape(len(DAYS) * NSEG, -1).astype(int)
+        step = np.zeros((len(DAYS), NSEG))
+        if counts.any():
+            f, p = _arr(forces).reshape(-1).astype(float), _arr(points).reshape(-1, 3).astype(float)
+            n, g = _arr(normals).reshape(-1, 3).astype(float), _arr(gaps).reshape(-1).astype(float)
+            origin = _np(base.scene.env_origins)[0]
+            for k in np.flatnonzero(counts.sum(axis=1)):
+                d, i = divmod(int(k), NSEG)
+                art = base.scene[label_name(DAYS[d])]
+                ids = _ids(art, DAYS[d], SEG_NAMES, art.find_bodies)
+                poses = _np(art.data.body_link_pose_w)[0]
+                geom = seg_geometry([(poses[j, :3] - origin, _rot(poses[j, 3:7])) for j in ids])[i]
+                sel = np.concatenate([np.arange(s, s + c) for s, c in zip(starts[k], counts[k]) if c])
+                step[d, i] = press_force(geom, f[sel], p[sel] - origin, n[sel], g[sel])
+                if DIAG and DAYS[d] == TODAY:
+                    _PRESS["last"] = (i, round(float(f[sel].sum()), 2), round(float(g[sel].min()) * 1000, 3),
+                                      round(float(g[sel].max()) * 1000, 3))  # quarter, N, gaps (mm)
+    except Exception as e:  # noqa: BLE001 - reported once; the force stays 0, so nothing sticks
+        if _PRESS["err"] is None:
+            _PRESS["err"] = repr(e)
+            print(f"DAYDOT_PRESS error: {e!r}", flush=True)
+        return
+    _PRESS["sum"] = _PRESS["sum"] + step
+    _PRESS["n"] += 1
+
+
+def _patch_manager(mod):
+    """Isaac Lab's PhysxManager: contact processing on, and _track after every physics step."""
+    mgr = mod.PhysxManager
+    if getattr(mgr.step, "_daydot_hooked", False):
+        return
+    base_cfg, base_step = mgr._configure_physics.__func__, mgr.step.__func__
+
+    def _configure_physics(cls):
+        base_cfg(cls)
+        try:
+            import carb
+            carb.settings.get_settings().set_bool("/physics/disableContactProcessing", False)
+        except Exception:  # noqa: BLE001
+            pass
+
+    def step(cls):
+        base_step(cls)
+        _PRESS["mgr"] = cls
+        try:
+            dt = float(cls.get_physics_dt())
+        except Exception:  # noqa: BLE001
+            dt = 1.0 / 240.0
+        _track(dt)
+
+    step._daydot_hooked = True
+    mgr._configure_physics, mgr.step = classmethod(_configure_physics), classmethod(step)
+
+
+class _MgrFinder(importlib.abc.MetaPathFinder):
+    """Patches PhysxManager when it is first imported (it needs the simulator app, so not at task import)."""
+    _daydot_mgr_finder = True
+
+    def find_spec(self, fullname, path, target=None):
+        if fullname != _PHYSX_MGR:
+            return None
+        sys.meta_path.remove(self)
+        try:
+            spec = importlib.util.find_spec(fullname)
+        finally:
+            sys.meta_path.insert(0, self)
+        if spec is None or spec.loader is None:
+            return None
+        orig_exec = spec.loader.exec_module
+
+        def exec_module(module):
+            orig_exec(module)
+            _patch_manager(module)
+
+        spec.loader.exec_module = exec_module
+        return spec
+
+
+def _install_press_reader():
+    if _PHYSX_MGR in sys.modules:
+        _patch_manager(sys.modules[_PHYSX_MGR])
+    elif not any(getattr(f, "_daydot_mgr_finder", False) for f in sys.meta_path):
+        sys.meta_path.insert(0, _MgrFinder())
+
+
+_install_press_reader()
 
 
 def _install_run_hooks():
@@ -691,10 +848,13 @@ def _install_run_hooks():
             _clear_wrenches(self._env)
             _flatten_labels(self._env)
         _new_episode_state()
+        _PRESS["armed"] = False
         result = original_reset(self, *args, **kwargs)
         _clear_wrenches(self._env)
         _flatten_labels(self._env)
         _new_episode_state()
+        _PRESS.update(env=self._env, sum=np.zeros((len(DAYS), NSEG)), n=0, value=np.zeros((len(DAYS), NSEG)),
+                      armed=True)
         _RUN["episode"] += 1
         _RUN["t"], _RUN["env"] = 0.0, self._env
         return result
@@ -725,7 +885,8 @@ def _diag(objects, t):
     print(f"DAYDOT t={_RUN['t']:.2f} wed=({o[0] * 1000:.1f},{o[1] * 1000:.1f},{(o[2] - TOP) * 1000:.1f}) "
           f"hinges=({q}) st={''.join(s[0] for s in _ADH[TODAY])} on_lid={t['on_lid']} stuck={t['stuck']} "
           f"rel={int(t['released'])} others={t['others_taken']} tub=({(to[0] - TUB_XY[0]) * 1000:.1f},"
-          f"{(to[1] - TUB_XY[1]) * 1000:.1f};{tub.tilt_deg():.1f}) {hs} F={_hand_forces()}", flush=True)
+          f"{(to[1] - TUB_XY[1]) * 1000:.1f};{tub.tilt_deg():.1f}) {hs} F={_hand_forces()} "
+          f"P=({','.join(f'{v:.2f}' for v in _PRESS['value'][DAYS.index(TODAY)])}) last={_PRESS.get('last')}", flush=True)
 
 
 def _hand_forces():

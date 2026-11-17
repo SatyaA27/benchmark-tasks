@@ -4,29 +4,28 @@ Put today's label on the lid of the food tub. Today is Wednesday.
 
 ## Revision: review feedback and what changed
 
-Review: "The simulated labels and tabs have colours but no readable weekdays, and the lettuce's type, temperature and
-handling are unspecified. ... Please add readable weekday markings to the simulated labels or dispenser so the model
-can identify Wednesday from its observations, as it can with the specified real day labels. Also specify the lettuce
-type, temperature and handling for repeatable trials, or replace the sealed contents with a repeatable inert ballast
-of the same mass." Changes:
+Review: "The simulation marks a quarter stuck when a fingertip is up to 1.5 mm above it, without requiring contact or
+pressure. ... Require actual fingertip contact and a realistic pressing force before a quarter adheres, and rerun the
+full-score demo and scoring checks with the revised rule." Changes:
 
-- Day names (see "Day names in the camera images"): every label in the scene (the first on each roll and the next
-  behind it) carries its day's full name in white capitals 6 mm tall on its coloured header, as the real DissolveMark
-  labels do, and a printed paper strip under each bay names its day in black capitals 36 mm tall (MON ... SUN), large
-  enough to read in the wrist camera's frames. Both are visual only (no collider, no mass).
-- The tub holds an inert ballast of the same mass instead of food: 350 g of plastic stuffing beads sealed in a quart
-  freezer bag laid flat on its floor (setup); it is drawn as clear plastic. The instruction says "the food tub".
-- Thursday and Friday now have DayMark's colours (brown and green; they were swapped).
-- Flag (adhesive on the pads): for real trials wrap each gripper pad in one layer of low-tack painter's masking tape,
-  replaced when it turns tacky (the lower pad touches the tab's sticky underside); DissolveMark adhesive also washes
-  off in water.
+- The 1.5 mm stand-off is gone. A quarter lying flat on the lid sticks only when PhysX reports a fingertip contact
+  on its top face whose surfaces touch (no more than 0.05 mm apart, a numerical tolerance) and the contact force
+  normal to the face, averaged over the control step, is at least 1 N (`press_force()`, `next_state()`, just above
+  `score()`; the contact report is read after every physics step by `_track()`).
+- 1 N: the standard probe-tack test for pressure-sensitive adhesives (ASTM D2979) bonds the adhesive under 100 gf/cm2
+  (9.8 kPa) of contact pressure; over a fingertip's contact patch of about 1 cm2 that is about 1 N. The pressure is
+  the test's; the 1 cm2 patch, and so the 1 N, is our estimate (we found no published minimum finger force for labels).
+- New offline tests (`test_adhesion_rule.py`, 30 cases): a fingertip 0.1 to 1.5 mm above a quarter never sticks it;
+  a touch under 1 N never sticks it and 1 N or more does; a finger under the tab or a push on the label's edge
+  presses nothing. Putting the stand-off back, or dropping or halving the force, fails them.
+- The demonstration's motion is unchanged; it, a hovering wrong way, the Dream-1 run and the media were redone with
+  the revised rule (see "Checked in simulation").
 
-Physics, colliders, masses, the adhesive rule, the scorer and the demo's motion are unchanged; the demo, the wrong
-way, the Dream-1 run and the media were redone for this version.
+The earlier revision (day names, inert ballast, day colours, masking tape on the pads) was accepted as addressed.
 
 ## Scoring
 
-Judged at the end of the run with a ruler, a photo and a feeler (a business card). The label is read as four quarters, 12.7 wide bands across its length. Stuck quarter: it lies flat on the lid's top (no corner more than 2 above it) and was pressed there with a fingertip; in a real trial, the card pushed against its edges does not slip under it and nothing lifts. Let go: both grippers' centre points at least 30 from the label. Scores: 1.0 for the Wednesday label off its roll, wholly on the lid's flat top (inside its 186 x 186 panel), let go, all four quarters stuck, held for 1 s. 0.5 + 0.125 per stuck quarter (0.5 to 0.875) for the same with fewer quarters stuck. 0.25 for the Wednesday label off its roll but not wholly on the lid's top (over its edge, on its side, on the counter, on the dispenser) or still held (a label stuck to the gripper counts as held). 0 for: any part of the Wednesday label still on its backing; the label folded onto its own adhesive (any fold past 150 degrees); any other day's label pulled more than 10 out of place or peeled up 1.5 from its backing at any time, even if put back; the tub tipped more than 20 degrees at any time or more than 30 from its mark at the end; (real trials) the dispenser moved more than 10 or a roll lifted out. Possible scores: 0, 0.25, 0.5, 0.625, 0.75, 0.875, 1.0.
+Judged at the end of the run with a ruler, a photo and a feeler (a business card). The label is read as four quarters, 12.7 wide bands across its length. Stuck quarter: it lies flat on the lid's top (no corner more than 2 above it) and was pressed there with a fingertip (in simulation: a fingertip touching its top face, no stand-off, and pressing with at least 1 N; hovering over it or brushing it does not count); in a real trial, the card pushed against its edges does not slip under it and nothing lifts. Let go: both grippers' centre points at least 30 from the label. Scores: 1.0 for the Wednesday label off its roll, wholly on the lid's flat top (inside its 186 x 186 panel), let go, all four quarters stuck, held for 1 s. 0.5 + 0.125 per stuck quarter (0.5 to 0.875) for the same with fewer quarters stuck. 0.25 for the Wednesday label off its roll but not wholly on the lid's top (over its edge, on its side, on the counter, on the dispenser) or still held (a label stuck to the gripper counts as held). 0 for: any part of the Wednesday label still on its backing; the label folded onto its own adhesive (any fold past 150 degrees); any other day's label pulled more than 10 out of place or peeled up 1.5 from its backing at any time, even if put back; the tub tipped more than 20 degrees at any time or more than 30 from its mark at the end; (real trials) the dispenser moved more than 10 or a roll lifted out. Possible scores: 0, 0.25, 0.5, 0.625, 0.75, 0.875, 1.0.
 
 ## Run and score
 
@@ -45,8 +44,8 @@ the end of the run. Each trial allows 1,800 control steps (90 seconds at 20 Hz).
 labels never move. The scripted demonstration takes 39.0 s, the last 3 s holding still.
 `success()` requires a score of 1.0, held for 1 s.
 
-`pytest` in this folder runs the generated offline checks (no GPU): the scorer on the start, the goal and the named
-partial and shortcut layouts.
+`pytest` in this folder runs the offline checks (no GPU): the scorer on the start, the goal and the named partial
+and shortcut layouts, and the press rule (`test_adhesion_rule.py`).
 
 ## How `score()` reads each condition
 
@@ -58,7 +57,8 @@ World frame: metres, x forward, y left, z up; the tub's frame for the lid.
 - **Off its roll:** no quarter is on the backing any longer (see the adhesive rule below).
 - **Wholly on the lid's top:** every corner of every quarter's underside lies inside the lid's 186 mm square top
   panel and no more than 2 mm above it (106 mm above the counter).
-- **Stuck:** a quarter whose state is stuck at the end (pressed and not peeled up again).
+- **Stuck:** a quarter whose state is stuck at the end (pressed as the adhesive rule requires
+  and not peeled up again).
 - **Let go:** both grippers' centre points at least 30 mm outside the label's bounding box.
 - **Folded:** any of the label's three hinges past 150 degrees at any time.
 - **Another label taken:** another day's label moved more than 10 mm at any time, or one of its quarters peeled
@@ -77,10 +77,13 @@ A label's adhesive cannot be simulated by contact, so the task file applies it a
   been drawn to within 2 mm of the bar's edge (where the backing turns down and the label goes straight on) or a
   corner of it has been peeled 1.5 mm up.
 - **On the lid:** a quarter off the backing that lies flat on the lid (every underside corner within
-  -0.8..1.2 mm of the lid's top and within 6 degrees of its plane) while a fingertip touches its top face
-  (a point just inside either finger's tip within 1.5 mm above to 2.5 mm into it) becomes stuck: it is
-  pulled onto the lid by 1.0 N, and the lid is pulled back by the same force, until a corner is peeled
-  2 mm up. Stuck quarters stay stuck when the hand goes.
+  -0.8..1.2 mm of the lid's top and within 6 degrees of its plane) becomes stuck only under a real fingertip press:
+  PhysX's contact report between the quarter and the four fingertip bodies, read after every physics step (240 Hz),
+  must show a contact on the quarter's top side whose surfaces are no more than 0.05 mm apart, and the contacts'
+  force along the face's normal, averaged over the control step, must be at least 1.0 N. A fingertip above the
+  quarter, however close, or one touching it more lightly, sticks nothing. A stuck quarter is pulled onto the lid by
+  1.0 N, and the lid is pulled back by the same force, until a corner is peeled 2 mm up. Stuck quarters stay stuck
+  when the hand goes.
 - The adhesive never sticks to the gripper pads, the counter or the tub's sides (a label laid there is simply not
   stuck).
 
@@ -147,8 +150,8 @@ it is pressed (scripted demos may read simulator state); it never moves an objec
 
 In the YAM Arena simulation (PhysX at 240 Hz, 20 Hz control) the scripted demonstration scores 1.0. Drawing the tab
 straight out takes quarters 1, 2 and 3 off the backing at 7.6, 8.0 and 8.4 s (score 0.25 from 8.4 s); the label
-lies flat on the lid by 18.8 s and is let go (0.5 from 19.3 s); the four dabs stick its quarters at 23.9, 26.5, 29.2
-and 31.9 s; 1.0 from 33.3 s, success at 34.2 s. The hand loads read from the arms' joint errors stay small:
+lies flat on the lid by 18.8 s and is let go (0.5 from 19.3 s); the four dabs stick its quarters at 23.90, 26.55,
+29.25 and 31.95 s; 1.0 from 33.3 s, success at 34.2 s. The hand loads read from the arms' joint errors stay small:
 under 2 N drawing the label off its backing, under 4 N pressing it down. With the tub started up to 10 mm off its mark
 (`-E object_jitter=0.01`, three seeded trials) the demonstration also scored 1.0 each time; it reads where the tub
 stands.
@@ -157,28 +160,36 @@ A wrong way, run in the simulation: the same demonstration aimed one bay to the 
 label comes off its backing and is laid and pressed on the lid; Wednesday's stays on its roll. It scores 0 throughout
 (another day's label taken; today's label still on its backing).
 
-Re-run for this version (day names printed; same physics and motion): the demonstration again scored 1.0, reaching
-0.25, 0.5 and 1.0 at the same control steps as before (168, 385, 665); the wrong way again scored 0; a Dream-1 run of
-1,800 steps scored 0 (its hands went toward the right-hand bays; Wednesday's label stayed on its backing).
+Re-run with the revised rule (same scene and motion): the demonstration scored 1.0, reaching 0.25, 0.5 and 1.0 at
+the same control steps as before (168, 385, 665). Each quarter stuck when the fingertips' contact force on it first
+reached 1 N; while each dab held, the contact report read 2.6 to 3.7 N on the pressed quarter (surfaces touching) and
+0 N on the others. The pinch on the tab (1.7 to 1.9 N while it is carried) sticks nothing: it is not on the lid.
+
+A hovering wrong way, run in the simulation: the same demonstration with every dab stopped 0.8 to 1.0 mm above the
+label (PhysX's nearest gaps 0.7 to 1.3 mm), which the old 1.5 mm stand-off counted as pressed. The contact force
+stayed 0 N, no quarter stuck, and the run ended at 0.5, the existing credit for a label laid wholly on the lid and
+let go, never 1.0: no quarter adheres without contact and force. (The Tuesday wrong way above was run with the
+previous version.) A Dream-1 run of 1,800 steps scored 0 (hands stayed near their start; no label left its backing).
 
 ## Why the shortcuts fail
 
 - Taking any other day's label scores 0 (another label taken), whatever is done with it. 
 - Pinching the tab and lifting it straight up peels the label too (as in life); dragging it sideways off its bay or
   pulling the backing out does not count as anything but a taken or still-stuck label.
-- Laying the label on the lid without pressing it scores 0.5; pressing only part of it 0.625-0.875.
+- Laying the label on the lid without pressing it scores 0.5, and so does hovering the fingertips over it or
+  brushing it with less than 1 N; pressing only part of it 0.625-0.875.
 - Pressing it on the lid's edge or the tub's side leaves it not wholly on the top: 0.25.
 - Pushing or tipping the tub to reach it: 0.
 
 ## Estimates (to be measured on the real items)
 
-The dispenser's inner layout (bay width, bar and deck height 100 mm, roll size), the lid's size, height and mass (80 g), the peel force from the backing (~0.1 N per 25 mm) and the pressed label's hold on the lid (1.0 N per quarter),
+The dispenser's inner layout (bay width, bar and deck height 100 mm, roll size), the lid's size, height and mass (80 g), the peel force from the backing (~0.1 N per 25 mm) the pressed label's hold on the lid (1.0 N per quarter), the 1 cm2 fingertip patch behind the 1 N press,
 the frictions, and the label's bending stiffness. The label is simulated 0.8 mm thick and 5 g (real about 0.1 mm and 0.3 g).
 
 ## Files
 
 `date_a_food_tub_with_a_day_label.py` (scene, adhesive rule, scorer, demo), `yam_parts.py` and `yam_joints.py` (rigid compound parts and passive
-jointed parts), `task.json`, and the generated test `test_date_a_food_tub_with_a_day_label.py`.
+jointed parts), `task.json`, the generated test `test_date_a_food_tub_with_a_day_label.py` and `test_adhesion_rule.py`.
 
 ## Sources
 
@@ -191,3 +202,6 @@ jointed parts), `task.json`, and the generated test `test_date_a_food_tub_with_a
   https://www.amazon.com/Fairfield-PP2B-Poly-Pellets-Weighted-Stuffing/dp/B0077AQ0W8 ; Ziploc Freezer quart bags,
   7 x 7 7/16 in (177 x 188 mm), https://ziploc.com/en-us/products/bags/freezer/medium , about $6.50 for 50,
   https://www.walmart.com/ip/Ziploc-Brand-Freezer-Bags-with-Grip-n-Seal-Technology-Quart-50-Count/256636026
+- Pressing force: the probe-tack test for pressure-sensitive adhesives, ASTM D2979 ("100 gm per square centimeter
+  probe pressure and 1 second dwell time", as quoted in US patent 4,556,464,
+  https://patents.google.com/patent/US4556464A/en ); 100 gf/cm2 = 9.8 kPa.
