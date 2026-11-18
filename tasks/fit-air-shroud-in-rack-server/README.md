@@ -10,10 +10,13 @@ https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/chassis
 
 ## Revision: review feedback and what changed
 
-The latest review said: "Provide a real-trial setup costing no more than a few hundred dollars, such as a sourced used chassis and genuine shroud with affordable stand-ins for the surrounding internals. Specify the parts or fabrication files and preserve the actual tab, slot and internal clearances needed for the installation." This version adds Real-trial setup: Dell's own shroud (T9P2J) and fan cage (CNYJ3) by
-part number, so the tabs and slots are the real ones, stand-ins for the rest built to the collider table, and a fit check
-of the clearances; about $210. No used chassis was found for a few hundred dollars. Setup points to it. Scene, scorer,
-tests, demo and media are unchanged.
+The latest review found the clearances "are still estimates from drawings, and the fit check only verifies the proposed
+fixture", and asked: "Measure the relevant clearances against a real R760 or a reliable dimensioned reference, then
+update the fixture and simulation as needed to preserve them." We had no R760, and the dimensioned Dell references we
+found (R760 Technical Guide, Table 23; manual, "Chassis dimensions") give only the outer size; the inside figures carry
+no dimensions. So the values stay estimates. New: where each comes from and its uncertainty (Estimated values), which
+gap values keep the same moves and failures (Sensitivity), and a check for a lab with an R760. The collider table gives
+fins and modules by count and spacing (same boxes). Scene, scorer, tests, demo and media are unchanged.
 
 ## Run and score
 
@@ -37,7 +40,7 @@ partial and shortcut layouts.
 
 ## The scene
 
-Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. A Dell PowerEdge R760 2U rack server (steel chassis 434 wide without its rack ears, 722.7 from its front panel to its rear wall, 86.8 high; unpowered and unplugged, system cover off) lies flat on the bench between the arms, front panel toward the robot at x -150, centred on y 0. Inside, from the front: the drive cage under its closed steel top (to x -15); the backplane's cable space; the cooling fan cage of six fans (x 69.5 to 144.5; its steel top 82 above the chassis floor, with two slots 22 wide and 6.5 high in its back face just under that top, centred at y +107 and -107); the shroud's bay over the system board: two finned aluminium processor heat sinks (61 wide, 100 long, 71 high, centred at x 228, y +-107) and four rows of eight DDR5 RDIMMs (133 long, 46 high; outer rows y +-148.5 to +-207, inner rows y +-7.5 to +-65.5); then the riser cages from x 345.5 to the rear wall. The server's own standard (non-GPU) air shroud, black moulded plastic, 426 wide, 165 front to back, 79 high, 0.30 kg, rests right way up on the drive cage's closed top, its middle at x -45, y 0, its tabbed front edge toward the robot: a top panel over the heat sinks and inner memory rows, a duct wall each side of each heat sink, an open trough (wing) over each outer memory row whose back wall is 2.5 thick, an end wall at each end, and two front tabs (16 wide, 7 long, 2 thick) on its front edge at y +107 and -107. Seated, its end walls stand on the chassis floor 3 inside the side walls, its front edge 1 behind the fan cage's back face, each tab 6 through its slot. Every collider is listed in README.md. Real trial (about $210; README.md, Real-trial setup): no server is needed. Dell's own R760 standard air shroud (part T9P2J) and fan cage (part CNYJ3) give the real tabs and slots; every other collider is a stand-in of the same outer size and place from the collider table: a 2.9 mm hardboard floor, walls, drive cage and riser block of 12.7 mm MDF, and 3D-printed system board, heat-sink and memory-row blocks. Before trials the shroud is seated by hand to check that both tabs enter the slots and the modelled gaps hold.
+Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the bench top. A Dell PowerEdge R760 2U rack server (steel chassis 434 wide without its rack ears, 722.7 from its front panel to its rear wall, 86.8 high; unpowered and unplugged, system cover off) lies flat on the bench between the arms, front panel toward the robot at x -150, centred on y 0. Inside, from the front: the drive cage under its closed steel top (to x -15); the backplane's cable space; the cooling fan cage of six fans (x 69.5 to 144.5; its steel top 82 above the chassis floor, with two slots 22 wide and 6.5 high in its back face just under that top, centred at y +107 and -107); the shroud's bay over the system board: two finned aluminium processor heat sinks (61 wide, 100 long, 71 high, centred at x 228, y +-107) and four rows of eight DDR5 RDIMMs (133 long, 46 high; outer rows y +-148.5 to +-207, inner rows y +-7.5 to +-65.5); then the riser cages from x 345.5 to the rear wall. The server's own standard (non-GPU) air shroud, black moulded plastic, 426 wide, 165 front to back, 79 high, 0.30 kg, rests right way up on the drive cage's closed top, its middle at x -45, y 0, its tabbed front edge toward the robot: a top panel over the heat sinks and inner memory rows, a duct wall each side of each heat sink, an open trough (wing) over each outer memory row whose back wall is 2.5 thick, an end wall at each end, and two front tabs (16 wide, 7 long, 2 thick) on its front edge at y +107 and -107. Seated, its end walls stand on the chassis floor 3 inside the side walls, its front edge 1 behind the fan cage's back face, each tab 6 through its slot. Every collider is listed below; the real trial (Dell's own shroud and fan cage, stand-ins for the rest, about $210) is under Real-trial setup.
 
 ### Collider table
 
@@ -65,72 +68,10 @@ of mass and inertia from its colliders at uniform density), listed here where it
 | chassis | 69.5 to 132.5 | 1 to 71 | 1 to 81.5 |
 | chassis | 69.5 to 132.5 | 73 to 143 | 1 to 81.5 |
 | chassis | 69.5 to 132.5 | 145 to 215 | 1 to 81.5 |
-| chassis | 178 to 278 | 76.5 to 137.5 | 8 to 16 |
-| chassis | 178 to 278 | 76.5 to 77.3 | 16 to 72 |
-| chassis | 178 to 278 | 80.5 to 81.3 | 16 to 72 |
-| chassis | 178 to 278 | 84.5 to 85.3 | 16 to 72 |
-| chassis | 178 to 278 | 88.5 to 89.3 | 16 to 72 |
-| chassis | 178 to 278 | 92.6 to 93.4 | 16 to 72 |
-| chassis | 178 to 278 | 96.6 to 97.4 | 16 to 72 |
-| chassis | 178 to 278 | 100.6 to 101.4 | 16 to 72 |
-| chassis | 178 to 278 | 104.6 to 105.4 | 16 to 72 |
-| chassis | 178 to 278 | 108.6 to 109.4 | 16 to 72 |
-| chassis | 178 to 278 | 112.6 to 113.4 | 16 to 72 |
-| chassis | 178 to 278 | 116.6 to 117.4 | 16 to 72 |
-| chassis | 178 to 278 | 120.6 to 121.4 | 16 to 72 |
-| chassis | 178 to 278 | 124.7 to 125.5 | 16 to 72 |
-| chassis | 178 to 278 | 128.7 to 129.5 | 16 to 72 |
-| chassis | 178 to 278 | 132.7 to 133.5 | 16 to 72 |
-| chassis | 178 to 278 | 136.7 to 137.5 | 16 to 72 |
-| chassis | 161.5 to 294.5 | 148.5 to 153.5 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 156.1 to 161.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 163.8 to 168.8 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 171.4 to 176.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 179.1 to 184.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 186.7 to 191.7 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 194.4 to 199.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 202 to 207 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 7.5 to 12.5 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 15.1 to 20.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 22.6 to 27.6 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 30.2 to 35.2 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 37.8 to 42.8 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 45.4 to 50.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 52.9 to 57.9 | 8 to 47 |
-| chassis | 161.5 to 294.5 | 60.5 to 65.5 | 8 to 47 |
-| chassis | 178 to 278 | -137.5 to -76.5 | 8 to 16 |
-| chassis | 178 to 278 | -137.5 to -136.7 | 16 to 72 |
-| chassis | 178 to 278 | -133.5 to -132.7 | 16 to 72 |
-| chassis | 178 to 278 | -129.5 to -128.7 | 16 to 72 |
-| chassis | 178 to 278 | -125.5 to -124.7 | 16 to 72 |
-| chassis | 178 to 278 | -121.4 to -120.6 | 16 to 72 |
-| chassis | 178 to 278 | -117.4 to -116.6 | 16 to 72 |
-| chassis | 178 to 278 | -113.4 to -112.6 | 16 to 72 |
-| chassis | 178 to 278 | -109.4 to -108.6 | 16 to 72 |
-| chassis | 178 to 278 | -105.4 to -104.6 | 16 to 72 |
-| chassis | 178 to 278 | -101.4 to -100.6 | 16 to 72 |
-| chassis | 178 to 278 | -97.4 to -96.6 | 16 to 72 |
-| chassis | 178 to 278 | -93.4 to -92.6 | 16 to 72 |
-| chassis | 178 to 278 | -89.3 to -88.5 | 16 to 72 |
-| chassis | 178 to 278 | -85.3 to -84.5 | 16 to 72 |
-| chassis | 178 to 278 | -81.3 to -80.5 | 16 to 72 |
-| chassis | 178 to 278 | -77.3 to -76.5 | 16 to 72 |
-| chassis | 161.5 to 294.5 | -207 to -202 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -199.4 to -194.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -191.7 to -186.7 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -184.1 to -179.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -176.4 to -171.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -168.8 to -163.8 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -161.1 to -156.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -153.5 to -148.5 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -65.5 to -60.5 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -57.9 to -52.9 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -50.4 to -45.4 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -42.8 to -37.8 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -35.2 to -30.2 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -27.6 to -22.6 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -20.1 to -15.1 | 8 to 47 |
-| chassis | 161.5 to 294.5 | -12.5 to -7.5 | 8 to 47 |
+| chassis (2 heat-sink bases) | 178 to 278 | 76.5 to 137.5 and -137.5 to -76.5 | 8 to 16 |
+| chassis (16 fins per heat sink, 0.8 thick, evenly spaced) | 178 to 278 | first 76.5 to 77.3, last 136.7 to 137.5; mirrored at -y | 16 to 72 |
+| chassis (8 modules per row, 5 thick, evenly spaced) | 161.5 to 294.5 | outer rows: first 148.5 to 153.5, last 202 to 207; mirrored at -y | 8 to 47 |
+| chassis (8 modules per row, 5 thick, evenly spaced) | 161.5 to 294.5 | inner rows: first 7.5 to 12.5, last 60.5 to 65.5; mirrored at -y | 8 to 47 |
 | chassis | 345.5 to 571.7 | -215 to 215 | 1 to 81 |
 | shroud (seated) | 145.5 to 310.5 | -144.5 to 144.5 | 78 to 80 |
 | shroud (seated) | 145.5 to 147.5 | -144.5 to 144.5 | 70 to 78 |
@@ -186,28 +127,12 @@ draw. After each read after the grasp it moves both hands so the shroud is where
 about the tabs' line, at most 40 mm and 10 degrees a read), taking out the
 arms' sag under the load and the shroud's droop in the pinches (about 3 degrees, front down).
 
-| Time (s) | Step |
-| --- | --- |
-| 0.0 to 2.5 | hands over the wings' back walls |
-| 2.5 to 4.0 | pads down beside the walls |
-| 4.0 to 5.2 | pinch both walls |
-| 5.2 to 5.6 | settle the pinch |
-| 5.6 to 7.1 | lift off the drive cage |
-| 7.1 to 7.7 | hold lifted |
-| 7.7 to 11.7 | carry back over the bay, tipping the front down |
-| 11.7 to 12.5 | hold over the bay |
-| 12.5 to 15.5 | lower tilted into the bay |
-| 15.5 to 16.1 | hold, tabs 25 mm above the slots |
-| 16.1 to 18.1 | lower tilted, tabs to slot height |
-| 18.1 to 18.7 | hold short of the cage |
-| 18.7 to 20.7 | draw forward: tabs into the slots |
-| 20.7 to 21.9 | swing the back down about the tabs (1) |
-| 21.9 to 23.1 | swing the back down about the tabs (2) |
-| 23.1 to 24.3 | swing the back down about the tabs (3) |
-| 24.3 to 24.9 | hold seated |
-| 24.9 to 25.9 | let go |
-| 25.9 to 27.4 | rise clear |
-| 27.4 to 29.4 | both hands to their parking points |
+Steps (s): hands over the wings' back walls 0 to 2.5; pads down beside the walls to 4.0; pinch both walls to 5.2;
+settle to 5.6; lift off the drive cage to 7.1; hold to 7.7; carry back over the bay, tipping the front down, to 11.7;
+hold to 12.5; lower tilted into the bay to 15.5; hold, tabs 25 mm above the slots, to 16.1; lower tilted, tabs to slot
+height, to 18.1; hold short of the cage to 18.7; draw forward, tabs into the slots, to 20.7; swing the back down about
+the tabs in three steps to 24.3; hold seated to 24.9; let go to 25.9; rise clear to 27.4; hands to their parking
+points to 29.4.
 
 The tilt is 8 degrees front-down; the shroud is lowered 12 mm back from its seated place
 (tab tips 6 mm short of the cage), then drawn
@@ -217,18 +142,80 @@ the floor and it settles under its own weight.
 
 ## Simulation and the real part
 
-Rigid bodies, 240 Hz physics, 20 Hz control. The chassis and all its parts are one fixed body of boxes at true size; the shroud is one rigid body of plates (no flex). Its height, walls, tabs, slots and 0.30 kg, and the heat sinks' and modules' sizes, are estimates from Dell's drawings, to be measured on a real R760. In the simulation it may also be lowered level 12 mm back and slid forward; the real shroud may not allow that. The demo reads the shroud's pose to correct its hands.
+Rigid bodies, 240 Hz physics, 20 Hz control. The chassis and all its parts are one fixed body of boxes; the shroud is one rigid body of plates (no flex). Only the chassis' outer size is Dell's published figure; the shroud's, tabs', slots' and internals' sizes and its 0.30 kg are estimates (Estimated values, below). In the simulation it may also be lowered level 12 mm back and slid forward; the real shroud may not allow that. The demo reads the shroud's pose to correct its hands.
 
-- Sizes from Dell: the chassis' outer size (434 x 722.7 x 86.8 mm, front panel to rear wall). Sizes taken from Dell's
-  drawings of the R760's inside (Figures 15 and 44 of the manual, scaled by the chassis' width): the shroud's 426 x 165
-  outline and where it, the fan cage and the riser cages sit. Estimates, to measure on the T9P2J shroud and the CNYJ3
-  fan cage when the trial is set up: the shroud's height (79), wall thickness (2), mass (0.3 kg), the tabs' size
-  and position (16 x 7 x 2 at y +-107) and the slots' (22 x 6.5), the heat sinks' and memory modules' sizes, and the
-  friction of the plastic on steel (0.45).
+- Sizes from Dell: the chassis' outer size, 434 wide, 86.8 high, 22.0 + 700.7 = 722.7 from front panel to rear wall
+  (Technical Guide, Table 23,
+  https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r760-technical-guide.pdf ).
+  Plastic-on-steel friction (0.45) is an estimate.
 - Static parts: the chassis and everything in it is one fixed body; nothing in it moves. In the real trial the fan
   cage is Dell's own and the other internals are fixed stand-ins of the same outer size (Real-trial setup).
 - The robot's own limits: two YAM arms, parallel grippers; the shroud is gripped by its own walls (no fixture, no
   tool).
+
+## Estimated values
+
+None of these values has been checked against a physical R760. Millimetres. "Our estimate": chosen by us within
+Dell's outer size and its undimensioned figures (Figure 15,
+https://www.dell.com/support/manuals/en-us/poweredge-r760/per760_ism_pub/inside-the-system , and Figure 44).
+
+| # | Value | From | Uncertainty (our judgement) |
+| --- | --- | --- | --- |
+| 1 | shroud 426 wide, 165 deep, 79 high | width, depth scaled from Figure 15 by the 434 width (420 to 430, 160 to 175); height our estimate | ±5, ±10, ±5 |
+| 2 | walls and roof 2 | our estimate | ±1 |
+| 3 | gripped back wall 2.5 | our estimate | ±1 |
+| 4 | tab 16 wide, 7 long, 2 thick | our estimate from Figure 44 | ±4, ±3, ±1 |
+| 5 | tab spacing 214 | our estimate (on the heat sinks' lines) | ±15 |
+| 6 | mass 0.30 kg | calculated from the modelled volume: 0.28 (polypropylene) to 0.36 kg (PC/ABS) | ±0.08 kg |
+| 7 | chassis inside width 432 | Dell's 434 (Table 23) less two 1 mm steel sides (our estimate) | ±1 |
+| 8 | slot 22 wide, 6.5 high | our estimate | ±4, ±2 |
+| 9 | slot edges 74 and 80.5 above the floor | our estimate, under Dell's 86.8 height | ±3 |
+| 10 | cage wall at the slot 1.5 | our estimate | ±0.5 |
+| 11 | shroud to side wall 3 each side | calculated from 1 and 7 | 0.5 to 6.2 |
+| 12 | tab to slot: sides 3, above 1.5, below 3 | calculated from 4, 8, 9 | ±2 each; above is over 0 (Dell: tabs below the cage's surface) |
+| 13 | wing to memory 4 | our fixture choice; to a standard DDR5 RDIMM edge 7.8 to 9.8, calculated from Micron's 31.25 module height (288-Pin DDR5 RDIMM Core Product Description, https://www.mouser.com/datasheet/2/671/ddr5_rdimm_core-3310292.pdf) and an assumed 2 to 4 seat | ±3 |
+| 14 | heat sink to duct wall 5 each side | calculated from our heat-sink width (61) | ±3 |
+| 15 | roof to heat sink 6 | calculated from our heat-sink height (64 on the board); Dell lists heat-sink types, not heights | ±5 |
+| 16 | duct bottom to board 3 | our estimate | ±2 |
+
+## Sensitivity: which values keep the same task
+
+Calculated offline with the task's own collider boxes as rigid bodies (no physics, no flex, no arm limits):
+
+- The tuck. Seated, each tab tip is 6.0 past the cage's back face and its top 1.5 under the cage top. Lowered level at
+  its place, both tabs land on the cage top and the front stands 5.0 proud (gap above 1.5 + tab 2 + cage top 1.5): score
+  0. This holds for any gap above the tab over 0 and any tab reach past the face over 0, so for every shroud that seats;
+  no value in the table removes the tuck or this failure.
+- Tab height. Seated, each tab has 1.5 above and 3.0 below it in its slot; any gaps over 0, as in a real R760, give the
+  same moves. The gap above sets how level the shroud must come down: the high tab meets the cage top at a roll of
+  0.09° (gap 0.5), 0.26° (1.5, model), 0.53° (3).
+- Side gaps. The sideways tolerance is the smallest of rows 11 and 12's side gaps (3, 3) and the duct walls' gaps (4 to
+  memory, 5 to heat sink): 3. The yaw that fits between the side walls is 0.35° at a 0.5 gap, 2.19° at 3 (model), 4.84°
+  at 6.2. Over 0.5 to 6.2 the moves and failures are the same: smaller is tighter; larger is not easier unless the slots
+  are wider too (the tab side gap still sets 3). At 0 it would not fit.
+- Memory, heat sinks, board. Along the demo's swing about the tab tips from 8° to level, the gaps under the shroud are
+  smallest when seated (memory 4.0, heat sinks 6.0, board 3.0; at 8°: 6.9, 11.5, 4.6). These parts never guide or stop
+  it, so any value over 0 gives the same task; at 0 or below the shroud would rest on them, not seat.
+- Not covered: the room behind the shroud (35 to the riser cage, our estimate) is what lets the simulation also lower it
+  level 12 back and slide it forward; we have no figure for the real room.
+
+## Checking on a real R760
+
+A lab with an R760 (standard air-cooled build, shroud seated) can read these with feeler gauges and calipers. The task
+needs no change while each reading is in the band: within a factor of two of the model for gaps that set a tolerance,
+over a margin for parts never touched. Outside a band, set that collider and stand-in to the reading.
+
+| Read | Model | No change if |
+| --- | --- | --- |
+| tab tip past the cage's back face | 6 | 4 to 12 (scoring needs 3; fans 12 past the face) |
+| gap above each tab (to the cage top's underside) | 1.5 | 0.75 to 3 |
+| gap below each tab | 3 | 1.5 to 6 |
+| tab to slot side, each side, shroud centred | 3 | 1.5 to 6 |
+| shroud end wall to chassis side wall, each side | 3 | 1.5 to 6 |
+| wing underside to memory top | 4 | 2 or more |
+| roof underside to heat-sink top | 6 | 2 or more |
+| duct wall to heat sink, each side | 5 | 3 or more |
+| duct wall bottom to board | 3 | 1 or more |
 
 ## Real-trial setup (no server needed, about $210)
 
@@ -270,9 +257,8 @@ floor sheet's top (the table's z minus 1) and the whole rig stands 1.9 higher th
 
 Fit check, before the first trial (by hand, ruler and the 2 mm feeler gauge): tilt the shroud, put both tabs into the
 slots and lower it. Both tab tips at least 3 mm past the cage's back face, the gauge passing under no end-wall corner,
-and the shroud touching only the floor and the slots. Modelled gaps: 3 at the side walls, 4 from the duct walls to the
-memory blocks, 5 to the heat-sink blocks, 4 under the wings, 3 under the duct walls. If the real shroud meets a block,
-move or trim the block until its gap is back. Scoring and reset are unchanged.
+and the shroud touching only the floor and the slots, with the modelled gaps (table above). If the real shroud meets a
+block, move or trim the block until its gap is back. Scoring and reset are unchanged.
 
 ## Reset
 
