@@ -1,0 +1,21 @@
+{
+  "title": "Play a cassette on a shoebox recorder: pop the door open, slide the tape into it side A up, click it shut, press PLAY",
+  "category": "Societal relatability",
+  "keywords": [
+    "cassette tape",
+    "tape recorder",
+    "top-loading door",
+    "orientation",
+    "press PLAY",
+    "latch"
+  ],
+  "instruction": "Put the cassette into the recorder so that side A will play, shut the cassette door and press PLAY.",
+  "context": "Cassettes are sold new again, and homes, schools and libraries still play tapes and dictation on portable 'shoebox' recorders. Loading one is a chain of small mechanical steps. Pressing STOP/EJECT pops the sprung door up about 3 cm. The cassette must then be slid into the holder under the tilted door the right way round, side to play facing up and the open tape edge toward the keys (where the heads are), between rails that leave about 1 mm on each side. The door has to be pushed down until its catch clicks, and PLAY pressed all the way until it locks. A cassette left beside the deck, put in backwards, a door that has not clicked or a key not pressed home and the reels do not turn.",
+  "setup": "Positions in cm from the midpoint between the two arm bases (bases 61 cm apart), x forward, y to the robot's left. (1) A Jensen MCR-100 portable cassette player/recorder (silver and black plastic, 24.0 x 14.2 x 4.6 cm, 1.8 lb plus four C alkaline cells, about 1.08 kg), standing on its four rubber feet on the bare table with its keys toward the robot, the middle of its footprint at x = 24, y = -5, its long side along x; door shut and empty, no key down, running on its batteries. Keys from the robot's left to right: RECORD, PLAY, REWIND, FAST FWD, STOP/EJECT, PAUSE. Its window door is hinged along the edge away from the keys: STOP/EJECT pops it up and the cassette slides into a holder under the door, open tape edge toward the keys (the published photos show the door shut; check this on the unit). Mark its outline on the table with tape. (2) A Maxell UR-90 compact cassette (black plastic IEC 60094 shell, 10.04 x 6.38 x 1.2 cm, about 42 g; side A's paper label covered with an orange sticky note, side B's with a blue one) standing upright on its long label edge directly on the table, its middle at x = 20, y = -21.5, its long side along y, side A facing away from the robot, open tape edge up.",
+  "scoring": "Judged at the end of the run by eye and a ruler. Seated: the cassette lies fully in the door's holder, its tape edge within 4 mm of the door's front edge, open tape edge toward the keys. Shut: the door is clicked down flush with the top (it stays down with no hand on it). Locked: PLAY stays down by itself. 1.0: seated side A up, door shut, PLAY locked (the reels turn). 0.75: the same with side B up; or seated side A up, door shut, PLAY not locked. 0.5: seated in any other state (door not shut, or side B up without PLAY). 0.25: not seated but the door is open at least 5 degrees, or the cassette is in the holder backwards. 0: anything else, doing nothing included. If the recorder ends more than 3 cm from its mark, turned over 15 degrees or tipped over 10 degrees, the score is at most 0.25.",
+  "run_limit": "2,400 steps (120 seconds at 20 steps per second)",
+  "reset_notes": "Press STOP/EJECT (PLAY pops up; a second press opens the door), take the cassette out, stand it on its label edge on its mark, and push the door down until it clicks. About half a minute. Nothing is used up.",
+  "fidelity": "Recorder and cassette at true size (published 240 x 142 x 46 mm, 1.8 lb; IEC shell). Not published, estimated: rear door hinge and 22-degree pop-up, holder clearances (1 mm a side), key pitch and travel, all forces (eject 4.4 N, door 2.8 N, PLAY 6.7 N), cassette 42 g. Door catch and PLAY lock are force rules at the hinge and key. Tape, reels, motor and heads are not simulated: playing = PLAY locked, door shut, cassette seated.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-VG5FF6"
+}
