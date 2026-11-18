@@ -1,0 +1,21 @@
+{
+  "title": "Take a turn at Guess Who: shut the doors over the five faces wearing hats without shutting any other face",
+  "category": "Societal relatability",
+  "keywords": [
+    "board game",
+    "Guess Who",
+    "selective touch",
+    "hinged doors",
+    "visual search",
+    "light touch"
+  ],
+  "instruction": "The other player has answered: 'My person is not wearing a hat.' Shut the door over every face that is wearing a hat and leave all the other doors open.",
+  "context": "Guess Who? is one of the best-known family board games. In the current Hasbro edition each player's board has 24 small doors in three rows of eight in front of a sheet of faces; after every answer the player shuts the doors over the faces the answer rules out. A turn joins looking and touching: pick out which of the 24 faces show the feature, then shut each of those doors with a fingertip. The doors are about 3 cm wide with 3 mm gaps, stick out towards the player when open and fall shut after a light lift, so a gripper reaching for one door easily catches its neighbours or the row below. Shutting a face by mistake is a real error in the game: the player may have just eliminated the answer.",
+  "setup": "Millimetres from the midpoint between the two arm bases (bases 610 mm apart): x forward, y to the robot's left, heights above the table top. (1) One player's board from Hasbro Guess Who? (F6105, the edition with two slide-in character sheets; about GBP 14 at UK retailers), unfolded and standing on its own folding rear panel, front edge centred at x = 160, y = 0, the face sheet towards the robot and tilted back 65 degrees. Sizes are estimates (the maker publishes none): sheet 270 x 220 mm; 24 plastic doors 29 wide x 38 tall x 2 mm, about 3 g each, 3 rows of 8 at 32 mm column pitch (3 mm gaps) and 41 mm row pitch, lowest hinge 14 mm above the table; board about 250 g. All 24 doors start open, sticking out towards the robot, every face showing. (2) The character sheet is the plain drawn set in this task's folder, printed on paper at true size by character_sheet.py: 24 numbered people, each with a shirt, a face and hair, except five who wear a brimmed hat instead. The five are the person numbers random.Random(2).sample(range(24), 5) + 1 in Python, numbering from the top row, left to right as the robot sees the sheet: persons 2, 3, 6, 12 and 24 (top row 2nd, 3rd and 6th, middle row 4th, bottom row 8th). (3) Nothing else on the table.",
+  "scoring": "Judged at the end of the run from a photo of the board, taken once the robot has let go. A door is shut when it lies against the sheet over its face; one turned less than upright falls back open (in simulation: shut = turned past upright, 90 degrees from open; a door still touching a gripper at the end counts on whichever side of upright it is, where it falls when released). Count H = hat faces shut (0 to 5) and W = other faces shut (0 to 19), and net = H - 2 x W. Score 1.0 when net = 5 (all five hats shut, nothing else); 0.75 when net = 4; 0.5 when net = 3; 0.25 when net = 1 or 2; 0 when net is 0 or less. Pushed: the board's front edge more than 5 cm from where it started (tape marks on the table): 0. Tipped: the board's base more than 20 degrees off the table (fallen on its back or face): 0. At the start no door is shut, so doing nothing scores 0.",
+  "run_limit": "2,400 steps (120 seconds at 20 steps per second)",
+  "reset_notes": "About 1 minute. Open any shut door with a fingertip so that all 24 stick out towards the robot, check that every face shows, and stand the board back on its tape marks. Nothing is consumed; the printed sheet stays in.",
+  "fidelity": "True size; every size, mass and the hinge friction are estimates (the README gives one-minute ruler and kitchen-scale checks). Rigid bodies: each door is its own body on a passive hinge with light stiction and no spring, so it rests open on its stop, falls shut by its own weight once lifted past upright, and falls back open if brushed less. Faces are thin coloured plates drawn for this task. A door counts as shut past upright.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-PA6Z26"
+}
