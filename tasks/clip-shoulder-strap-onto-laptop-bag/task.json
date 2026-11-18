@@ -1,0 +1,23 @@
+{
+  "title": "Clip a shoulder strap onto a laptop bag: squeeze each swivel snap hook open over its D-ring, the strap not twisted",
+  "category": "Societal relatability",
+  "keywords": [
+    "shoulder strap",
+    "laptop bag",
+    "swivel snap hook",
+    "trigger snap",
+    "D-ring",
+    "webbing",
+    "clip on",
+    "everyday task"
+  ],
+  "instruction": "Clip the shoulder strap onto the laptop bag: pick up each hook so your grip squeezes its trigger open, pass the open hook over the D-ring at its end of the bag, and let it snap shut, without twisting the strap.",
+  "context": "Putting the shoulder strap back on a laptop bag is a small everyday job: each end of the strap has a swivel snap hook whose gate opens only while its trigger, a tab beside the gate's hinge, is squeezed toward the back of the hook. The hook has to be picked up in the one pinch that squeezes the trigger, held open while it is carried and turned, and its 8 mm mouth passed over the 4 mm wire of a D-ring that swings freely on its tab, then let go so the spring snaps the gate shut round the wire. The two hooks are joined by 60 cm of webbing, so each must be turned the right way or the strap ends up twisted. Each arm clips the hook at its own end of the bag; letting go too early leaves the gate shut on the wire's outside or jammed open on it.",
+  "setup": "Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the desk (table top). 1) Bag: a laptop bag (Zign leather laptop bag, 393.7 x 266.7 x 63.5 mm) lying on its back, its top edge (zip, handles folded flat on its front) toward the robot at x 180, centred on y 0. 2) D-rings: a steel D-ring (38 mm inside width, 22 mm inside depth, 4 mm wire; estimate) on a short leather tab on each end panel, its straight bar upright, centre 30 mm from the top edge (x 210) at mid-height (z 31.75), bar centre at y +-210.9; each ring stands out square from its panel and swings on its bar if pushed. 3) Strap: a 38 mm webbing shoulder strap set to its shortest (Ytonet 52 in universal strap, pad taken off), lying flat and straight along y at x 145, its eyelet bars at y +-300; a swivel trigger snap hook at each end (BIKICOCO 1-1/2 in: 58 mm long, 38 mm eyelet, 8 mm opening, 15 g) lying flat in line with the strap, nose outward, both gates toward the back (the left hook lies on its other face). Start positions vary by up to 8 mm and 1.5 degrees for the strap.",
+  "scoring": "Judged from a photo of the end of the run and the trial video. A hook is clipped on a ring when the ring's wire passes through the hook's loop and the gate is shut (back against its stop). Twisted: with both hooks left clipped, lift the strap by its middle and follow it from one hook to the other; it is twisted if the webbing turns over between them (120 degrees or more; a half turn is 180). Scores: 1.0 both rings each clipped by one of the two hooks, strap not twisted; 0.75 both clipped but the strap twisted; 0.5 one ring clipped; 0.25 no ring clipped but a hook hangs on a ring's wire with its gate open (jammed on the wire); 0 otherwise (hooks on the desk, dropped, hooked on the tab or the bag only). Doing nothing scores 0.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Unclip both hooks (squeeze each trigger and lift the hook off its ring). Set the strap to its shortest and lay it flat and straight on its tape marks 145 mm in front of the bag's top edge, both hooks in line with it, nose outward, both gates toward the bag (turn the left hook onto its other face). Swing each D-ring out square from its end panel. Check the bag still lies on its back on its marks; double-sided tape under the bag keeps it from sliding when a hook pulls on its ring (the simulated bag does not move).",
+  "fidelity": "True size. Bag: rigid, fixed (a strap pulls at most a few newtons). Webbing: 30 mm flat links joined by sprung joints (flat bend, stiff edge bend, twist); stiffness, 30 g/m and the doubled adjuster run are estimates. Hook: body, sprung gate and swivel; gate spring (about 3-5 N at the trigger), swivel friction, ring size and tab stiffness are estimates. The ring hinges on its bar only.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-Z6F9XK"
+}
