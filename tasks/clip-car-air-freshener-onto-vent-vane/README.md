@@ -4,7 +4,7 @@ Clip the air freshener onto one of the centre vent's horizontal vanes, pushed al
 
 ## Scoring
 
-Judged at the end of the run (real trial: the end of the video, then a ruler, a protractor and a 100 g weight). Any of the four vanes counts. Engaged: the vane lies between the two prongs (real: seen from the side, the vane between both prongs) with at least 8 mm of the 20 mm prongs over it (the vane's front edge 12 mm or less from the fork's root). Home: the vane's front edge within 2 mm of the root. Let go: both grippers' tool points at least 3 cm from the clip and from the vent opening. Then, once it has been engaged, let go and still for 1 s (three points on the clip moved under 1 mm and no vane turned more than 1 degree over that second), a hold check: the clip is pulled straight down with 1 N for 2 s (real: a 100 g weight hung from a thread looped round the clip's body, lowered by hand without touching the clip); it must move less than 2 mm. Aim: the largest angle any vane is turned from level at the end (protractor; the vanes keep any angle they are pushed to). Square: the angle between the fork and the dashboard face's normal (real: a protractor against the clip's back face, from above and from the side). Score 0: not engaged (in a gap, on a vane's face, on a prong, dropped), still touched, hold check failed, or the aim off by more than 15 degrees (the vent knocked). Otherwise aim is ok up to 5 degrees and minor from 5 to 15; square is ok up to 15 degrees, minor from 15 to 30, major beyond. Home with aim and square ok: 1.0; home with one minor: 0.75; home with two minors: 0.5; engaged but not home (root gap 2-12 mm) with both ok: 0.5; not home with a minor: 0.25; square major (home or not): 0.25. Doing nothing scores 0. Possible scores: 0, 0.25, 0.5, 0.75, 1.0.
+The rules: task.json's `scoring`, word for word (real trial: the end of the video, then a ruler, a protractor and a 100 g weight).
 
 How `score()` reads each condition (clip frame: origin at the body's centre, x along the fork, z across the gap):
 
@@ -83,24 +83,11 @@ about a millimetre, and the arm sags a little under load. The pinch is firm (pad
 41 mm body: about 45 N, within the arena's 50 N limit for the YAM gripper); held at about 10 N, the clip turned in the
 fingers when the fork met the vane.
 
-| Time (s) | Step |
-| --- | --- |
-| 0.0 to 1.5 | out in front of the dashboard (from the ready pose, so the hand clears its top) |
-| 1.5 to 3.0 | over the clip |
-| 3.0 to 4.2 | down behind the clip |
-| 4.2 to 5.0 | pinch its sides |
-| 5.0 to 5.3 | settle |
-| 5.3 to 6.3 | lift it |
-| 6.3 to 8.8 | carry it in front of the vane |
-| 8.8 to 9.4 | hold in front of the vane |
-| 9.4 to 10.0 | line up with the vane |
-| 10.0 to 12.8 | push along the vane (8 steps of 0.35 s, height and pitch re-read after each) |
-| 12.8 to 13.4 | hold it home |
-| 13.4 to 14.2 | let go |
-| 14.2 to 15.2 | back away |
-| 15.2 to 16.2 | rise clear |
-| 16.2 to 18.2 | the hand to its parking point |
-| 18.2 to 23.2 | hold still (the run stops at full credit) |
+Steps (s): out in front of the dashboard, clearing its top 0.0-1.5; over the clip 1.5-3.0; down behind the clip
+3.0-4.2; pinch its sides 4.2-5.0; settle 5.0-5.3; lift it 5.3-6.3; carry it in front of the vane 6.3-8.8; hold in
+front of the vane 8.8-9.4; line up with the vane 9.4-10.0; push along the vane (8 steps of 0.35 s, height and pitch
+re-read after each) 10.0-12.8; hold it home 12.8-13.4; let go 13.4-14.2; back away 14.2-15.2; rise clear 15.2-16.2;
+the hand to its parking point 16.2-18.2; hold still (the run stops at full credit) 18.2-23.2.
 
 The push starts with the fork's tips 8 mm short of the third vane's edge and goes 5 mm past
 home along the vane's plane; the vane's edge stops at the fork's root and the arm's compliance takes the rest. The pads stay
@@ -115,12 +102,11 @@ True-size rigid parts. Each vane has its own pins and its own detent; the rear l
   (universal in-dash louvres list only bezel and cut-out sizes), so the vent is built to the simulated sizes and
   detent (Building the vent). Vent-mount makers publish what real louvres must be for their hooks: blades under
   3.5-4.2 mm thick, 10-34 mm deep, at least 8 mm apart; our vanes are 2.0 thick, 17 deep and 13 apart.
-- The clip, looked up: the Febreze CAR Vent Clip holds 2 mL of scented oil; the single pack with card weighs 13.6 g
-  (7 g used). The maker publishes no clip sizes. Its patent for this kind of vent-clip dispenser gives prongs 10 to 40 mm long (narrowest stated range 16 to
-  20), gaps 0.5 to 8 mm at their widest (3 to 5) and 0.5 to 3 mm at their narrowest (1 to 2). Our 20 mm prongs,
-  4.5 mm mouth and 1.6 mm gap lie inside the narrowest ranges; they stay estimates for the sold clip (checked: The
-  clip for real trials).
-- Estimates: the clip's body size, spreading force (1.5 N) and mass; every friction.
+- The clip: the Febreze CAR Vent Clip. The maker publishes no clip sizes or forces; its patent for such clips gives
+  prongs 10 to 40 mm long (narrowest range 16 to 20), gaps 0.5 to 8 mm at their widest (3 to 5) and 0.5 to 3 mm at
+  their narrowest (1 to 2). Our 20 mm prongs, 4.5 mm mouth and 1.6 mm gap
+  lie inside the narrowest ranges. Every clip value is an estimate (The clip, below).
+- Estimates: every friction.
 
 ## Building the vent
 
@@ -138,7 +124,9 @@ the dashboard, y along the vanes, z up. Parts (US prices looked up November 2026
 - 6 in. digital caliper (Pittsburgh 63711, Harbor Freight, $24.99): https://www.harborfreight.com/6-in-digital-caliper-63711.html
 - For the checks: thread, a small bag, 80 US nickels (5.000 g each; or a kitchen scale) and a dime.
 
-Prints (black ABS, solid round the pins):
+Prints (black ABS, solid round the pins). Printable STL files (mm, from the dimensions below, laid out for printing):
+fixture/vane.stl (print 4; on its front edge), fixture/front_plate.stl (on its front face), fixture/rear_half.stl (on
+its back wall).
 
 1. Vanes, 4: blade 108 (y) x 17 (x) x 2.0 (z), front edge at x = 0; at each end a hub 6 across and 5 long (|y| 54
    to 59) on the pin axis (x = 8.5, mid-thickness) with a 3.0 hole, 5 deep. Print standing on the front edge,
@@ -169,26 +157,55 @@ Assembly and the detent:
    (y = -120, 130 above the table), push the register in from behind, fronts flush, and hot-glue it. Clamp the box
    to the table, face at x = 240, ends at y = -300 and 300.
 
-A built vane weighs about 6 g with its pins (3 g simulated); its weight sits on the pin axis, so it adds no turning
+A built vane comes to about 6 g with its pins (calculated; 3 g simulated); its weight sits on the pin axis, so it adds no turning
 torque. The simulated +-30 degree stops are not built: a vane past 15 degrees already scores 0.
 
-## The clip for real trials
+## The clip: estimates and checks
 
-Before the first trial, check the bought clip (clicked open). Gap between the prongs at the root: simulated 1.6,
-accepted 1.35 to 1.95: a US dime (1.35 thick) slides in to the root without force, a nickel (1.95) goes in only by
-spreading the sprung prong, as the 2.0 vane must. With the caliper, the mouth at the tips: 4.5, accepted 3.5 to 5.5;
-prong length from the clip's back: 20, accepted 18 to 22 (the fixed fins stand 26 behind the face). If the clip
-has four prongs (the patent's preferred form), check the pair that takes a horizontal vane. A clip outside these
-bands is not the simulated fork: use another. Then push it onto a vane by hand: it must pass the 100 g hold check.
+No physical measurement of the purchased clip has been made: its values are estimates, and the lab checks the key
+ones before the first trial (below).
 
-Scented oil (review note): clicking the clip open pierces the foil over the oil and the maker's FAQ covers oil
-leaking onto surfaces, so real trials use a used-up clip, not a fresh one: clicked open, dial on high, left until the
-scent is gone (the maker says up to 30 days on low), then squeezed hard by its flat sides in a paper towel: no oil
-mark. It is about 2 g lighter (2 mL of oil); the simulated 7 g is an estimate either way.
+| Value | Estimate | Obtained from |
+| --- | --- | --- |
+| Body, w x h x t | 41 x 38 x 16 mm | a retail photo scaled by the listed pack size (about 39 x 41); thickness estimated |
+| Prongs, length x width; thickness root / mid / tip | 20 x 7; 1.4 / 2.1 / 1.4 mm | length inside the patent's range; the rest estimated |
+| Gap, mouth, flare | 1.6, 4.5, 3 mm | gap and mouth inside the patent's ranges; flare estimated |
+| Vane, thickness x depth | 2.0 x 17 mm | the printed vane |
+| Mass | 7 g | calculated from the shell: 5.5 g empty, 7.3 g with the oil |
+| Spread to a 2.0 mm gap | 1.5 N (simulated spring) | calculated 0.39 N (both prongs bend) / 0.78 N (one braced), at the tips |
+| Push-on peak; pull-off | 1.66 / 3.22 N; 0.68 / 1.34 N | simulated with the task's spring, height held / floating |
+
+What was run, no hardware: a beam calculation of the task's fork (polypropylene, modulus 1.5 GPa assumed), and a
+contact simulation (MuJoCo 3.4) of the task's own fork mesh and sprung prong pushed onto and off the 2.0 mm
+vane at 2.5 mm/s, height held (one face loaded) or floating (both); halving the time step to 25 µs (held) and 12.5 µs
+(floating) changed the results by under 0.01 N; pull-off is the seated load times static friction 0.45 (assumed).
+
+The simulated spring, 1.5 N on a vane (1.0 N preload plus 1.25 N/mm), is 2 to 4 times the calculated 0.39 to 0.78 N.
+So the simulated push-on is harder than for a fork as soft as calculated (slide model of the same fork: 1.64 to
+3.29 N, against 0.40 to 0.54 N with bending prongs and no preload) and its grip stronger (pull-off 1.35 against
+0.45 N). The scored hold check pulls straight down, not along the vane, and none of these covers it: the bought clip
+must pass it by hand (below).
+
+Checks before the first trial, about a minute each; a clip outside a band is not the simulated fork: use another.
+
+- Fork: gap at the root 1.35 to 1.95 (a dime, 1.35 thick, slides in to the root freely; a nickel, 1.95, only by
+  spreading the prongs); by caliper, mouth at the tips 3.5 to 5.5 and prongs 18 to 22 from the clip's back. A
+  four-prong clip (the patent's preferred form): check the pair that takes a horizontal vane.
+- Spreading force, kitchen scale: hang the clip by a thread round one prong's tip, a small bag from the other's; add
+  nickels until a nickel slides between the prongs 3 mm in from the tips; weigh the bag: at most 150 g (the simulated
+  spring gives 147 g at a nickel's 1.95; calculated under 40 g).
+- Push-on force, kitchen scale: tape a spare printed vane to the scale on its back edge, tare, push the fork straight
+  down onto it until home over about 3 s: highest reading at most 340 g (3.3 N, the top of the simulated range).
+- Hold: pushed onto a built vane by hand, the clip passes the 100 g hold check.
+
+Scented oil (review note): opening the clip pierces the foil over the oil, and the maker's FAQ covers oil leaking onto
+surfaces, so real trials use a used-up clip: clicked open, dial on high, left until the scent is gone (up to 30 days
+on low, says the maker), then squeezed by its flat sides in a paper towel: no oil mark. It is about 2 g lighter
+(calculated 5.5 g against 7.3 g); the simulated 7 g lies between.
 
 Sources: maker's FAQ, https://circle.supersavvyme.co.uk/uk/projects/febreze/faq; patent US 12,708,692 B2,
-https://patents.google.com/patent/US12708692B2/en; a universal louvre listing (sizes of bezel and cut-out only),
-https://watsons-streetworks.com/product/trique-mfg-rectangular-a-c-vent/; coin mass and thickness,
+https://patents.google.com/patent/US12708692B2/en; retail photo and pack size,
+https://www.target.com/p/-/A-14966291; a universal louvre listing (sizes of bezel and cut-out only), https://watsons-streetworks.com/product/trique-mfg-rectangular-a-c-vent/; coin mass and thickness,
 https://en.wikipedia.org/wiki/Nickel_(United_States_coin), https://en.wikipedia.org/wiki/Dime_(United_States_coin).
 
 ## Reset
@@ -197,11 +214,13 @@ Pull the clip straight off its vane along the vane's plane, stand it on its flat
 
 ## Revision
 
-Review (not accepted): "Please specify a compatible, readily obtainable car vent, or provide build files and a parts
-list for the four-vane fixture, including how to reproduce its pivot friction. Check the freshener's fork and the
-selected vent's dimensions and forces against the real parts, and update the setup and simulation where needed so the
-real trial exercises the same insertion." Note: protect the shared rig from scented oil.
+Review 2 (not accepted), what to change: "The real-parts check is still open: measure the purchased clip's fork dimensions and the
+force needed to spread or insert it over the specified vane, report the measurements, and update the setup and
+simulation where needed. Please also provide 3D-printable files for the vent fixture if they are not already
+included."
 
-Changes, text only: Building the vent (no obtainable car vent publishes its vane sizes); the fork checked against
-the maker's patent ranges and measured on the bought clip before the first trial; a used-up clip for real trials;
-setup and fidelity to match. The built vent matches the simulation: code, demonstration and runs are unchanged.
+Changes, text and print files only: the README states that no physical measurement of the purchased clip has been
+made, gives each clip value as an estimate with its source, states the simulated spring's difference from the
+calculation and which way it errs, and adds kitchen-scale checks of spreading and push-on force, banded so the real
+clip is no stiffer than the simulated one; STL files of the printed vent parts (fixture/); README Scoring points to
+task.json. Simulation, demonstration and runs unchanged.
