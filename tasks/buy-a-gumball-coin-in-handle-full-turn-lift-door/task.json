@@ -1,0 +1,23 @@
+{
+  "title": "Buy a gumball from a coin gumball machine: drop the quarter in the slot, turn the handle a full turn, lift the door",
+  "category": "Societal relatability",
+  "keywords": [
+    "gumball machine",
+    "coin slot",
+    "US quarter",
+    "T-bar handle",
+    "re-grip",
+    "ratchet",
+    "hinged door",
+    "vending"
+  ],
+  "instruction": "Buy one gumball: drop the quarter into the coin slot on top of the gumball machine's coin mechanism, turn the handle one full turn clockwise, then lift the chute door so the gumball rolls out of the machine.",
+  "context": "Countertop coin gumball machines stand in shops, waiting rooms and children's bedrooms, and working one is among the first purchases a child makes. It strings three different contacts together. A flat quarter has to be picked off the table, turned to stand on edge and dropped into a slot barely wider than the coin, through a mouth no bigger than a fingertip. The handle, a small T-bar, then has to be turned a whole turn clockwise; no wrist turns that far, so the hand lets go half way, turns back and grips again, and a ratchet stops the handle going back. The mechanism only turns if the coin is seated: without it a sprung pin stops the handle after about a quarter turn. Last, the gumball waits behind a hanging chrome door; lifting the door's lip lets it roll out. Nothing can be skipped: no coin, no turn; no full turn, no gumball.",
+  "setup": "Millimetres from the midpoint between the arm bases: x forward, y to the robot's left, heights above the table top. A VEVOR 16 in gumball machine (red, 215 wide x 200 deep x 410 high, 2.95 kg, 25-cent coin mechanism, one gumball wheel, chrome exit door) stands at x 332, y -60, its coin mechanism facing the arms. On the mechanism: the coin slot's mouth on top, 182 high; the knob axis 141 high, with a 41 x 13 mm T-bar standing 15 mm proud, horizontal at the start; below it the exit door (46 x 47 mm, hinged along its top edge 89 high, a 16 mm turned-out lip at its bottom 42 high). The globe holds 1 in gumballs; one sits in the wheel's pocket, one in the feed tube. A US quarter (24.26 mm, 1.75 mm, 5.67 g) lies flat in the middle of a black rubber mat 110 x 110 x 2 mm at x 150, y -175. The table in front of the exit door is clear. In real trials the machine stands on a thin non-slip pad (the pushes stay under 1 N against its 2.95 kg; the simulation holds it fixed).",
+  "scoring": "Judged at the end from the video and a look at the machine. 1.0: the quarter is inside the machine and exactly one gumball has come out through the door onto the table, machine upright. 0.75: quarter in and exactly one gumball dispensed but still behind the closed door. 0.5: quarter in and the handle turned at least a quarter turn, no gumball out. 0.25: quarter dropped in and seated in the coin dial, handle turned less than a quarter turn. 0: otherwise, including any gumball out while the quarter is not in the machine, two gumballs out, or the machine tipped more than 10 degrees. At the start the quarter is on the mat and the handle home, so doing nothing scores 0.",
+  "run_limit": "2,400 steps (120 seconds at 20 steps per second)",
+  "reset_notes": "Unlock the base's coin box with the machine's key and take the quarter out; put it back flat in the middle of the mat. Unlock the top cover, drop the gumball back into the globe, close it. If the handle stopped part way, finish the turn with a second quarter and take that coin and gumball back out the same way. About a minute; nothing is consumed (gumballs are sealed candy; a clean dry gumball is reused, or use a set of 1 in wooden balls, which the wheel vends the same way).",
+  "fidelity": "Machine at true size (215 x 200 x 410 mm, 2.95 kg, listing); mechanism heights and the T-bar scaled from the maker's photos. The coin pin, ratchet and coin path follow the common rotary 25-cent mechanism, not a drawing of this model. The globe's gumballs are fixed scenery; the vended gumball comes from a one-pocket wheel on the knob's shaft (the real turntable is geared to it). The 2.95 kg machine is fixed to the table. Turning torque 0.12-0.15 N m and the door's 20 g are estimates.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-NW6KTH"
+}
