@@ -2,8 +2,6 @@
 
 Put the cassette into the recorder so that side A will play, shut the cassette door and press PLAY.
 
-Cassettes are sold new again, and homes, schools and libraries still play tapes and dictation on portable 'shoebox' recorders. Loading one is a chain of small mechanical steps. Pressing STOP/EJECT pops the sprung door up about 3 cm. The cassette must then be slid into the holder under the tilted door the right way round, side to play facing up and the open tape edge toward the keys (where the heads are), between rails that leave about 1 mm on each side. The door has to be pushed down until its catch clicks, and PLAY pressed all the way until it locks. A cassette left beside the deck, put in backwards, a door that has not clicked or a key not pressed home and the reels do not turn.
-
 ## Scoring
 
 Judged at the end of the run. In the real world: look through the door's window and at the keys, and check the
@@ -26,17 +24,15 @@ the score is at most 0.25 (a shove the real machine would not take).
 - Shut: the door is clicked down flush with the top and stays there with no hand on it (simulation: within 1 degree
   of shut, where the catch holds it).
 - PLAY locked: the PLAY key stays down by itself (simulation: at least 6 mm of its 7 mm travel, where the lock holds).
-- Side A / side B: which label faces up through the window. Backwards: tape edge toward the hinge.
+- Side A / side B: which marked note faces up through the window: black A on orange or black B on blue. The letters, not the colors alone, identify side A to the robot. Backwards: tape edge toward the hinge.
 - `success()` is a score of 1.0, held for one second. The tiers do not overlap and cover every end state; the start
   (door shut and empty, cassette on the table) scores 0.
 
-Why shortcuts fail: PLAY pressed without a seated cassette, or with the door open, never reaches 1.0; a cassette
-left on the table scores at most 0.25 (door opened); one put in backwards or a door that has not clicked stops at
-0.25 or 0.5. Measured in simulation: the same demonstration with the door left open before PLAY is pressed ends with the cassette seated side A up and PLAY locked down, the door still up at 22 degrees: 0.5.
+PLAY alone cannot reach 1.0. The original physical wrong-way run seated side A and locked PLAY but left the door at 22 degrees: score 0.5.
 
 ## Run and score
 
-From this task folder, with the official YAM Arena environment installed:
+From this folder with YAM Arena installed:
 
 ```sh
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
@@ -45,22 +41,24 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
   --scorer task_score --max-steps 2400 --epochs 1 --store-frames --log-dir ./demo-run
 ```
 
-For a model policy, replace `--policy yam_scripted` with the policy. A trial is at most 2,400 control steps (120 s at
-20 Hz); the scripted demonstration takes about 36 s. `pytest` in this folder runs the offline checks of the scorer.
-The demonstration reads where the recorder and the cassette are before acting, so it also runs with a small
-`object_jitter` (it was probed at 0.01).
+Replace `yam_scripted` for a model policy. Limit: 2,400 steps (120 s at 20 Hz); demo about 36 s. Run `pytest` for scorer checks.
+The demo reads both object poses before acting; original jitter probes used 0.01.
 
 ## The scene
 
-Positions in cm from the midpoint between the two arm bases (bases 61 cm apart), x forward, y to the robot's left. (1) A Jensen MCR-100 portable cassette player/recorder (silver and black plastic, 24.0 x 14.2 x 4.6 cm, 1.8 lb plus four C alkaline cells, about 1.08 kg), standing on its four rubber feet on the bare table with its keys toward the robot, the middle of its footprint at x = 24, y = -5, its long side along x; door shut and empty, no key down, running on its batteries. Keys from the robot's left to right: RECORD, PLAY, REWIND, FAST FWD, STOP/EJECT, PAUSE. Its window door is hinged along the edge away from the keys: STOP/EJECT pops it up and the cassette slides into a holder under the door, open tape edge toward the keys (the published photos show the door shut; check this on the unit). Mark its outline on the table with tape. (2) A Maxell UR-90 compact cassette (black plastic IEC 60094 shell, 10.04 x 6.38 x 1.2 cm, about 42 g; side A's paper label covered with an orange sticky note, side B's with a blue one) standing upright on its long label edge directly on the table, its middle at x = 20, y = -21.5, its long side along y, side A facing away from the robot, open tape edge up.
+Coordinates from the midpoint of arm bases 61 cm apart: x forward, y left. Jensen MCR-100 silver/black plastic recorder, 240 x 142 x 46 mm, 1.08 kg including four C cells (estimate), centre (24, -5) cm, long axis x, feet on bare table, keys toward robot; mark its outline with tape. Start shut and empty, no key down. Maxell UR-90 black IEC cassette, 100.4 x 63.8 x 12 mm, about 42 g, stands on its label edge at (20, -21.5) cm, long axis y, tape edge up. Side A faces away from the robot, with an orange note marked A; side B faces the robot, with a blue note marked B. Each note has its own side's black marker capital at least 8 mm tall. The letters tell the robot which side is A. Keys from robot left to right: RECORD, PLAY, REWIND, FAST FWD, STOP/EJECT, PAUSE.
 
-The recorder (cassette_recorder.py) is one articulated body, loose on its feet: the case (lower shell, speaker end,
+The recorder is one articulated body, loose on its feet: the case (lower shell, speaker end,
 the sides of the cassette well, the label strip and the key surround), the window door on a hinge along its rear edge,
 and six keys on slides. Under the door's 2 mm plate hangs the cassette holder: two side walls 102.4 mm apart (1.0 mm a
 side around the shell, the front 4 mm flared out to 109 mm), two rails under the cassette's ends 13.2 mm below the
 plate (the front 4 mm bent down 4 mm), open at the front and closed by a back stop 63.8 mm in. Seated, the cassette's
 tape edge is level with the door's front edge. The door pops up to 22 degrees (its front edge about 28 mm up), so the
 cassette goes in along a 22 degree slope, label edge first.
+
+Reset: keep black marker A on orange side A and B on blue side B, capitals at least 8 mm tall; renew faded letters. Simulated ink: about 32 mm high, 3.5 mm strokes, 0.15 mm proud, visual-only without collision/mass APIs. Physics, pose, scorer and demo path are unchanged.
+
+No door dimension is a maker figure: the spec gives overall size (9.45 x 5.59 x 1.78 in); the manual says playing side facing out. Rear hinge, 22-degree opening, 112 x 73 mm door and 102.4 x 13.2 mm holder cross-section, depth 63.8 mm, are estimates. Before each trial, spend one minute with a ruler checking hinge side, door rise/run (opening angle), holder depth/width/gap against the 100.4 x 63.8 x 12 mm cassette, and confirm slide-in loading without forcing. If any check fails or loading differs, do not run a scored trial on that unit; do not force it or substitute another model. No hardware verification is claimed. At native 320 x 176 resolution, the upright notes are too edge-on to read in the start top view and outside both start wrist views. Bring a camera face-on to read a note; the existing demo turn makes A identifiable in the top view.
 
 ## Forces and how to check them on the real recorder
 
@@ -79,43 +77,34 @@ kitchen scale (press slowly, read the peak, subtract the recorder's weight):
 | Key pitch | 17 mm, keys 15 mm wide, 7 mm travel | ruler |
 | Cassette | 42 g | kitchen scale |
 
-The door spring, the door catch and the PLAY lock are force rules applied between the door or key and the case
-before every physics step, as the real springs and catches act; the arm still has to press the key down, slide the
-cassette in and push the door down with about the real forces to trigger them.
+Door spring, catch and PLAY lock apply internal forces before each physics step. The arm must still grasp, insert and press with roughly the real forces to trigger them.
 
 ## Scripted demonstration
 
-Right arm only; the left arm stays at its start. Run on this version (no jitter): full score at 31.5 s; the run stops once it has held for 1 s, with the hand still at the keys. The cassette slid home by itself on the rails when let go, the door was pushed shut in 1.2 s and caught, PLAY locked at 7 mm, and the recorder did not move. Without a hand: in the probe runs the door stayed at 0 degrees for 4 s while the hand went to PLAY, and in the wrong-way run, which goes on to the park pose, PLAY stayed down at 7 mm for 4.4 s with the hand 25 cm away. The same plan scored 1.0 in three episodes with the recorder and cassette shifted up to 10 mm (it reads both first).
+Right arm only; left stays at start. Revision demo: 1.0 after 648 executed steps, first full score at call 629. It ends during the one-second success hold with the hand over PLAY; its video alone does not show a retreat. Final recorded state: door 0 degrees, PLAY 7 mm, cassette seated, recorder unmoved. With the unchanged physics, original probes held the door shut without contact for 4 s; the original wrong-way run held PLAY down for 4.4 s with the hand parked 25 cm away. Original 10 mm-jitter probes: 1.0 in all three episodes.
 
-1. Closed fingers come down on STOP/EJECT and press it to its stop; the door pops up.
-2. The open hand comes down over the standing cassette with the pads either side of its faces 10 mm below the tape
-   edge, pinches it (pads sent 2.5 mm inside the 12 mm shell), lifts it, and turns it 68 degrees on the way so that it
-   lies along the door's slope, side A up, tape edge toward the keys.
-3. It holds the label edge 15 mm in front of the holder, reads where the cassette really is and corrects, slides it in
-   until the fingers are 2 mm short of the door, lets go, and pushes the tape edge home with the closed fingertips
-   held below the door plate.
-4. Closed fingers come down on the door's plate 10 mm behind its front edge and push it down past the click.
-5. Closed fingers press PLAY to its stop; it stays down. The hand moves clear.
+1. Press STOP/EJECT with closed fingers; the door pops up.
+2. Pinch the standing cassette 10 mm below the tape edge (12 mm shell, jaws 2.5 mm inside), lift and turn 68 degrees to match the door slope, side A up.
+3. Read the held cassette pose and correct; slide label-edge first until fingers are 2 mm short of the door, release, then push the tape edge home with closed fingertips below the plate.
+4. Press the door 10 mm behind its front edge until it catches.
+5. Press PLAY fully; release and move clear.
 
 ## Sources
 
 - Jensen MCR-100 maker page (Spectra Merchandising): https://www.spectraintl.com/index.php/jensen-products/item/mcr-100
   ("shoebox" style, top loading cassette deck, four C cells or the AC adaptor; product photos for the key layout).
+- Maker spec: https://www.spectraintl.com/images/stories/pdf/jn/MCR-100.pdf (overall size 9.45 x 5.59 x 1.78 in; no door or holder dimensions).
 - MCR-100 user manual: https://www.spectraintl.com/images/stories/pdf/jn/UM/MCR-100_EIB.pdf (STOP/EJECT "Press to stop
   all deck operations. Press again to open the cassette door."; "Put in a cassette tape with the side to play facing
   out, and close the cassette door.").
 - Size and weight: Best Buy listing Q&A, https://www.bestbuy.com/site/questions/jensen-cassette-player-recorder-silver/5657390
   (width 5.59 in, depth 9.45 in, 1.8 lb); height 1.8 in from the Beach Audio listing,
   https://www.beachaudio.com/jensen-mcr100-cassette-player-and-recorder-with-one-touch-mcr100_9/ (about 47 USD).
-- Compact cassette shell 100.4 x 63.8 x 12 mm: IEC 60094-7. The Maxell UR-90 is a common blank tape; its price
-  (about 2-8 USD a tape) and mass are estimates (retail pages could not be fetched; any blank C60/C90 serves).
+- Compact cassette shell 100.4 x 63.8 x 12 mm: IEC 60094-7. Maxell UR-90 price (about 2-8 USD) and mass are estimates.
 - Cost of the real objects (estimate): recorder about 47 USD, cassette under 10 USD, four C cells and two sticky
   notes: under 80 USD.
 
-Estimates, as listed above: the door's hinge side, pop-up angle and holder (the published photos show the door shut;
-built as the common shoebox design: hinged at the rear, the cassette sliding into the door label edge first), the key
-pitch and travel, every force, the four C cells' mass (about 66 g each), the cassette's 42 g, and all frictions
-(holder 0.25, cassette 0.35, case 0.7).
+Other estimates: four C cells about 66 g each, cassette 42 g, frictions holder 0.25, cassette 0.35, case 0.7. No physical measurements are claimed.
 
 ## Simulation shortcuts
 

@@ -180,12 +180,80 @@ def recorder(name, pos, mass=1.08):
 
 
 def cassette(name, pos):
+    _install_note_letters(name)
     t = CAS_T - 2 * LABEL_T
     s = (bx(-t / 2, t / 2, -CAS_L / 2, CAS_L / 2, -CAS_H / 2, CAS_H / 2, SHELL),
          bx(t / 2, t / 2 + LABEL_T, -40, 40, -CAS_H / 2 + 4, CAS_H / 2 - 22, SIDE_A),     # side A label (+x face)
          bx(-t / 2 - LABEL_T, -t / 2, -40, 40, -CAS_H / 2 + 4, CAS_H / 2 - 22, SIDE_B),   # side B label
          bx(-t / 2 + 0.5, t / 2 - 0.5, -30, 30, CAS_H / 2 - 1.5, CAS_H / 2 - 0.2, TAPE))   # tape across the open edge
     return Part(name, pos, s, mass=CAS_MASS, color=SHELL, friction=(0.35, 0.30), contact_offset=0.001)
+
+
+_NOTE_NAMES = set()
+_NOTE_SPAWNER_INSTALLED = False
+
+
+def _note_strokes(letter):
+    """Black marker centre-lines in face coordinates (mm); ~32 mm high, 3.5 mm strokes."""
+    if letter == "A":
+        return (((-11, -14), (0, 14)), ((0, 14), (11, -14)), ((-7, -4), (7, -4)))
+    outline = ((-10, -14), (-10, 14), (6, 14), (11, 10), (11, 5),
+               (6, 0), (-10, 0), (6, 0), (11, -5), (11, -10), (6, -14), (-10, -14))
+    return tuple(zip(outline, outline[1:]))
+
+
+def _add_note_letters(stage, prim_path):
+    """Visual-only ink, 0.15 mm proud of each existing note; no collision or mass APIs.
+
+    The two faces have opposite horizontal axes so each capital reads normally from its own side.
+    The original Part shapes, mass, inertia calculation, contact offsets and state bounds are untouched.
+    """
+    import isaaclab.sim as sim_utils
+    from pxr import UsdGeom
+    from yam_arena.station import linear_rgb
+
+    material_path = f"{prim_path}/note_ink"
+    material = sim_utils.PreviewSurfaceCfg(diffuse_color=linear_rgb((0.01, 0.01, 0.01)), roughness=1.0)
+    material.func(material_path, material)
+    for letter, side in (("A", 1), ("B", -1)):
+        points, indices = [], []
+        for a, b in _note_strokes(letter):
+            a, b = np.asarray(a, float), np.asarray(b, float)
+            delta = b - a
+            normal = np.array([-delta[1], delta[0]]) / np.linalg.norm(delta) * 1.75
+            corners = (a - normal, b - normal, b + normal, a + normal)
+            indices.extend(range(len(points), len(points) + 4))
+            points.extend((side * (CAS_T / 2 + 0.15) * MM, side * u * MM, (v - 9) * MM)
+                          for u, v in corners)
+        path = f"{prim_path}/note_{letter}"
+        mesh = UsdGeom.Mesh.Define(stage, path)
+        mesh.CreatePointsAttr(points)
+        mesh.CreateFaceVertexCountsAttr([4] * (len(points) // 4))
+        mesh.CreateFaceVertexIndicesAttr(indices)
+        mesh.CreateSubdivisionSchemeAttr("none")
+        mesh.CreateDoubleSidedAttr(True)
+        sim_utils.bind_visual_material(path, material_path, stage=stage)
+
+
+def _install_note_letters(name):
+    """Extend the kit spawner locally, without editing the kit or adding collider shapes."""
+    global _NOTE_SPAWNER_INSTALLED
+    import yam_parts
+
+    _NOTE_NAMES.add(name)
+    if _NOTE_SPAWNER_INSTALLED:
+        return
+    original = yam_parts._spawn_part
+
+    def spawn_with_notes(prim_path, cfg, *args, **kwargs):
+        prim = original(prim_path, cfg, *args, **kwargs)
+        if cfg.part_name in _NOTE_NAMES:
+            _add_note_letters(prim.GetStage(), prim_path)
+        return prim
+
+    yam_parts._spawn_part = spawn_with_notes
+    yam_parts._CLONED_SPAWN_PART = None
+    _NOTE_SPAWNER_INSTALLED = True
 
 
 # ---------------------------------------------------------------- reading a state (scorer and demo)
