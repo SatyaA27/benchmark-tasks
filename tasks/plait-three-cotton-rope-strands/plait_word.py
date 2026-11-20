@@ -1,15 +1,16 @@
-"""Reading a three-strand plait from the strands' centre-lines, the way a person reads it from a top photo.
+"""Reading a three-strand plait (a braid of three hair sections) from their centre-lines, the way a person reads it
+from a top photo.
 
-A crossing is a point where two strands' centre-lines cross seen from above, with the upper one at least MIN_DZ higher
-there (10 mm rope: a strand lying over another sits ~10 mm higher; less is two strands squeezed side by side, not a
-crossing). Crossings are read in order of distance from the clamp along the plait (toward the robot). Positions are
-counted from the robot's right: 0 = right, 1 = middle, 2 = left, starting from the strands' order at the clamp; at
-each crossing the two strands swap places. A crossing between the right and middle places is +1 when the strand
-coming from the right lies over, -1 when it lies under; one between the middle and left places is -2 when the strand
-coming from the left lies over, +2 when it lies under. A plait alternates +1 and -2 (outer over middle, sides
-alternating, either side first). A strand laid over and straight back cancels (the two crossings are removed). The
-plait count is the length of the alternating run from the clamp: it stops at the first crossing that breaks the
-pattern (the same side twice, a strand passing under the middle, a strand laid across both others).
+A crossing is a point where two centre-lines cross seen from above, with the upper one at least MIN_DZ higher there
+(10 mm sections: one lying over another sits ~10 mm higher; less is two sections squeezed side by side, not a
+crossing). Crossings are read in order of distance from the start of the plait (the gathering elastic) along it,
+toward the robot. Positions are counted from the robot's right: 0 = right, 1 = middle, 2 = left, starting from the
+order at the start; at each crossing the two strands swap places. A crossing between the right and middle places is
++1 when the strand coming from the right lies over, -1 when it lies under; one between the middle and left places is
+-2 when the strand coming from the left lies over, +2 when it lies under. A plait alternates +1 and -2 (outer over
+middle, sides alternating, either side first). A strand laid over and straight back cancels (the two crossings are
+removed). The plait count is the length of the alternating run from the start: it stops at the first crossing that
+breaks the pattern (the same side twice, a strand passing under the middle, a strand laid across both others).
 Pure NumPy.
 """
 import itertools
@@ -26,7 +27,7 @@ def _cross2(a, b):
 
 
 def crossings(lines, origin, axis):
-    """lines: {name: (N, 3) centre-line points}. origin: the clamp (xy); axis: unit xy direction of the plait."""
+    """lines: {name: (N, 3) centre-line points}. origin: the plait's start (xy); axis: unit xy direction of the plait."""
     origin, axis = np.asarray(origin, float)[:2], np.asarray(axis, float)[:2]
     out = []
     for a, b in itertools.combinations(sorted(lines), 2):
@@ -53,9 +54,9 @@ def crossings(lines, origin, axis):
     return out
 
 
-def word(cross_list, order_at_clamp):
-    """The plait's crossings as generators (+-1, +-2), in order from the clamp, and the crossings used."""
-    order = list(order_at_clamp)
+def word(cross_list, order_at_start):
+    """The plait's crossings as generators (+-1, +-2), in order from the start, and the crossings used."""
+    order = list(order_at_start)
     left = list(cross_list)
     gens, used, skipped = [], [], 0
     while left:
@@ -94,7 +95,7 @@ def reduce(gens, used):
 
 
 def plait_count(gs):
-    """Length of the alternating right-over-middle / left-over-middle run from the clamp."""
+    """Length of the alternating right-over-middle / left-over-middle run from the start."""
     n, prev = 0, None
     for g in gs:
         if g not in PLAIT or g == prev:
@@ -103,12 +104,12 @@ def plait_count(gs):
     return n
 
 
-def read(lines, origin, axis, order_at_clamp, min_dz=MIN_DZ):
-    """{'count': plait count, 'word': reduced generators, 'along': each crossing's distance from the clamp (m),
+def read(lines, origin, axis, order_at_start, min_dz=MIN_DZ):
+    """{'count': plait count, 'word': reduced generators, 'along': each crossing's distance from the start (m),
     'dz': height of the upper strand over the lower at each (m), 'skipped': unreadable crossings, 'crossings': the
     crossings read, in order}."""
     cl = [c for c in crossings(lines, origin, axis) if c['dz'] >= min_dz]
-    gens, used, skipped = word(cl, order_at_clamp)
+    gens, used, skipped = word(cl, order_at_start)
     gs, us = reduce(gens, used)
     return {'count': plait_count(gs), 'word': gs, 'along': [u['along'] for u in us], 'dz': [u['dz'] for u in us],
             'skipped': skipped, 'crossings': us}
@@ -119,7 +120,7 @@ def example(schedule, names, origin=(0.55, 0.0), lane=0.012, step=0.03, rest_z=0
     """Centre-lines of three strands plaited by `schedule`, a list of (pair, outer_over) with pair 0 = right and
     middle places, 1 = middle and left; outer_over True lays the outer strand of the pair over the inner one.
     The strands run from `origin` along -x (toward the robot), `step` apart per crossing, then `tail` straight."""
-    order = list(names)  # right, middle, left at the clamp
+    order = list(names)  # right, middle, left at the start
     ys = {0: -lane, 1: 0.0, 2: lane}
     pts = {n: [] for n in names}
     x = origin[0]

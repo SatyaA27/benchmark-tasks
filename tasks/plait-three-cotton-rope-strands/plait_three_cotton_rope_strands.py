@@ -1,10 +1,13 @@
-"""Plait three cotton rope strands from a clamp: six crossings, the outer strand over the middle one each time.
+"""Braid a practice mannequin head's long hair: three sections, six crossings, an outer one over the middle each time.
 
-Three 450 mm lengths of 10 mm (3/8 in) twisted cotton rope (red, natural, blue; 70 g/m) are held at one end side by
-side, 11 mm apart, under a steel clamp bar on a hardwood block at the far side of the table (x 0.55). From the clamp
-they lie flat and straight on the bare table, fanned toward the robot: red 20 degrees to the robot's right, natural
-straight toward the robot, blue 20 degrees to its left. Plait them: lay an outer strand over the middle one, then the
-other outer strand over the new middle one, and keep alternating until there are six crossings; then let go.
+A hairdressing training head with long dark synthetic hair lies on its back on a folded hand towel at the far side of
+the table, crown toward the robot. The hair is combed out over the crown onto the bare table and gathered there with
+a plain elastic that lies against the crown (x 0.54, the start of the braid). From the elastic the hair is split into
+three equal sections of 450 mm, each a round bundle about 10 mm thick whose tip is bound with a small elastic (red on
+the section to the robot's right, white in the middle, blue to its left). The sections lie flat and straight on the
+table, fanned toward the robot: red 20 degrees to the robot's right, white straight toward the robot, blue 20
+degrees to its left. Braid them: lay an outer section over the middle one, then the other outer section over the
+new middle one, and keep alternating until there are six crossings; then let go.
 Metres; x forward from the arm bases, y to the robot's left, z up.
 """
 import math
@@ -18,6 +21,7 @@ for _helper in ("rope_strand", "plait_word"):
     sys.modules.pop(_helper, None)
 import plait_word  # noqa: E402
 import rope_strand  # noqa: E402
+from rope_strand import Piece  # noqa: E402
 from yam_arena.constants import FINGER_CLOSED, FINGER_OPEN  # noqa: E402
 from yam_arena.demo import Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP, Box  # noqa: E402
@@ -26,52 +30,89 @@ SCENE = "station"
 TOP = TABLE_TOP[SCENE]
 SUCCESS_HOLD_S, SCORE_OVER = 5.0, "end"  # success: six crossings photographed for 5 s in a row
 RUN_LIMIT_STEPS = 3600  # 180 s at 20 Hz
-DEMO_WAY = "plait"  # "plait": sides alternate; "twist" (wrong way): the right strand goes over the middle every time
-TEST_ROPE = None  # offline checks only: {strand name: (N, 3) centre-line points} instead of the objects' states
+DEMO_WAY = "plait"  # "plait": sides alternate; "twist" (wrong way): the right section goes over the middle every time
+TEST_ROPE = None  # offline checks only: {section name: (N, 3) centre-line points} instead of the objects' states
 TEST_GRIPPERS = None  # offline checks only: {"left"/"right": (TCP position, TCP rotation)}
 
-# ---------------------------------------------------------------- the rope and the clamp
-D = 0.010  # 10 mm (3/8 in) twisted cotton rope
-PITCH = 0.015  # link length of the simulated rope
-LINKS = 30  # 450 mm a strand; link 0 is the end under the clamp
-KG_PER_M = 0.070  # 10 mm twisted cotton rope, 70 g/m (rope maker's datasheet)
-EI = 1.0e-4  # N m^2 bending stiffness, estimate (a 10 cm overhang droops about 35 degrees)
-ROPE_FRICTION = (0.8, 0.8)  # cotton on cotton and on wood, estimate
-CLAMP_X = 0.55
-SPACING = 0.011  # strand centres under the clamp bar
-FAN = math.radians(20.0)  # the outer strands' angle from straight toward the robot
+# ---------------------------------------------------------------- the hair sections (all figures are estimates)
+D = 0.010  # a third of the hair held as one round bundle (a ponytail of about 5.5 cm circumference, split in three)
+PITCH = 0.015  # link length of the simulated section
+LINKS = 30  # 450 mm from the gathering elastic to the end; link 0 is the hair inside the elastic
+KG_PER_M = 0.040  # a 10 mm bundle of synthetic fibre (about 1.3 g/cm3) packed about 40%
+EI = 3.0e-5  # N m^2: ~7,000 fibres of ~75 um bending side by side; held level, a 10 cm overhang hangs ~7.6 cm down
+HAIR_FRICTION = (0.8, 0.8)  # fibre bundle on fibre and on bare wood
+ELASTIC_X = 0.55  # the sections' starts, side by side in the gathering elastic
+SPACING = 0.011  # section centres where they leave the elastic
+FAN = math.radians(20.0)  # the outer sections' angle from straight toward the robot
+HAIR = (0.13, 0.09, 0.06)  # darkest brown synthetic hair
+BAND_LINK = LINKS - 2  # each section's tip elastic sits 22.5 mm from its end
 
 
-def _rope(color):
+def _section(band):
     return rope_strand.Rope(links=LINKS, pitch=PITCH, radius=D / 2, link_mass=KG_PER_M * PITCH, bend_k=EI / PITCH,
-                            bend_d=0.1 * EI / PITCH, friction=ROPE_FRICTION, color=color)
+                            bend_d=0.1 * EI / PITCH, friction=HAIR_FRICTION, color=HAIR, roughness=0.55,
+                            band_link=BAND_LINK, band_color=band, band_width=0.008)
 
 
-# name, place at the clamp (y), heading toward the robot (world yaw), colour; ordered from the robot's right
-_STRANDS = [("rope_red", -SPACING, math.pi + FAN, (0.78, 0.18, 0.14)),
-            ("rope_natural", 0.0, math.pi, (0.93, 0.89, 0.76)),
-            ("rope_blue", SPACING, math.pi - FAN, (0.16, 0.34, 0.74))]
-NAMES = tuple(n for n, _, _, _ in _STRANDS)
-STRANDS = [rope_strand.strand(n, (CLAMP_X, y), yaw, _rope(c), TOP) for n, y, yaw, c in _STRANDS]
-CLAMP_BAR = Box(name="clamp_bar", pos=(0.552, 0.0, TOP + 0.0165), size=(0.034, 0.060, 0.009), color=(0.20, 0.21, 0.23))
-CLAMP_BLOCK = Box(name="clamp_block", pos=(0.582, 0.0, TOP + 0.0105), size=(0.026, 0.060, 0.021),
-                  color=(0.45, 0.30, 0.18))
-OBJECTS = [*STRANDS, CLAMP_BAR, CLAMP_BLOCK]
+# name, place at the elastic (y), heading toward the robot (world yaw), tip-elastic colour; from the robot's right
+_SECTIONS = [("section_red", -SPACING, math.pi + FAN, (0.86, 0.10, 0.10)),
+             ("section_white", 0.0, math.pi, (0.96, 0.96, 0.96)),
+             ("section_blue", SPACING, math.pi - FAN, (0.12, 0.32, 0.86))]
+NAMES = tuple(n for n, _, _, _ in _SECTIONS)
+SECTIONS = [rope_strand.strand(n, (ELASTIC_X, y), yaw, _section(c), TOP) for n, y, yaw, c in _SECTIONS]
+
+# ---------------------------------------------------------------- the training head, lying on its back
+# Head frame: origin on the table top below the crown (vertex), x from the crown toward the chin, z up. True size of
+# an adult female training head (estimates: crown to chin 225 mm, 145 mm ear to ear, 185 mm back to brow).
+TOWEL_H = 0.020  # a hand towel folded to about 300 x 250 mm, 20 mm thick
+CROWN_X = 0.590
+SKIN, BROW, LIPS, ELASTIC = (0.93, 0.79, 0.68), (0.30, 0.20, 0.14), (0.78, 0.42, 0.42), (0.55, 0.56, 0.60)
+
+
+def head_pieces():
+    b = TOWEL_H  # the back of the head rests on the towel
+    cz = b + 0.0925  # cranium centre height
+    return [
+        Piece("ellipsoid", (0.095, 0.0, cz), (0.095, 0.0725, 0.0925), SKIN),  # cranium
+        Piece("ellipsoid", (0.160, 0.0, cz + 0.032), (0.068, 0.056, 0.060), SKIN),  # face and jaw
+        Piece("ellipsoid", (0.135, 0.0, cz + 0.092), (0.024, 0.012, 0.014), SKIN),  # nose
+        Piece("ellipsoid", (0.135, -0.074, cz - 0.012), (0.031, 0.009, 0.018), SKIN),  # ears
+        Piece("ellipsoid", (0.135, 0.074, cz - 0.012), (0.031, 0.009, 0.018), SKIN),
+        Piece("ellipsoid", (0.118, -0.031, cz + 0.0796), (0.006, 0.012, 0.003), BROW),  # painted eyes
+        Piece("ellipsoid", (0.118, 0.031, cz + 0.0796), (0.006, 0.012, 0.003), BROW),
+        Piece("ellipsoid", (0.103, -0.031, cz + 0.0823), (0.004, 0.017, 0.003), BROW),  # brows
+        Piece("ellipsoid", (0.103, 0.031, cz + 0.0823), (0.004, 0.017, 0.003), BROW),
+        Piece("ellipsoid", (0.180, 0.0, cz + 0.0883), (0.006, 0.018, 0.003), LIPS),
+        Piece("cylinder", (0.225, 0.0, b + 0.052), (0.052, 0.120), SKIN),  # neck, to its flat base
+        Piece("ellipsoid", (0.090, 0.0, cz - 0.015), (0.105, 0.079, 0.105), HAIR),  # hair over the crown and back
+        Piece("ellipsoid", (0.000, 0.0, b + 0.012), (0.050, 0.050, 0.028), HAIR),  # hair combed off the crown
+        Piece("ellipsoid", (-0.022, 0.0, 0.010), (0.022, 0.030, 0.010), HAIR),  # ... down to the elastic
+        Piece("ellipsoid", (ELASTIC_X - 0.004 - CROWN_X, 0.0, 0.009), (0.004, 0.023, 0.009), ELASTIC),
+        Piece("ellipsoid", (0.095, 0.0, cz), (0.070, 0.070, 0.070), SKIN, collide=True),  # invisible colliders
+        Piece("ellipsoid", (0.165, 0.0, cz + 0.020), (0.054, 0.054, 0.054), SKIN, collide=True),
+        Piece("cylinder", (0.225, 0.0, b + 0.052), (0.050, 0.120), SKIN, collide=True),
+    ]
+
+
+TOWEL = Box(name="towel", pos=(CROWN_X + 0.150, 0.0, TOP + TOWEL_H / 2), size=(0.300, 0.250, TOWEL_H),
+            color=(0.62, 0.74, 0.84))
+HEAD = rope_strand.figure("training_head", (CROWN_X, 0.0, TOP), 0.0, head_pieces(), SKIN)
+OBJECTS = [*SECTIONS, TOWEL, HEAD]
 rope_strand.install()
 
 # ---------------------------------------------------------------- scoring: a top photo with the hands clear
 NEEDED = 6  # crossings for full score
-HAND_CLEAR = 0.030  # both grippers at least this far from the rope for a photo
-STILL = 0.010  # m/s: every link of the rope slower than this for a photo
+HAND_CLEAR = 0.030  # both grippers at least this far from the hair for a photo
+STILL = 0.010  # m/s: every link of every section slower than this for a photo
 GRIP_REACH = 0.050  # gripper envelope: a cylinder of 50 mm radius (open fingers) from the pad tips 120 mm up the hand
 GRIP_TIP, GRIP_BACK = 0.013, 0.120
-HEAD = np.array((CLAMP_X - 0.010, 0.0))  # where the plait starts (the clamp bar's front edge); it grows along -x
+PLAIT_START = np.array((ELASTIC_X - 0.010, 0.0))  # where the braid starts (the gathering elastic); it grows along -x
 AXIS = np.array((-1.0, 0.0))
 GRIP_DOWN = ((0.0, -1.0, 0.0), (-1.0, 0.0, 0.0), (0.0, 0.0, -1.0))  # TCP rotation of a hand pointing straight down
 
 
 def centre_lines(objects):
-    """Each strand's centre-line, clamp end first."""
+    """Each section's centre-line, elastic end first."""
     if TEST_ROPE is not None:
         return {n: np.asarray(TEST_ROPE[n], float) for n in NAMES}
     out = {}
@@ -79,7 +120,7 @@ def centre_lines(objects):
         o = objects[n]
         if hasattr(o, "polyline"):
             out[n] = o.polyline()
-        else:  # a plain object state (offline checks): the straight strand it stands for
+        else:  # a plain object state (offline checks): the straight section it stands for
             x, y, z, w = o.quat_xyzw
             yaw = math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
             d = np.array((math.cos(yaw), math.sin(yaw), 0.0)) * PITCH
@@ -90,10 +131,10 @@ def centre_lines(objects):
 
 def read_plait(objects):
     """{'count', 'word', 'along', 'dz', 'skipped'}: see plait_word.read."""
-    return plait_word.read(centre_lines(objects), HEAD, AXIS, NAMES)
+    return plait_word.read(centre_lines(objects), PLAIT_START, AXIS, NAMES)
 
 
-def rope_still(objects):
+def hair_still(objects):
     for n in NAMES:
         o = objects[n]
         v = o.speeds if hasattr(o, "speeds") else [np.linalg.norm(o.lin_vel)]
@@ -103,7 +144,7 @@ def rope_still(objects):
 
 
 def hands_clear(objects):
-    """Both grippers at least HAND_CLEAR from the rope's surface (offline checks without grippers: clear)."""
+    """Both grippers at least HAND_CLEAR from the hair's surface (offline checks without grippers: clear)."""
     grips = grippers()
     if grips is None:
         return True
@@ -120,9 +161,9 @@ def hands_clear(objects):
 
 
 def photo(objects):
-    """The plait count a top photo would show now, or None if no photo may be taken (a hand near the rope, or the
-    rope still moving)."""
-    if not (rope_still(objects) and hands_clear(objects)):
+    """The braid count a top photo would show now, or None if no photo may be taken (a hand near the hair, or the
+    hair still moving)."""
+    if not (hair_still(objects) and hands_clear(objects)):
         return None
     return read_plait(objects)["count"]
 
@@ -131,7 +172,7 @@ _PHOTO = {"episode": None, "count": 0}
 
 
 def score(objects):
-    """Crossings in the last photo / 6 (at most 1.0). In a run the last photo is kept while a hand is near the rope;
+    """Crossings in the last photo / 6 (at most 1.0). In a run the last photo is kept while a hand is near the hair;
     before any photo the score is 0."""
     count = photo(objects)
     if _RUN["env"] is None:  # offline checks: judge the given state alone
@@ -205,7 +246,7 @@ def grippers():
 
 
 def strands_now():
-    """The strands' live states (None offline)."""
+    """The sections' live states (None offline)."""
     env = _RUN["env"]
     if env is None:
         return None
@@ -213,28 +254,29 @@ def strands_now():
     states = arena_scene.object_states(env, list(NAMES))
     for n in NAMES:
         if not (np.isfinite(states[n].centres).all() and np.isfinite(states[n].axes).all()):
-            raise ValueError(f"non-finite rope state {n}")
+            raise ValueError(f"non-finite hair state {n}")
     return states
 
 
 # ---------------------------------------------------------------- scripted demonstration
-# Each crossing is one cycle by one hand: the right hand does the right strand's crossings, the left hand the left's.
-# CROSS: pinch the outer strand 22.5 mm from its free end, lift it so the chord from its root (its furthest crossing,
-# else the clamp) to the hand is 5 mm short of the strand's length, swing it over the middle strand to 65% of the way
-# from the middle strand's end toward the far strand's, lower it along that arc about the root so it lands straight
-# (laid slack, a strand bows near the plait and the crossing forms far out), pull it 1.5 mm past its length (light
-# tension), let go. SPREAD: pinch the old middle strand, now outer, near its end and slide it out to 30 degrees about
-# its previous root, which draws the new crossing toward the clamp. The demo reads the strands' link poses (simulator
-# state) to pick grasp points and roots; a model under test sees only the cameras.
-GRASP_LINK = LINKS - 2  # pinch 22.5 mm from the free end
+# Each crossing is one cycle by one hand: the right hand does the right section's crossings, the left hand the left's.
+# CROSS: pinch the outer section at its tip elastic, 22.5 mm from its end, lift it so the chord from its root (its
+# furthest crossing, else the gathering elastic) to the hand is 5 mm short of the section's length, swing it over the
+# middle section to 65% of the way from the middle section's end toward the far section's, lower it along that arc
+# about the root so it lands straight (laid slack, a section bows near the braid and the crossing forms far out),
+# pull it 1.5 mm past its length (light tension), let go. SPREAD: pinch the old middle section, now outer, near its
+# end and slide it out to 30 degrees about its previous root, which draws the new crossing toward the elastic. The
+# demo reads the sections' link poses (simulator state) to pick grasp points and roots; a model under test sees only
+# the cameras.
+GRASP_LINK = BAND_LINK  # pinch at the tip elastic, 22.5 mm from the end
 FRAC = 0.65
 CARRY_SLACK, LOWER_SLACK, PULL = 0.005, 0.003, 0.0015
 SPREAD_ANGLE = math.radians(30.0)
 SPREAD_SLACK = 0.003
 PRE = -0.016  # finger target before a pinch (~32 mm between the pads)
 HOVER_Z = TOP + 0.070
-CARRY_Z = (0.075, 0.130)  # carry height range above the table (0.4 x the strand's free length, clipped)
-TCP_OVER_ROPE = 0.0095  # pinch height: TCP this far above the rope's centre-line (pad tips 1.5 mm above the table)
+CARRY_Z = (0.075, 0.130)  # carry height range above the table (0.4 x the section's free length, clipped)
+TCP_OVER_ROPE = 0.0095  # pinch height: TCP this far above the section's centre-line (pad tips 1.5 mm above table)
 PARK = {"left": np.array((0.15, 0.29, TOP + 0.19)), "right": np.array((0.15, -0.29, TOP + 0.19))}
 START = [("to park", 1.5)]
 CROSS = [("hover", 1.0), ("descend", 0.6), ("close", 0.45), ("lift", 0.6), ("carry1", 0.45), ("carry2", 0.45),
@@ -265,9 +307,9 @@ def point_at(poly, s):
 
 
 def root_of(states, name, skip_with=None):
-    """Where a strand leaves the plait: its crossing furthest along it (arc in links from the clamp end), else the
-    clamp's edge (arc 1.0). skip_with: ignore its newest crossing with that strand (the one just made)."""
-    found = plait_word.read({n: states[n].polyline() for n in NAMES}, HEAD, AXIS, NAMES)["crossings"]
+    """Where a section leaves the braid: its crossing furthest along it (arc in links from the elastic end), else the
+    elastic (arc 1.0). skip_with: ignore its newest crossing with that section (the one just made)."""
+    found = plait_word.read({n: states[n].polyline() for n in NAMES}, PLAIT_START, AXIS, NAMES)["crossings"]
     found = [c for c in found if name in c["arc"]]
     if skip_with is not None:
         mine = [c for c in found if skip_with in c["arc"]]
@@ -289,12 +331,12 @@ def grasp_pose(state):
 
 
 def plan_cross(states, side):
-    """Waypoints {phase: (TCP position, yaw, finger)} laying the outer strand on `side` over the middle one."""
+    """Waypoints {phase: (TCP position, yaw, finger)} laying the outer section on `side` over the middle one."""
     ends = {n: states[n].centres[GRASP_LINK][:2] for n in NAMES}
     order = sorted(NAMES, key=lambda n: ends[n][1])  # robot's right .. left
     S, mid, far = (order[0], order[1], order[2]) if side == "R" else (order[2], order[1], order[0])
     s_root, root = root_of(states, S)
-    free = (GRASP_LINK + 0.5 - s_root) * PITCH  # strand length from its root to the pinch
+    free = (GRASP_LINK + 0.5 - s_root) * PITCH  # section length from its root to the pinch
     g, yaw_g = grasp_pose(states[S])
     th_g, d_g = angle_from(root[:2], g)
     th_t, _ = angle_from(root[:2], ends[mid] + FRAC * (ends[far] - ends[mid]))
@@ -324,7 +366,7 @@ def plan_cross(states, side):
 
 
 def plan_spread(states, side, S, T, hand):
-    """Waypoints sliding the old middle strand T, now outer on `side`, out to the spread angle about its previous
+    """Waypoints sliding the old middle section T, now outer on `side`, out to the spread angle about its previous
     root; None if it has under 50 mm free (nothing to open)."""
     _, pivot = root_of(states, T, skip_with=S)
     g, yaw_g = grasp_pose(states[T])
@@ -345,7 +387,7 @@ def plan_spread(states, side, S, T, hand):
 
 
 class Plan:
-    """Each crossing and spread is planned from the strands as they lie when its hand starts it."""
+    """Each crossing and spread is planned from the sections as they lie when its hand starts it."""
 
     def __init__(self):
         self.episode, self.cache = None, {}

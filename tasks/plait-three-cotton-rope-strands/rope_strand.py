@@ -1,14 +1,21 @@
-"""Rope strands for YAM Arena tasks: a length of soft rope anchored at one end, simulated as a chain of capsules.
+"""Soft strands for YAM Arena tasks (a rope, or a section of hair held as one bundle), anchored at one end and
+simulated as a chain of capsules, plus fixed figures built from simple shapes (a mannequin head).
 
 A strand is declared in the task file as an ordinary fixed :class:`Box` (its straight starting footprint, so layout
-checks see where it lies) and registered here by name with its rope parameters. When the simulator builds the scene,
+checks see where it lies) and registered here by name with its parameters. When the simulator builds the scene,
 the hook below replaces that box with an articulation rooted at the held end: ``links`` capsule links of length
 ``pitch`` laid along the box's long axis from the held end, each joined to the next by a joint whose stretch and twist are locked and whose two bending axes are free
-(+-60 degrees) on passive spring/damper drives toward a straight rest shape. The first link is the end held in the
-clamp: it is fixed to the world where it was spawned. Every bending axis has a small joint armature (5e-6 kg m^2);
-without it, closing a gripper on a light capsule chain destabilises the solver. Self-collision is on, so strands
-lie over and under each other. ``object_states`` reports each strand as a :class:`RopeState` with every link's
-centre, axis and speed. Only primitive specs and NumPy are imported before the simulator starts.
+(+-60 degrees) on passive spring/damper drives toward a straight rest shape. The first link is the held end (under
+a clamp, or inside a hair elastic): it is fixed to the world where it was spawned. Every bending axis has a small
+joint armature (5e-6 kg m^2); without it, closing a gripper on a light capsule chain destabilises the solver.
+Self-collision is on, so strands lie over and under each other. A strand may carry a coloured band (a visual ring
+on one link, such as an elastic binding a hair section's tip). ``object_states`` reports each strand as a
+:class:`RopeState` with every link's centre, axis and speed.
+
+A figure is declared as a fixed :class:`Box` (its bounding box) and registered with a list of pieces in its own
+frame: visible ellipsoids, cylinders and boxes, each with a colour, and invisible static colliders (pieces marked
+``collide``: uniform spheres, cylinders and boxes). It is a fixed body: nothing in it moves. Only primitive specs and
+NumPy are imported before the simulator starts.
 """
 import functools
 import importlib.abc
@@ -37,6 +44,10 @@ class Rope:
     lin_damp: float = 0.5
     ang_damp: float = 2.0
     color: tuple = (0.8, 0.8, 0.8)
+    roughness: float = 0.85
+    band_link: int = -1  # the link carrying a coloured band (visual only); -1: none
+    band_color: tuple = (1.0, 1.0, 1.0)
+    band_width: float = 0.008
 
     @property
     def length(self):
@@ -62,6 +73,55 @@ def strand(name, held_end, heading, rope: Rope, table_top):
     registry()[name] = (rope, (float(held[0]), float(held[1]), z), float(heading))
     return Box(name=name, pos=(float(centre[0]), float(centre[1]), z),
                size=(rope.length, 2 * rope.radius, 2 * rope.radius), color=rope.color, yaw=float(heading))
+
+
+@dataclass(frozen=True)
+class Piece:
+    """One shape of a figure, in the figure's frame (m). kind "ellipsoid": dims = semi-axes (x, y, z); "cylinder":
+    dims = (radius, length) along ``axis``; "box": dims = edge lengths. ``collide``: an invisible static collider
+    instead of a visible shape (only uniform spheres, cylinders and boxes)."""
+    kind: str
+    centre: tuple
+    dims: tuple
+    color: tuple
+    axis: str = 'X'
+    collide: bool = False
+
+
+def figures():
+    """{figure name: (pieces, origin (x, y, z), yaw)}, shared like registry()."""
+    import yam_arena
+    if not hasattr(yam_arena, '_rope_figures'):
+        yam_arena._rope_figures = {}
+    return yam_arena._rope_figures
+
+
+def piece_bounds(p: Piece):
+    c = np.asarray(p.centre, float)
+    if p.kind == 'ellipsoid' or p.kind == 'box':
+        half = np.asarray(p.dims, float) * (1.0 if p.kind == 'ellipsoid' else 0.5)
+    else:
+        r, h = p.dims
+        half = np.full(3, float(r))
+        half['XYZ'.index(p.axis)] = h / 2
+    return c - half, c + half
+
+
+def figure(name, origin, yaw, pieces, color):
+    """A fixed figure at `origin` (world, m; its frame's z = 0 on the surface it stands on) turned by `yaw`; returns
+    the fixed Box (its bounding box above that surface) that stands for it in the task's OBJECTS."""
+    pieces = tuple(pieces)
+    for p in pieces:
+        if p.collide and not (p.kind in ('box', 'cylinder') or len(set(p.dims)) == 1):
+            raise ValueError(f'{name}: only uniform spheres, cylinders and boxes collide')
+    figures()[name] = (pieces, tuple(float(v) for v in origin), float(yaw))
+    lo = np.min([piece_bounds(p)[0] for p in pieces], axis=0)
+    hi = np.max([piece_bounds(p)[1] for p in pieces], axis=0)
+    lo[2] = max(lo[2], 0.0)  # the frame's z = 0 is the surface it stands on; anything below is hidden in it
+    c, s = math.cos(yaw), math.sin(yaw)
+    centre = np.asarray(origin, float) + np.array(((c, -s, 0.0), (s, c, 0.0), (0.0, 0.0, 1.0))) @ ((lo + hi) / 2)
+    return Box(name=name, pos=tuple(float(v) for v in centre), size=tuple(float(v) for v in hi - lo), color=color,
+               yaw=float(yaw))
 
 
 def local_centres(rope: Rope):
@@ -154,8 +214,12 @@ def _spawn(prim_path, cfg, *args, **kwargs):
     matpath, vispath = f'{prim_path}/rope_material', f'{prim_path}/rope_look'
     mat = sim.RigidBodyMaterialCfg(static_friction=s.friction[0], dynamic_friction=s.friction[1], restitution=0.)
     mat.func(matpath, mat)
-    look = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(s.color), roughness=.85)
+    look = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(s.color), roughness=s.roughness)
     look.func(vispath, look)
+    if s.band_link >= 0:
+        bandpath = f'{prim_path}/band_look'
+        band = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(s.band_color), roughness=.6)
+        band.func(bandpath, band)
     r, h, m = s.radius, s.pitch - 2 * s.radius, s.link_mass  # capsule inertia (cylinder + two half-spheres)
     vc, vs = math.pi * r * r * h, 4 * math.pi * r ** 3 / 3
     mc, ms = m * vc / (vc + vs), m * vs / (vc + vs)
@@ -193,6 +257,12 @@ def _spawn(prim_path, cfg, *args, **kwargs):
         vis.CreateRadiusAttr().Set(s.radius)
         vis.CreateHeightAttr().Set(s.pitch - 0.2 * s.radius)
         sim.bind_visual_material(path + '/visual', vispath, stage=stage)
+        if i == s.band_link:  # a ring round the strand, visual only
+            ring = UsdGeom.Cylinder.Define(stage, path + '/band')
+            ring.CreateAxisAttr().Set('X')
+            ring.CreateRadiusAttr().Set(1.15 * s.radius)
+            ring.CreateHeightAttr().Set(s.band_width)
+            sim.bind_visual_material(path + '/band', bandpath, stage=stage)
     first = stage.GetPrimAtPath(f'{prim_path}/seg_00')
     # Articulation root on the container Xform + a world FixedJoint on the held link = a fixed-base articulation.
     UsdPhysics.ArticulationRootAPI.Apply(root.GetPrim())
@@ -236,6 +306,87 @@ def _spawn(prim_path, cfg, *args, **kwargs):
     return root.GetPrim()
 
 
+_FCFG = None
+_FSPAWN = None
+
+
+def _figure_object(box):
+    """A registered figure as a fixed Arena object (static colliders, no rigid body), like the kit's fixed parts."""
+    global _FCFG, _FSPAWN
+    _, origin, yaw = figures()[box.name]
+    import isaaclab.sim as sim
+    from isaaclab.sim.utils import clone
+    from isaaclab.utils import configclass
+    from isaaclab_arena.assets.object import Object
+    from isaaclab_arena.assets.object_type import ObjectType
+    from isaaclab_arena.utils.pose import Pose
+
+    if _FCFG is None:
+        @configclass
+        class FigureSpawnCfg(sim.SpawnerCfg):
+            figure_name: str = ''
+        _FCFG = FigureSpawnCfg
+        _FSPAWN = clone(_spawn_figure)
+    return Object(name=box.name, object_type=ObjectType.BASE,
+                  spawner_cfg=_FCFG(func=_FSPAWN, figure_name=box.name),
+                  initial_pose=Pose(position_xyz=origin, rotation_xyzw=(0., 0., math.sin(yaw / 2), math.cos(yaw / 2))))
+
+
+def _spawn_figure(prim_path, cfg, *args, **kwargs):
+    import isaaclab.sim as sim
+    from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
+    from yam_arena.station import linear_rgb
+
+    pieces = figures()[cfg.figure_name][0]
+    stage = kwargs.get('stage') or sim.get_current_stage()
+    root = UsdGeom.Xform.Define(stage, prim_path)
+    translation = kwargs.get('translation', args[0] if args else None)
+    orientation = kwargs.get('orientation', args[1] if len(args) > 1 else None)
+    if translation is not None:
+        root.AddTranslateOp().Set(Gf.Vec3d(*map(float, translation)))
+    if orientation is not None:
+        x, y, z, w = map(float, orientation)
+        root.AddOrientOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(w, Gf.Vec3d(x, y, z)))
+    matpath = f'{prim_path}/figure_material'
+    mat = sim.RigidBodyMaterialCfg(static_friction=0.6, dynamic_friction=0.5, restitution=0.)
+    mat.func(matpath, mat)
+    looks = {}
+    for i, p in enumerate(pieces):
+        if p.color not in looks and not p.collide:
+            looks[p.color] = f'{prim_path}/look_{len(looks):02d}'
+            look = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(p.color), roughness=.6)
+            look.func(looks[p.color], look)
+        path = f'{prim_path}/piece_{i:02d}'
+        if p.kind == 'ellipsoid':
+            geom = UsdGeom.Sphere.Define(stage, path)
+            uniform = len(set(p.dims)) == 1
+            geom.CreateRadiusAttr().Set(float(p.dims[0]) if uniform else 1.)
+            geom.AddTranslateOp().Set(Gf.Vec3d(*map(float, p.centre)))
+            if not uniform:
+                geom.AddScaleOp().Set(Gf.Vec3f(*map(float, p.dims)))
+        elif p.kind == 'cylinder':
+            geom = UsdGeom.Cylinder.Define(stage, path)
+            geom.CreateAxisAttr().Set(p.axis)
+            geom.CreateRadiusAttr().Set(float(p.dims[0]))
+            geom.CreateHeightAttr().Set(float(p.dims[1]))
+            geom.AddTranslateOp().Set(Gf.Vec3d(*map(float, p.centre)))
+        else:
+            geom = UsdGeom.Cube.Define(stage, path)
+            geom.CreateSizeAttr().Set(1.)
+            geom.AddTranslateOp().Set(Gf.Vec3d(*map(float, p.centre)))
+            geom.AddScaleOp().Set(Gf.Vec3f(*map(float, p.dims)))
+        if not p.collide:
+            sim.bind_visual_material(path, looks[p.color], stage=stage)
+        else:  # an invisible collider; the visible shape is a separate piece
+            geom.CreateVisibilityAttr().Set('invisible')
+            UsdPhysics.CollisionAPI.Apply(geom.GetPrim())
+            col = PhysxSchema.PhysxCollisionAPI.Apply(geom.GetPrim())
+            col.CreateContactOffsetAttr().Set(0.002)
+            col.CreateRestOffsetAttr().Set(0.)
+            sim.bind_physics_material(path, matpath, stage=stage)
+    return root.GetPrim()
+
+
 def _array(v):
     v = getattr(v, 'torch', v)
     return v.detach().cpu().numpy().astype(float) if hasattr(v, 'detach') else np.asarray(v, float)
@@ -269,6 +420,8 @@ def _patch(scene):
     def task_object(spec):
         if getattr(spec, 'name', None) in registry():
             return _object(spec)
+        if getattr(spec, 'name', None) in figures():
+            return _figure_object(spec)
         return old_object(spec)
 
     @functools.wraps(old_states)
