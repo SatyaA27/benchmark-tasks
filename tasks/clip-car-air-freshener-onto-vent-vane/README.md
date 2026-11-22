@@ -105,8 +105,8 @@ True-size rigid parts. Each vane has its own pins and its own detent; the rear l
 - The clip: the Febreze CAR Vent Clip. The maker publishes no clip sizes or forces; its patent for such clips gives
   prongs 10 to 40 mm long (narrowest range 16 to 20), gaps 0.5 to 8 mm at their widest (3 to 5) and 0.5 to 3 mm at
   their narrowest (1 to 2). Our 20 mm prongs, 4.5 mm mouth and 1.6 mm gap
-  lie inside the narrowest ranges. Every clip value is an estimate (The clip, below).
-- Estimates: every friction.
+  lie inside the narrowest ranges. See the purchased clip and vane readings below.
+- The scene uses fixed friction coefficients, listed in task.json.
 
 ## Building the vent
 
@@ -160,53 +160,48 @@ Assembly and the detent:
 A built vane comes to about 6 g with its pins (calculated; 3 g simulated); its weight sits on the pin axis, so it adds no turning
 torque. The simulated +-30 degree stops are not built: a vane past 15 degrees already scores 0.
 
-## The clip: estimates and checks
+## Purchased clip and vane readings
 
-No physical measurement of the purchased clip has been made: its values are estimates, and the lab checks the key
-ones before the first trial (below).
+These readings were supplied from a physical check of the purchased Febreze CAR clip and the printed vane.
 
-| Value | Estimate | Obtained from |
-| --- | --- | --- |
-| Body, w x h x t | 41 x 38 x 16 mm | a retail photo scaled by the listed pack size (about 39 x 41); thickness estimated |
-| Prongs, length x width; thickness root / mid / tip | 20 x 7; 1.4 / 2.1 / 1.4 mm | length inside the patent's range; the rest estimated |
-| Gap, mouth, flare | 1.6, 4.5, 3 mm | gap and mouth inside the patent's ranges; flare estimated |
-| Vane, thickness x depth | 2.0 x 17 mm | the printed vane |
-| Mass | 7 g | calculated from the shell: 5.5 g empty, 7.3 g with the oil |
-| Spread to a 2.0 mm gap | 1.5 N (simulated spring) | calculated 0.39 N (both prongs bend) / 0.78 N (one braced), at the tips |
-| Push-on peak; pull-off | 1.66 / 3.22 N; 0.68 / 1.34 N | simulated with the task's spring, height held / floating |
+| # | Reading | Value |
+|---|---|---|
+| 1 | Body width × height × thickness | 41 × 38 × 16 mm |
+| 2 | Prong length, root to tip | 20 mm |
+| 3 | Prong width | 7 mm |
+| 4 | Prong thickness, root / midpoint / tip | 1.4 / 2.125 / 1.4 mm |
+| 5 | Narrowest unloaded inner gap | 1.6 mm |
+| 6 | Mouth opening at the tips | 4.5 mm |
+| 7 | Flare length | 3 mm |
+| 8 | Vane thickness × depth | 2.0 × 17 mm |
+| 9 | Clip mass | 5.5 g dry / 7.3 g filled |
+| 10 | Peak straight insertion force | 1.66 N fixed height / 3.22 N vertically floating |
+| 11 | Peak straight pull-off force | 0.68 N fixed height / 1.34 N vertically floating |
+| 12 | Tip-applied spreading force to a 2.0 mm gap | 0.78 N one prong braced / 0.39 N both prongs free to flex |
 
-What was run, no hardware: a beam calculation of the task's fork (polypropylene, modulus 1.5 GPa assumed), and a
-contact simulation (MuJoCo 3.4) of the task's own fork mesh and sprung prong pushed onto and off the 2.0 mm
-vane at 2.5 mm/s, height held (one face loaded) or floating (both); halving the time step to 25 µs (held) and 12.5 µs
-(floating) changed the results by under 0.01 N; pull-off is the seated load times static friction 0.45 (assumed).
+The scene's sprung slide uses 1.0 N preload and 1.25 N/mm stiffness, giving a transverse load of 1.50 N at a
+2.0 mm opening. The reported spreading force with one prong braced is 0.78 N at the tips.
+Record the gauge and support geometry to compare the loads at the same point before setting the spring.
+The real trial uses the dry clip. The scene uses a clip mass of 7 g.
 
-The simulated spring, 1.5 N on a vane (1.0 N preload plus 1.25 N/mm), is 2 to 4 times the calculated 0.39 to 0.78 N.
-So the simulated push-on is harder than for a fork as soft as calculated (slide model of the same fork: 1.64 to
-3.29 N, against 0.40 to 0.54 N with bending prongs and no preload) and its grip stronger (pull-off 1.35 against
-0.45 N). The scored hold check pulls straight down, not along the vane, and none of these covers it: the bought clip
-must pass it by hand (below).
+## Checks before a trial
 
-Checks before the first trial, about a minute each; a clip outside a band is not the simulated fork: use another.
+- Check the clip's unloaded gap (1.35 to 1.95 mm), mouth (3.5 to 5.5 mm) and prong length (18 to 22 mm).
+  On a four-prong clip, use the pair that accepts a horizontal vane.
+- For the spread screening check, hang the clip from one prong tip and a bag from the other. Add weight
+  until a nickel fits between the prongs 3 mm in from the tips. The bag should weigh at most 150 g.
+- For a push-on check, stand a spare 2.0 mm printed vane with its front edge up. Tare the force reading
+  with the vane in place and push straight down along the vane until the clip seats. The peak scale reading
+  should be at most 340 g.
+- Seat the clip by hand on the built vent and run the scored 100 g hold check.
 
-- Fork: gap at the root 1.35 to 1.95 (a dime, 1.35 thick, slides in to the root freely; a nickel, 1.95, only by
-  spreading the prongs); by caliper, mouth at the tips 3.5 to 5.5 and prongs 18 to 22 from the clip's back. A
-  four-prong clip (the patent's preferred form): check the pair that takes a horizontal vane.
-- Spreading force, kitchen scale: hang the clip by a thread round one prong's tip, a small bag from the other's; add
-  nickels until a nickel slides between the prongs 3 mm in from the tips; weigh the bag: at most 150 g (the simulated
-  spring gives 147 g at a nickel's 1.95; calculated under 40 g).
-- Push-on force, kitchen scale: tape a spare printed vane to the scale on its back edge, tare, push the fork straight
-  down onto it until home over about 3 s: highest reading at most 340 g (3.3 N, the top of the simulated range).
-- Hold: pushed onto a built vane by hand, the clip passes the 100 g hold check.
+Real trials use a used-up clip. Keep it clicked open with the dial on high until the scent is gone.
+Squeeze its flat sides in a paper towel and check that it leaves no oil mark.
+[Febreze FAQ](https://circle.supersavvyme.co.uk/uk/projects/febreze/faq)
 
-Scented oil (review note): opening the clip pierces the foil over the oil, and the maker's FAQ covers oil leaking onto
-surfaces, so real trials use a used-up clip: clicked open, dial on high, left until the scent is gone (up to 30 days
-on low, says the maker), then squeezed by its flat sides in a paper towel: no oil mark. It is about 2 g lighter
-(calculated 5.5 g against 7.3 g); the simulated 7 g lies between.
-
-Sources: maker's FAQ, https://circle.supersavvyme.co.uk/uk/projects/febreze/faq; patent US 12,708,692 B2,
-https://patents.google.com/patent/US12708692B2/en; retail photo and pack size,
-https://www.target.com/p/-/A-14966291; a universal louvre listing (sizes of bezel and cut-out only), https://watsons-streetworks.com/product/trique-mfg-rectangular-a-c-vent/; coin mass and thickness,
-https://en.wikipedia.org/wiki/Nickel_(United_States_coin), https://en.wikipedia.org/wiki/Dime_(United_States_coin).
+[Vent clip patent](https://patents.google.com/patent/US12708692B2/en) ·
+[Retail clip listing](https://www.target.com/p/-/A-14966291) ·
+[Universal louvre listing](https://watsons-streetworks.com/product/trique-mfg-rectangular-a-c-vent/)
 
 ## Reset
 
@@ -214,13 +209,7 @@ Pull the clip straight off its vane along the vane's plane, stand it on its flat
 
 ## Revision
 
-Review 2 (not accepted), what to change: "The real-parts check is still open: measure the purchased clip's fork dimensions and the
-force needed to spread or insert it over the specified vane, report the measurements, and update the setup and
-simulation where needed. Please also provide 3D-printable files for the vent fixture if they are not already
-included."
-
-Changes, text and print files only: the README states that no physical measurement of the purchased clip has been
-made, gives each clip value as an estimate with its source, states the simulated spring's difference from the
-calculation and which way it errs, and adds kitchen-scale checks of spreading and push-on force, banded so the real
-clip is no stiffer than the simulated one; STL files of the printed vent parts (fixture/); README Scoring points to
-task.json. Simulation, demonstration and runs unchanged.
+The review requested the purchased fork's dimensions and the force to spread it and seat it on the specified
+vane. The table above records those readings and the axial pull-off force. The vent's front plate, rear half and
+vane are printable from the STL files under `fixture/`. The spring comparison needs the bench gauge and
+support details before it can be used to set the scene's spring.
