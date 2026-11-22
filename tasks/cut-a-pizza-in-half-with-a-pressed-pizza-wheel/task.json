@@ -1,0 +1,25 @@
+{
+  "title": "Cut a single-serve pizza in half with a pizza wheel pressed hard through the centre, one hand holding the board",
+  "category": "Societal relatability",
+  "keywords": [
+    "pizza",
+    "pizza wheel",
+    "cutting",
+    "kitchen",
+    "food",
+    "bimanual",
+    "holding still",
+    "tool use",
+    "pressing",
+    "rolling blade"
+  ],
+  "instruction": "Cut the pizza in half. Hold the pizza board still by its handle with one hand. With the other, lift the pizza wheel out of its block, press it down on the pizza and roll it straight across through the centre, from one crust edge right over the other, pressing hard enough to cut right through. Put the pizza wheel back in its block, then draw one half about 3 cm away from the other.",
+  "context": "Halving a small single-serve pizza to share it, with a pizza wheel, is an ordinary kitchen job. What makes it physical: the wheel is a rolling blade that only cuts where it is pressed down hard as it rolls, so the hand must push it down (about 8 N here) and drive it in a straight line through the centre, from one crust edge right over the other, while the other hand holds the board by its handle so it does not slide or turn under the push. A pass that is too light, wanders off the centre line or stops short of the far crust leaves the halves joined, and that shows the moment one half is drawn away: the whole pizza and board come with it. On video: one hand on the board's handle, the wheel rolling across the pizza, a thin cut line opening, and one half slid away from the other.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the table top; arm bases at (0, +0.305) and (0, -0.305). (1) A round acacia serving board, 254 mm across and 12.7 mm thick with a 127 mm handle 40 mm wide, 0.50 kg, flat on the table, its middle at (0.225, -0.155), the handle pointing back toward the left arm (135 degrees from +x). (2) On it, centred, a heated single-serve frozen pizza (Celeste Pizza For One, pepperoni) 152 mm across and 9 mm thick (142 g): crust, tomato sauce, cheese and pepperoni. (3) A palm-held pizza wheel (red guard and handle over a steel wheel 96 mm across, 134 x 29 x 130 mm overall, 131 g) standing upright with its wheel in the slot of (4) a wooden utensil block 140 x 60 x 75 mm (slot 12 mm wide, 55 mm deep), fixed, at (0.24, -0.39), the slot along y. Both arms at the ready pose, grippers open; the gripper fingertips wear food-safe covers (the drawn half is touched). Tape outlines mark the board and the block.",
+  "scoring": "Score 0 if the cut line is not cut through anywhere from the centre to a crust edge, or the board ends tipped over or off the table. Otherwise the lowest of these numbers. Cut (the line through the centre is two seams, centre to each crust edge; a stretch is cut only where the wheel's edge rolls over it within 6 mm of the line pressing down at least 8 N, so the halves are within 45/55 of equal): both seams cut crust to crust = 1.0; one = 0.5 (the halves stay joined). Half drawn (how far each half has moved from its place at the end; a half can move only once the whole line is cut through): one half 30 mm or more away with the other within 10 mm = 1.0; 10-30 mm = 0.75; otherwise = 0.5. Board held still (largest shift of its middle and largest turn): within 15 mm and 5 degrees = 1.0; 30 mm and 10 degrees = 0.75; 60 mm and 20 degrees = 0.5; more = 0.25. Pizza wheel let go = 1.0; still in the hand = 0.75. Doing nothing scores 0. Success: 1.0 held for 1 s. In a real trial: a half comes away only if the cut goes right through crust to crust, so the end photo shows the gap of the drawn half (ruler); the board against its tape outline (ruler; 5 degrees is 11 mm at the board's rim); the video shows the wheel let go.",
+  "run_limit": "1,300 steps (65 s at 20 Hz)",
+  "reset_notes": "A new pizza each trial: heat one single-serve frozen pizza as its box says (microwave about 2 min) and let it cool 5 min; about US$2 a trial. Wipe the board and the wheel. Put the board on its tape outline, handle toward the left arm, the pizza centred on it; the pizza wheel upright in the block's slot. Fresh fingertip covers. Ready pose, grippers open.",
+  "fidelity": "Rigid bodies. The pizza is two rigid halves on locked slides; a seam is cut only where the wheel's edge rolls over it within 6 mm of the line pressing at least 8 N (the axle's force); the halves are freed (2 mm kerf) once the whole line is cut crust to crust. Left out: cheese stringing, crust crumbling, toppings dragging, the crust's give. Wheel, handle and pizza sizes and the 8 N are estimates; the block is a stand.",
+  "scores": "Dream-1 run: 0.0 (full length); demo: 1.0 (full length); wrong way: light pass 0, pass stopped short of the far crust 0.5",
+  "media": "M-5WV768"
+}
