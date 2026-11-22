@@ -1,0 +1,25 @@
+{
+  "title": "Float a magnetic levitating desk globe: lift it under the frame's magnet to its balance point and let go",
+  "category": "Societal relatability",
+  "keywords": [
+    "levitating globe",
+    "magnetic levitation",
+    "desk toy",
+    "balance point",
+    "release",
+    "placing by feel",
+    "hidden target",
+    "pinch",
+    "pitched grip",
+    "everyday"
+  ],
+  "instruction": "Pick the globe up off the frame's base, lift it under the magnet in the frame's top arm to the point where the magnet takes its weight, let go, and take your hand away so the globe hangs in mid-air touching nothing.",
+  "context": "Magnetic levitating globes are a common desk gift, and getting one to float is the one thing every owner has to do, often more than once (it drops when unplugged and must be floated again). The target is invisible and found only by position: the globe hangs about 15 mm below the head; let go still with its top much closer than about 10 mm and the magnet snaps it up, much further than about 20 mm and it drops, and a push or drag while letting go throws it out. Nothing supports the object at the goal and nothing guides it there: the robot must place it in mid-air, open its fingers without disturbing it, and withdraw past it, and the globe shows at once whether that worked.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the desk top; arm bases at (0, +0.305) and (0, -0.305). (1) C-shaped levitating globe frame, plugged in and on: 18 x 4.8 x 17.3 cm (base 18 x 8.4 cm), about 0.32 kg, dark metal and ABS plastic, loose on the desk, its C in the x-z plane with the open side toward the robot and the upright at the far end; base centre at (0.205, -0.100); the head (electromagnet, a 40 mm disc) under the end of the top arm, its face 143 mm above the desk, its axis at (0.200, -0.100). (2) 3-inch (76 mm) hollow acrylic world globe with a neodymium magnet at its north pole, about 70 g (estimate), resting north pole up on the frame's base under the head. Nothing else on the desk. Both arms start at the ready pose, grippers open. A tape outline marks the frame's base.",
+  "scoring": "Score 0 if the frame was knocked over (tilted over 30 degrees) or the globe left the desk. Otherwise the lower of two numbers. Globe: 1.0 it has hung free for 5 s in a row: below the head, its top 3-30 mm under the head's face and within 15 mm of the head's axis, clear of the base, every part of the gripper 10 mm or more off the globe, and the globe still (under 5 cm/s); 0.25 stuck up against the magnet (gap under 2 mm) with the hand away; 0 otherwise (on the base, dropped, or still in the hand; includes doing nothing). Frame: 1.0 within 15 mm of its start; 0.5 moved 15-40 mm; 0.25 further. Success: 1.0 held 1 s more. In the real trial: the video (gap and clearance, timed) and a ruler on the frame's tape outline.",
+  "run_limit": "1,200 steps (60 s at 20 Hz), about 2.8x the scripted demo's 21.4 s",
+  "reset_notes": "Take the globe off the head or the desk and set it north pole up on the frame's base under the head; put the frame back on its tape outline, open side toward the robot; check the frame is lit (adapter plugged in). Ready pose, grippers open. About 20-30 s a trial.",
+  "fidelity": "Levitation is a force law, not simulated electronics: a magnet pull rising steeply toward the head plus a one-way coil whose feedback holds the globe 15 mm under the head (stiff, damped); let go still nearer than 10 mm it snaps up, beyond 20 mm it drops; field centring to 12-20 mm off axis. Gap, window, 70 g and frame proportions are estimates. Frame and globe are each one rigid body; continents drawn only; no LEDs or spin.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-ZQWM64"
+}
