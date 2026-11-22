@@ -1,0 +1,23 @@
+{
+  "title": "Put a five-piece wooden nesting doll set back together, pressing each snug top home with its face lined up",
+  "category": "Societal relatability",
+  "instruction": "Put the nesting dolls back together, each closed with its own top pressed home and its face lined up, the smaller ones inside the largest.",
+  "run_limit": "3,000 steps (2.5 minutes at 20 Hz)",
+  "keywords": [
+    "nesting dolls",
+    "matryoshka",
+    "toy",
+    "friction fit",
+    "press fit",
+    "nesting order",
+    "rotational alignment",
+    "household"
+  ],
+  "context": "A painted wooden nesting doll set is a familiar toy and shelf ornament that children and adults take apart and put back together. Doing it right takes order and a feel for the fit: the smallest doll goes in before the next one is closed, each top must go on its own bottom, turned so the painted face sits over the apron, and the halves are a snug friction fit. A top set on its bottom stops on the spigot, a visible gap at the waist, and goes home only when pressed square with a few newtons; pressed crooked it jams. A loosely capped doll comes apart when the next one is picked up.",
+  "setup": "Positions in mm from the midpoint between the two arm bases (x forward, y left, z up from the table top); one fixed layout as in the screenshot. A five-piece turned linden wood nesting doll set, varnished, painted red with a cream face on each top and a cream apron on each bottom half (face and apron on the same side when a doll is closed). Doll 1: 150 mm tall, 71 mm across, split 60 mm up; bottom half (38 g) open end up at x 240, y -130, apron toward the arms; top (16 g) on its rim at x 130, y -20, its face turned 60 degrees from where it belongs. Doll 2: 110 x 52 mm, split 44 mm up; bottom (20 g) at x 300, y -300; top (8 g) at x 240, y -430, 70 degrees off. Doll 3: 72 x 34 mm, closed (holds dolls 4 and 5; 21 g, blue) at x 150, y -220. Walls 2.5 mm, floors 4 mm; each bottom has a spigot 2 mm thick and 8 mm tall that its own top fits over snugly; an inner doll passes the next spigot with 2.6 mm to spare all round.",
+  "scoring": "Read at the end from the video and a photo, with both grippers at least 30 mm from every piece. Score 0 if any piece ever fell off the table or a gripper is still on the set; otherwise the highest level reached. Inside: a doll or bottom half stands on the floor of the next bottom half, within 3.5 mm of its axis, both upright within 8 degrees. Closed: a top on its own bottom with a seam gap of 2 mm or less at the waist, centred within 2.5 mm, square within 5 degrees, its face within 15 degrees of the apron. 1.0: doll 3 inside doll 2, doll 2 closed and inside doll 1, doll 1 closed and upright within 5 degrees, no piece moving more than 1 mm over the last 1 s. 0.75: doll 2, closed with doll 3 in it, inside doll 1 (or all done but still moving). 0.5: doll 2 closed with doll 3 in it. 0.25: doll 3 inside doll 2's bottom half. 0 otherwise; a top resting above its spigot or on the other doll's bottom does not count as closed.",
+  "reset_notes": "Open dolls 1 and 2 by twisting each top gently while pulling. Leave doll 3 closed with dolls 4 and 5 inside. Stand each half of dolls 1 and 2 on its printed outline (bottoms open end up, tops on their rims) with the faces turned to the marks on the outlines, and doll 3 on its outline. About one minute.",
+  "fidelity": "Halves are rigid lathed shapes at the stated sizes with masses from linden at 0.45 g/cm3. The snug fit is four sprung pads inside each top's skirt: a top set on its spigot rests about 4 mm up under its own weight and goes home only when pressed with a few newtons (estimate; no maker publishes the force). Doll 3 and the two inside it are one solid body. Paint is thin raised strips. Friction 0.5. Wood springback and crushing are not modelled.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-GAMALJ"
+}
