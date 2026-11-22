@@ -1,0 +1,23 @@
+{
+  "title": "Change a toy robot into its truck: legs together, arms in, then the bonnet halves over the head",
+  "category": "Societal relatability",
+  "keywords": [
+    "toy",
+    "converting robot",
+    "transforming toy",
+    "robot to truck",
+    "hinges",
+    "fold order",
+    "two hands",
+    "children's play"
+  ],
+  "instruction": "The toy robot lies face down on the bench. Change it into its truck the way its picture instructions show, in this order: (1) swing both legs together until each clicks against the other; (2) swing both arms in flat along the sides of the body until they click; (3) swing the two shoulder plates forward over the head until they meet in front of it as the truck's bonnet. The arms will not go in while a leg is still spread. Do not force a part or shove the figure off its mark; leave the truck on its wheels and take both hands away.",
+  "context": "Robot toys that change into trucks and cars have been among the best-known toys in the world for forty years, and changing one is something every child and parent does. Anyone watching a short clip sees at once what is happening: a robot becomes a truck. This task is the simple few-step kind sold for young children: six chunky parts on stiff hinges, swung to a click in the order the instruction pictures show, because the parts block each other: an arm meets the spread thigh about 19 degrees before its stop, so the legs must go together first. What makes it physical: the figure is small and light and is not fixed down, so each part must be swung round its hinge with a fingertip that follows the arc, firmly enough to overcome the hinge's stiffness and seat it, but without forcing a blocked part or shoving the whole figure across the bench.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the bench top; arm bases at (0, +0.305) and (0, -0.305). A plastic converting robot-to-truck toy (ages 3 and up), 165 mm long in truck form and 0.28 kg, lies face down in robot form inside a tape outline, its torso centre at (0.13, 0.00), head toward the robot, feet away. Torso 60 x 56 x 30 mm; head 21 x 24 mm; legs 70 x 27 mm spread 32 degrees outward on hip hinges; arms 92 x 12 mm spread 45 degrees outward on shoulder hinges; two bonnet halves (33 x 28 x 10 mm, grille and headlight on the front) standing straight out beside the head on hinges at the front corners of the torso. Four wheels (26 mm across): front ones on the arms, double rear ones on the legs. Each hinge turns about the vertical between a robot-form stop and a truck-form stop, with friction of 0.015-0.025 N m. Sizes, masses and hinge stiffness are estimates. Both arms at the ready pose, grippers open.",
+  "scoring": "Score 0 if the figure fell off the bench or was forced: its body moved more than 30 mm from its start mark or turned more than 20 degrees at any time. Otherwise the lowest of these numbers. (a) Parts home (each of the six hinged parts - two legs, two arms, two bonnet halves - within 6 degrees of its truck-form stop): 6 = 1.0; 5 = 0.75; 3-4 = 0.5; 1-2 = 0.25; 0 = 0. (b) On its wheels (tilted no more than 15 degrees) = 1.0, otherwise 0.5. (c) Hands away (no part of either gripper within 20 mm of the figure's outline) = 1.0, otherwise 0.75. Doing nothing scores 0. Success: 1.0 held 1 s. In a real trial: one end photo from above against the truck picture on the instruction sheet shows which parts are home and whether the truck stands on its four wheels inside its tape outline; the video shows any shove.",
+  "run_limit": "2,400 steps (120 s at 20 Hz); the demo takes about 85 s",
+  "reset_notes": "Fold the toy back to robot form: bonnet halves straight out, arms 45 degrees out, legs 32 degrees out, each to its stop. Lay it face down in its tape outline, head toward the robot. Ready pose, grippers open. About 30 s a trial.",
+  "fidelity": "Rigid parts on vertical hinges with friction; the click is the hinge's end stop (no snap torque). Hinge friction, sizes and masses are estimates. Forcing is judged by the figure being shoved or turned. Left out: plastic flex, ball joints popping off, the toy's smaller detail parts. The figure is a procedural model of the common few-step kind, with no logo or character marks.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-AYMC86"
+}
