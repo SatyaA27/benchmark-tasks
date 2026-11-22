@@ -8,7 +8,10 @@ lights after a short random pause.
 Here each mole head is a slide joint of the game's mechanism (yam_joints): `update()` is given the joints' positions
 (metres, 0 at the top stop, negative when pressed) once per control step and runs the same rules. The lit mole is
 shown by the kit's visibility lamp on the mole's dome (`lamp_values()` is the mechanism's lamp_logic). Nothing here
-moves a body: a hit happens only when something physically presses a mole past its switch.
+moves a body: a hit happens only when something physically presses a mole past its switch, and only when the
+task says that something was the head of the held mallet (`who(mole) == "head"`). A lit mole pressed past its switch
+by anything else (the handle, a loose mallet, a finger, the gripper) goes dark as the real unit's would, but earns no
+hit: that lighting is lost (counted in `foul`).
 
 Tuned numbers (all ESTIMATES; a person checks them on the real unit with a ruler and a stopwatch):
   N_LIT = 8 lightings a round; LIT_S = 1.6 s lit (the easier level); GAP_S = 0.6-1.4 s dark between lightings
@@ -22,8 +25,8 @@ How to use it (pure Python, offline and on the simulator host):
     import whack_kit as wk
     game = wk.Game(["m0", "m1", "m2", "m3", "m4"])
     game.reset(seed)                       # at each episode start
-    game.update(t, {"m0": q0, ...}, started=..., who=lambda mole: "mallet" | "gripper" | "other")
-    game.hits, game.wrong, game.bare, game.missed, game.lit, game.done
+    game.update(t, {"m0": q0, ...}, started=..., who=lambda mole: "head" | "gripper" | "handle" | "loose" | "other")
+    game.hits, game.wrong, game.bare, game.foul, game.missed, game.lit, game.done
 """
 from __future__ import annotations
 
@@ -65,6 +68,7 @@ class Game:
         self.wrong = 0
         self.missed = 0
         self.bare = 0              # presses with a gripper finger on the mole
+        self.foul = 0              # lit moles pressed by something other than the held mallet's head: no hit
         self.down = {m: False for m in self.moles}
         self.t_up = {m: -1e9 for m in self.moles}
         self.events = []
@@ -83,7 +87,8 @@ class Game:
 
     def update(self, t, q, started=False, who=None):
         """One control step: t (s since the episode began), q {mole: slide position (m)}, started (the start signal),
-        who(mole) -> "gripper" when a gripper finger is on that mole."""
+        who(mole) -> what pressed that mole: "head" (the head of the held mallet: the only press that can be a
+        hit), "gripper" (a gripper finger), or anything else ("handle", "loose", "other")."""
         self.t = t
         if self.t_start is None:
             if started and self.t_signal is None:
@@ -102,9 +107,13 @@ class Game:
                     self.bare += 1
                 if not self.started:
                     kind = "early"
-                elif m == self.lit:
+                elif m == self.lit and by == "head":
                     kind = "hit"
                     self.hits += 1
+                    self._dark(t)
+                elif m == self.lit:
+                    kind = "foul"          # the unit's switch closed, so the light goes out, but no hit is credited
+                    self.foul += 1
                     self._dark(t)
                 else:
                     kind = "wrong"

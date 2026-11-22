@@ -174,6 +174,8 @@ OBJECTS = [UNIT, MALLET]
 
 # ------------------------------------------------------------------ what a person checks
 NEAR_XY, NEAR_Z = 0.026, 0.012             # a gripper point this close over a mole's dome = fingers on the mole
+HEAD_TOL = 0.003                           # the mallet's head within 3 mm of a dome = on it (contact offset 1 mm)
+HOLD_GAP, HOLD_AXIS = 0.003, 0.008         # held: jaw gap 18 mm +/- 3 mm, handle axis within 8 mm of the pads' middle
 MOVED_M, TILT_DEG = 0.030, 10.0
 LIFTED = 0.050                             # the start signal: mallet head 50 mm above where it lay
 
@@ -212,16 +214,88 @@ def head_centre(mallet_state):
     return np.asarray(mallet_state.origin, float)
 
 
-def _who(game_state, pts):
+def dome_centre(game_state, mole):
+    """World centre of a mole's hard-hat dome, from the mole's reported pose (it moves down with the mole)."""
+    return np.asarray(game_state.links[mole][0], float) + game_state.link_rotation(mole) @ np.array(
+        [0.0, 0.0, DOME_C - DECK])
+
+
+def _nearest_on_cylinder(p, axis, lo, hi, radius):
+    """Nearest point to p (mallet frame) on a solid cylinder round the mallet's x or y axis, from lo to hi along it."""
+    k = "xyz".index(axis)
+    along = float(np.clip(p[k], lo, hi))
+    radial = np.array(p, float)
+    radial[k] = 0.0
+    r = float(np.linalg.norm(radial))
+    if r > radius:
+        radial *= radius / r
+    radial[k] = along
+    return radial
+
+
+def held(mallet_state, pts):
+    """The mallet is held: for one gripper, the jaws have stopped closed on the handle. Both pad centres lie along
+    the handle's length, the line between them crosses the handle (within 45 degrees of square to it), the handle's
+    axis passes within HOLD_AXIS of their midpoint, and the jaw gap is the handle's 18 mm give or take HOLD_GAP."""
+    if mallet_state is None or not pts:
+        return False
+    for arr in pts.values():
+        arr = np.asarray(arr, float)
+        if len(arr) < 3:
+            continue
+        a, b = mallet_state.to_local(arr[1]), mallet_state.to_local(arr[2])
+        gap = float(np.linalg.norm(a - b))
+        if not abs(gap - 2 * HANDLE_R) <= HOLD_GAP:
+            continue
+        mid = (a + b) / 2
+        along_ok = all(HANDLE_X1 <= p[0] <= HANDLE_X0 for p in (a, b))
+        square = abs((a - b)[0]) / gap <= math.cos(math.radians(45))
+        if along_ok and square and float(np.hypot(mid[1], mid[2])) <= HOLD_AXIS:
+            return True
+    return False
+
+
+def _contact_from_above(mallet_state, centre, axis, lo, hi, radius):
+    """(gap, from_above): the gap between the mole's dome (a sphere at `centre`) and one solid of the mallet, and
+    whether that solid's nearest point is above the dome (within 60 degrees of straight up from the dome's centre)."""
+    c = mallet_state.to_local(centre)
+    q = _nearest_on_cylinder(c, axis, lo, hi, radius)
+    v = mallet_state.rotation() @ (q - c)
+    d = float(np.linalg.norm(v))
+    if d < 1e-9:
+        return -DOME_R, True
+    return d - DOME_R, float(v[2]) >= 0.5 * d
+
+
+def head_on(mallet_state, game_state, mole):
+    """The mallet's head (its 65 mm drum and end caps) is on this mole's dome from above, within HEAD_TOL."""
+    half = HEAD_L / 2 + 0.004
+    gap, above = _contact_from_above(mallet_state, dome_centre(game_state, mole), "y", -half, half, HEAD_R)
+    return gap <= HEAD_TOL and above
+
+
+def handle_on(mallet_state, game_state, mole):
+    gap, _ = _contact_from_above(mallet_state, dome_centre(game_state, mole), "x", HANDLE_X1, HANDLE_X0, HANDLE_R)
+    return gap <= HEAD_TOL
+
+
+def _who(game_state, mallet_state, pts):
+    """What pressed a mole, judged at the step its switch closes: "gripper" (a gripper point over the dome; a finger
+    press scores 0), "head" (the head of the held mallet on the dome from above: the only press that can earn a hit),
+    "loose" (the head on it but the mallet not held), "handle" (the handle on it), or "other"."""
     def who(mole):
-        if not pts:
-            return "other"
         top = dome_top(game_state, mole)
-        for arr in pts.values():
-            d = arr - top
+        for arr in (pts or {}).values():
+            d = np.asarray(arr, float) - top
             if np.any((np.hypot(d[:, 0], d[:, 1]) < NEAR_XY) & (d[:, 2] < NEAR_Z)):
                 return "gripper"
-        return "mallet"
+        if mallet_state is None:
+            return "other"
+        if head_on(mallet_state, game_state, mole):
+            return "head" if held(mallet_state, pts) else "loose"
+        if handle_on(mallet_state, game_state, mole):
+            return "handle"
+        return "other"
     return who
 
 
@@ -268,7 +342,7 @@ def play(objects):
     _GAME_EP["t"] = t
     g, mal = objects["game"], objects["mallet"]
     lifted = float(mal.origin[2]) > _GAME_EP["z0"] + LIFTED
-    GAME.update(t, dict(g.joints), started=lifted, who=_who(g, gripper_points()))
+    GAME.update(t, dict(g.joints), started=lifted, who=_who(g, mal, gripper_points()))
     return GAME
 
 
@@ -316,8 +390,10 @@ def score(objects):
     if DIAG and _RUN["t"] is not None and _RUN["step"] % 5 == 0:
         q = {m: round(v / MM, 1) for m, v in objects["game"].joints.items()}
         print(f"WMLOG {_RUN['step']} {_RUN['t']:.2f} lit={GAME.lit} hits={GAME.hits} wrong={GAME.wrong} "
-              f"missed={GAME.missed} bare={GAME.bare} i={GAME.i} q_mm={q} moved_mm={st['moved'] / MM:.1f} "
-              f"tilt={st['tilt']:.1f} mallet_z={float(objects['mallet'].origin[2]) - TOP:.3f} {_hand_diag()}", flush=True)
+              f"missed={GAME.missed} bare={GAME.bare} foul={GAME.foul} i={GAME.i} q_mm={q} "
+              f"moved_mm={st['moved'] / MM:.1f} tilt={st['tilt']:.1f} "
+              f"mallet_z={float(objects['mallet'].origin[2]) - TOP:.3f} "
+              f"held={held(objects['mallet'], gripper_points())} {_hand_diag()} events={GAME.events[-3:]}", flush=True)
     if fingers or dropped or shoved or controls or st["hits"] == 0:
         return 0.0
     return min(hit_tier(st["hits"]), wrong_cap(st["wrong"]))
