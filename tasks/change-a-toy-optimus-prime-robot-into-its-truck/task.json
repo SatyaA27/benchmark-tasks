@@ -1,0 +1,23 @@
+{
+  "title": "Change a toy Optimus Prime robot into its truck: legs together, arms in, then the back pack swung over as its front",
+  "category": "Societal relatability",
+  "keywords": [
+    "toy",
+    "Optimus Prime",
+    "Transformers",
+    "converting robot",
+    "robot to truck",
+    "hinges",
+    "fold order",
+    "children's play"
+  ],
+  "instruction": "The toy robot, a Transformers Authentics Optimus Prime, lies face down on the bench. Change it into its truck in the order of its instruction steps: (1) straighten the legs: swing both legs in until they stop side by side; (2) push both arms in flat along the sides of the body until they stop; (3) swing the back pack forward to form the front of the truck: swing its two halves round the sides of the head until they meet in front of it. Do not force a part or shove the figure off its mark; leave the truck on its wheels and take both hands well away.",
+  "context": "Transformers robots that change into vehicles have been among the best-known toys in the world for forty years, and Optimus Prime, the red-and-blue robot that becomes a lorry cab, is the best known of them. A viewer of a short clip sees a small red-and-blue robot lying on a table become, part by part, a red truck. The product is the 7-inch figure sold for children, changed in four big steps. What makes it physical: the figure is small, light and not fixed down, so each part must be swung round its hinge with a fingertip that follows the arc, firmly enough to overcome the hinge's stiffness and reach its stop, but without shoving the figure; and the parts touch each other: an arm swung in before its leg meets the spread thigh about 19 degrees before its stop and must drive the leg in with it, so the card's order is the easy one.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the bench top; arm bases at (0, +0.305) and (0, -0.305). A hard-plastic Transformers Authentics Alpha Optimus Prime figure (Hasbro E0771, 7-inch scale) lies face down in robot form inside a tape outline, its torso centre at (0.13, 0.00), head toward the robot, feet away: 178 mm from head to feet, 194 mm long as a truck, 0.28 kg. Red cab-shaped torso (70 x 66 x 35 mm) with a light-blue windscreen and two silver exhaust stacks; blue helmet; red arms (108 x 14 mm, blue fists) 45 degrees out on shoulder hinges; blue legs (81 x 32 mm, silver bumpers) 32 degrees out on hip hinges; the back pack that forms the truck front, in two red halves (39 x 32 x 9 mm, silver grille, amber headlight), standing straight out beside the head on hinges at the torso's front corners. Four black wheels (30 mm across): front on the arms, rear on the legs. Each hinge turns about the vertical between a robot-form stop and a truck-form stop, friction 0.015-0.020 N m. Sizes other than the scale, the mass and the hinge stiffness are estimates. Both arms at the ready pose, grippers open.",
+  "scoring": "Score 0 if the figure fell off the bench or was forced: its body moved more than 30 mm from its start mark or turned more than 20 degrees at any time. Otherwise the lowest of these numbers. (a) Parts home (each of the six hinged parts - two legs, two arms, two halves of the truck front - within 6 degrees of its truck-form stop): 6 = 1.0; 5 = 0.75; 3-4 = 0.5; 1-2 = 0.25; 0 = 0. (b) On its wheels (tilted no more than 15 degrees) = 1.0, otherwise 0.5. (c) Hands away (no part of either gripper within 60 mm of the figure's outline) = 1.0, otherwise 0.75. Doing nothing scores 0. Success: 1.0 held 1 s. In a real trial: one end photo from above against the truck picture on the instruction sheet shows which parts are home, whether the truck stands on its wheels inside its tape outline and where the hands are; the video shows any shove.",
+  "run_limit": "2,400 steps (120 s at 20 Hz); the demo takes about 63 s",
+  "reset_notes": "Fold the toy back to robot form: the two front halves straight out beside the head, arms 45 degrees out, legs 32 degrees out, each to its stop. Lay it face down in its tape outline, head toward the robot. Ready pose, grippers open. About 30 s a trial.",
+  "fidelity": "Rigid parts on vertical hinges with friction; the click is the hinge's end stop. The toy's one-piece back pack, swung over to form the truck front, is modelled as two halves swung flat round the head; its last step (lower legs swung up over the thighs) is left out, the legs straight. Hinge friction, part sizes and mass are estimates. Forcing is judged by shove or turn. Proportions and colours only: no logo or marks.",
+  "scores": "Dream-1 run: 0.25; demo: 1.0",
+  "media": "M-SXPEAG"
+}
