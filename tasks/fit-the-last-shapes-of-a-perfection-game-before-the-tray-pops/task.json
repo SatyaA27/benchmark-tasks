@@ -1,0 +1,25 @@
+{
+  "title": "Finish a game of Perfection against its timer: fit the last four shapes in their holes, then stop the clock",
+  "category": "Societal relatability",
+  "keywords": [
+    "Perfection",
+    "board game",
+    "shape matching",
+    "timer",
+    "pop-up tray",
+    "toy",
+    "insertion",
+    "time pressure",
+    "bimanual",
+    "everyday play"
+  ],
+  "instruction": "Finish this game of Perfection before its clock runs out: the timer is already running. Fit each of the four yellow shapes lying beside the game into its own hole in the blue tray, turned so it drops in, then slide the timer's switch to STOP. If the clock runs out first the tray pops up and throws the shapes out. Do not hold the tray down.",
+  "context": "Perfection has been a family game for five decades: 25 small shapes must go into their matching holes in a tray before a 60-second clock runs out, or the spring-loaded tray pops up and throws them across the table. This task is the end of a round: 21 shapes are in, four are left, 40 seconds remain. What makes it physical: each shape is held by a small knob, picked from a loose position and angle, and drops into one hole only, turned to the right angle, with about half a millimetre to spare on each side; a square, a circle, a cross and a rounded bar never fit each other's holes. Then the robot must reach the timer and slide its switch to STOP before the clock ends. On video: two hands carrying yellow shapes to the blue tray, each shape turning and dropping flush, a finger sliding the switch; if the clock wins, the tray jumps up and the shapes fly out.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the desk; arm bases at (0, +/-0.305). (1) Perfection game unit (moulded plastic, red frame, blue pop-up tray, yellow shapes), 333 x 267 x 76 mm, long side across the robot, centre at (0.200, -0.045). The 225 mm tray (5 x 5 holes, 42 mm apart) is centred at (0.20, 0.00), its top 52 mm above the desk, locked down; the timer housing with its dial and START/STOP slide switch takes the unit's right-hand 96 mm. 21 shapes are in. Empty holes: square (0.158, 0.084), circle (0.200, 0.084), hot dog (0.158, -0.084), cross (0.200, -0.084). (2) The four loose shapes, 6 mm thick with an 8 mm knob 11 mm tall: circle 32 mm across at (0.13, 0.185); square 26 mm at (0.22, 0.185) turned 25 deg; cross 34 mm (12 mm arms) at (0.27, -0.30) turned 30 deg; hot dog 36 x 16 mm at (0.17, -0.30) turned -55 deg. Before the trial the person running it presses the tray down until it locks, turns the dial to the 20 mark (40 s left) and slides the switch to START as the trial begins. Sizes inside the unit's outline, clearances and forces are estimates. Arms at the ready pose, grippers open.",
+  "scoring": "Score 0 if the tray was held down when it popped, or the game unit was shoved more than 30 mm or tipped more than 10 degrees. Otherwise, if the clock ran out (the tray popped): 0.25 if all four shapes were down in their own holes at that moment, else 0. If the switch is at STOP at the end (the clock stopped by it, never run out), count the four shapes that were down in their own holes when the switch reached STOP and are still there at the end: 4 = 1.0; 3 = 0.75; 2 = 0.5; 1 = 0.25; 0 = 0. If the clock is still running at the end, 0. A shape is in only when it lies flat in the hole cut for its own shape, sunk to the pocket floor (within 1.5 mm, turned to fit); one resting on top of a hole is not in. Doing nothing scores 0: the clock runs out with no shape in. Success: 1.0 held 1 s. In a real trial: the video shows when the switch reached STOP and whether the tray popped; an end photo shows the switch at STOP and which holes are filled flush.",
+  "run_limit": "2,400 steps (120 s at 20 Hz); the clock runs out 40 s into the trial unless stopped",
+  "reset_notes": "Take the four shapes out (square, circle, cross, hot dog) and lay them on their tape marks at the stated angles; leave the other 21 in. Slide the switch to STOP, press the tray down until it locks, put the unit on its tape outline, turn the dial to the 20 mark, and slide the switch to START as the trial begins. Arms at the ready pose. About 60 s a trial.",
+  "fidelity": "The wind-up timer is a script: 40 s left, stopped when the switch has slid 8 of its 12 mm; at time-out the tray's spring (6-21 N over a 25 mm stroke) is applied to the tray. The 21 shapes already in are part of the tray. Shapes are rigid prisms with flat sides; the curved holes are fine steps. Clearance 0.5 mm a side, switch detent 2 N, sizes inside the unit and masses are estimates.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-VH42SM"
+}
