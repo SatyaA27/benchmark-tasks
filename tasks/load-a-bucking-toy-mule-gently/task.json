@@ -1,0 +1,25 @@
+{
+  "title": "Load the bucking toy mule: hang a rope, a canteen and a pan on its saddle so gently that it does not buck",
+  "category": "Societal relatability",
+  "keywords": [
+    "bucking mule game",
+    "toy",
+    "children's game",
+    "hanging",
+    "gentle placement",
+    "force control",
+    "hair trigger",
+    "spring catch",
+    "saddle",
+    "everyday play"
+  ],
+  "instruction": "Hang the three pieces of gear on the toy mule's saddle without making it buck: the coiled rope over the saddle horn, the canteen and the frying pan over the two hangers at the back of the saddle. Set each one down gently and do not touch the mule.",
+  "context": "The bucking-mule game has been in toy shops for fifty years: players take turns hanging the cowboy gear on a spring-loaded mule's saddle, and whoever makes it buck is out. This task is that play itself, with the pieces named. Finding the post is easy; the hard part is the set-down. The mule's catch gives under load and lets go past a small threshold, so a piece pressed onto the saddle, set down with a hand that keeps pushing, or dropped from a height bucks it, and the mule throws off everything already hung. The robot cannot feel force: it must lower each piece slowly over its post, stop just above the seat and open its fingers without pressing or dragging, then leave without touching the mule. Three light pieces are well under the mule's weight limit at its hardest setting, so a careful player succeeds and a careless one does not, and the toy shows the result at once.",
+  "setup": "Metres; x forward from the line through the arm bases, y to the robot's left, z up from the desk top; arm bases at (0, +0.305) and (0, -0.305). (1) Spring-loaded bucking-mule toy (moulded plastic, steel spring inside), set (pushed down and locked), skill switch on its most sensitive setting: mule and base 22 x 8.5 x 23 cm, about 0.38 kg in all (estimate), loose on the desk, facing away from the robot along +x, base centre at (0.175, 0); its blanket on the hindquarters and the saddle (red, 10 x 6.6 cm seat, 144 mm up) resting on it, with a horn post at the front (0.186, 0) and two hanger posts at the back (0.110, +0.026) and (0.110, -0.026), 6 mm posts 18 mm tall. (2) The game's moulded plastic pieces: coiled rope (orange ring, 36 mm across, 20 mm hole, 8 g) with its hole at (0.255, -0.150) and canteen (green, 34 mm flask with a 16 mm strap loop, 9 g) with its loop at (0.105, -0.175), both on the right; frying pan (blue, 36 mm pan, handle with a 14 mm hole, 6 g) with its hole at (0.100, 0.175) on the left; each lying flat, body pointing +x. Piece sizes and masses are estimates. Both arms at the ready pose, grippers open. A tape outline marks the mule's base.",
+  "scoring": "Score 0 if the mule bucked at any time (the catch let go and it kicked), or it was knocked over (tilted over 20 degrees) or shoved more than 30 mm. Otherwise by the pieces hanging on the saddle at the end: a piece counts when a hanger post passes through its hole or loop, it lies on the seat within 30 degrees of flat, no part of a gripper is within 30 mm of it, and the saddle is still on the mule's back. Any hanger counts. Three pieces 1.0; two 0.6; one 0.3; none 0 (includes doing nothing). Success: 1.0 held 1 s more. In the real trial: the video (did the mule kick at any point) and one photo at the end (which pieces are on the posts).",
+  "run_limit": "2,400 steps (120 s at 20 Hz), about 2.8x the scripted demo's 42.9 s",
+  "reset_notes": "If the mule bucked: push its bottom down until the back legs touch the base and push the tail down to lock it (the maker's instructions), put the blanket and saddle back on. Take the pieces off the saddle and lay them flat on their tape marks (rope and canteen right, pan left, bodies pointing away from the robot). Mule back on its tape outline, skill switch on 3. Ready pose, grippers open. About 30 s a trial.",
+  "fidelity": "The mule's catch is a force law, not the real latch: the hindquarters are held by a hold that gives 200 N/m under load (damped) and lets go at 2.9 mm of give, about 60 g of static load (estimate for the most sensitive setting); then they kick up and the saddle is struck upward. Load reaches it only by contact. Mule, hindquarters and saddle are rigid; pieces are simplified flat shapes; sizes, masses and threshold are estimates.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-P3UC38"
+}
