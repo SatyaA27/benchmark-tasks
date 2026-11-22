@@ -47,6 +47,7 @@ class Rope:
     color: tuple = (0.8, 0.8, 0.8)
     roughness: float = 0.85
     band_link: int = -1  # the link carrying a coloured band (visual only); -1: none
+    band_links: tuple = ()  # more links carrying a band (visual only)
     band_color: tuple = (1.0, 1.0, 1.0)
     band_width: float = 0.008
 
@@ -267,7 +268,8 @@ def _spawn(prim_path, cfg, *args, **kwargs):
     mat.func(matpath, mat)
     look = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(s.color), roughness=s.roughness)
     look.func(vispath, look)
-    if s.band_link >= 0:
+    band_set = set(s.band_links) | ({s.band_link} if s.band_link >= 0 else set())
+    if band_set:
         bandpath = f'{prim_path}/band_look'
         band = sim.PreviewSurfaceCfg(diffuse_color=linear_rgb(s.band_color), roughness=.6)
         band.func(bandpath, band)
@@ -309,7 +311,7 @@ def _spawn(prim_path, cfg, *args, **kwargs):
         vis.CreateRadiusAttr().Set(s.radius)
         vis.CreateHeightAttr().Set(s.pitch - 0.2 * s.radius)
         sim.bind_visual_material(path + '/visual', vispath, stage=stage)
-        if i == s.band_link:  # a ring round the strand, visual only
+        if i in band_set:  # a ring round the strand, visual only
             ring = UsdGeom.Cylinder.Define(stage, path + '/band')
             ring.CreateAxisAttr().Set('X')
             ring.CreateRadiusAttr().Set(1.15 * s.radius)

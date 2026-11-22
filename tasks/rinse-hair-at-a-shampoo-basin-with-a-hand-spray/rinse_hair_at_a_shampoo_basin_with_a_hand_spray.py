@@ -1,13 +1,14 @@
-"""Rinse a practice mannequin head's hair at an inflatable shampoo basin with a hand spray, scalp wetted at the crown
-and the front hairline, face and ears kept dry.
+"""Rinse a practice mannequin head's hair at an inflatable shampoo basin with a hand spray: the scalp wetted across
+the top and the crown and the hair tail rinsed along its length, the face, eyes and ears kept dry.
 
 A hairdressing training head lies face up in an inflatable bed shampoo basin on the table, its crown toward the robot,
-its top hair combed back over the crown into the basin in one tail. Water runs from a hand spray (a camping-shower head fed by a pump
-in a bucket), which lies face down in the basin on the robot's left, so its water goes into the basin. Square water-
-contact indicator patches are stuck on the head: two must be wetted (the scalp at the crown, under the hair that runs
-over it; the scalp at the middle of the front hairline) and three must stay dry (the forehead just in front of the
-hairline, the outside of each ear). Pick up the spray, wet both scalp patches, keep the face and ears dry, and lay the
-spray back face down in the basin.
+its top hair combed back over the crown into the basin in one tail. Water runs from a hand spray (a camping-shower
+head fed by a pump in a bucket), which lies face down in the basin on the robot's left, so its water goes into the
+basin. White water-contact indicator tape is stuck on the head and the hair. Must be wetted (9): six scalp patches
+(the front hairline; the top 35 mm either side of the tail; the crown under the tail and 35 mm either side of it)
+and three bands round the tail. Must stay dry (9 units): a strip across the forehead from temple to temple, each
+closed eye, each cheek, each ear's front and outside. Pick up the spray, rinse, keep the face and ears dry, and lay
+the spray back face down in the basin.
 
 The water is a scored model (spray_kit.py), not a fluid: straight jets from the nozzle face, stopped by the hair, a
 hand, the head or the basin floor. Hair: one capsule-chain tail (hair_kit.py). Metres; x forward from the arm bases, y to
@@ -36,7 +37,9 @@ TOP = TABLE_TOP[SCENE]
 SCORE_OVER = "end"
 SUCCESS_HOLD_S = 1.0
 RUN_LIMIT_STEPS = 2400  # 120 s at 20 Hz
-DEMO_WAY = "rinse"  # "rinse"; wrong ways: "noshield" (no hand at the hairline), "toponly" (hair never moved aside)
+DEMO_WAY = "rinse"  # "rinse"; wrong ways: "noshield" (no hand at the brow, the spray aimed at the hairline patch
+# itself from 40 degrees), "toponly" (hair never moved aside),
+# "spots" (only the crown and hairline spots aimed at: no sweep across them, the tail not rinsed)
 DEMO_SEQ = None  # GPU probes only: one way per episode, e.g. ("rinse", "rinse", "rinse", "careless")
 TEST_GRIPPERS = None  # offline checks: {"left"/"right": (TCP position, TCP rotation)}
 DIAG = False  # True: print patch changes and a status line every second (probes)
@@ -91,18 +94,68 @@ def cranium_point(hx, y=0.0):
 
 
 PATCH_SIDE = 0.015
-W1_X, W2_X, D1_X = 0.003, 0.056, 0.090  # head-frame x of the crown, hairline and forehead patches (centre line)
+BAND_FRACTION = 0.25  # a tail band counts as wet with a quarter of its surface red (one side of the tail faces the spray)
+FULL_SHARE = 6  # with the face dry: 6-8 of the 9 must-wet places wet scores 0.5, 1-5 scores 0.25
+_HEAD_SHAPES = (CRANIUM, FACE, NOSE, *EARS)
+
+
+def surface_hit(frm, toward):
+    """(point, outward normal) where a ray from `frm` along `toward` (head frame) first meets the head's shapes."""
+    O, D = np.array([frm], float), np.array([toward], float) / np.linalg.norm(toward)
+    best = (np.inf, None)
+    for c, semi in _HEAD_SHAPES:
+        t = float(sk.ray_ellipsoid(O, D, c, semi)[0])
+        if t < best[0]:
+            best = (t, (c, semi))
+    p = O[0] + D[0] * best[0]
+    c, semi = best[1]
+    n = (p - np.asarray(c)) / np.asarray(semi) ** 2
+    return p, n / np.linalg.norm(n)
+
+
+def _down(hx, y):
+    return surface_hit((hx, y, 0.40), (0.0, 0.0, -1.0))
+
+
+def _from_robot(y, z):
+    return surface_hit((-0.20, y, z), (1.0, 0.0, 0.0))
+
+
+W2_X, D1_X = 0.056, 0.090  # head-frame x of the hairline patch and of the forehead strip's centre line
+CROWN_Z = 0.116  # head-frame height of the crown patches on the back of the head (facing the robot)
+SIDE_Y = 0.035  # the side patches' offset from the middle line
+TOP_X = 0.045  # head-frame x of the two top patches
+FOREHEAD_DEG = (-43.0, -32.25, -21.5, -10.75, 0.0, 10.75, 21.5, 32.25, 43.0)  # the strip's 9 squares round the brow
+
+
+def _round_brow(deg):
+    """A point of the forehead strip: on the cranium at head-frame x D1_X, `deg` round from the top toward +y."""
+    t = math.radians(deg)
+    (cx, _, cz), _s = CRANIUM[0], CRANIUM[1]
+    return surface_hit((D1_X, 0.4 * math.sin(t), cz + 0.4 * math.cos(t)), (0.0, -math.sin(t), -math.cos(t)))
 
 
 def patches_head():
-    """[(name, centre, normal, in-plane axis, must_wet)] in the head frame."""
+    """[(name, unit, centre, normal, in-plane axis, must_wet)] in the head frame; a unit is what the scorer reads
+    (the forehead strip is one unit of nine squares)."""
     out = []
-    for name, hx, wet in (("crown", W1_X, True), ("hairline", W2_X, True), ("forehead", D1_X, False)):
-        p, n = cranium_point(hx)
-        out.append((name, p, n, (0.0, 1.0, 0.0), wet))
-    for (c, semi), side in zip(EARS, ("right_ear", "left_ear")):
-        s = 1.0 if c[1] > 0 else -1.0
-        out.append((side, np.array((c[0], c[1] + s * semi[1], c[2])), np.array((0.0, s, 0.0)), (1.0, 0.0, 0.0), False))
+    scalp = [("hairline", _down(W2_X, 0.0)),
+             ("top_left", _down(TOP_X, SIDE_Y)), ("top_right", _down(TOP_X, -SIDE_Y)),
+             ("crown", _from_robot(0.0, CROWN_Z)),
+             ("crown_left", _from_robot(SIDE_Y, CROWN_Z)), ("crown_right", _from_robot(-SIDE_Y, CROWN_Z))]
+    for name, (p, n) in scalp:
+        out.append((name, name, p, n, (0.0, 1.0, 0.0), True))
+    for i, deg in enumerate(FOREHEAD_DEG):
+        p, n = _round_brow(deg)
+        out.append((f"forehead_{i + 1}", "forehead_strip", p, n, (1.0, 0.0, 0.0), False))
+    for side, s in (("left", 1.0), ("right", -1.0)):
+        for name, (p, n) in ((f"{side}_eye", _down(0.118, s * 0.031)), (f"{side}_cheek", _down(0.165, s * 0.042))):
+            out.append((name, name, p, n, (0.0, 1.0, 0.0), False))
+        c, semi = EARS[0 if s < 0 else 1]
+        p, n = surface_hit((c[0], s * 0.3, c[2]), (0.0, -s, 0.0))
+        out.append((f"{side}_ear_outside", f"{side}_ear_outside", p, n, (1.0, 0.0, 0.0), False))
+        p, n = surface_hit((0.3, c[1], c[2]), (-1.0, 0.0, 0.0))
+        out.append((f"{side}_ear_front", f"{side}_ear_front", p, n, (0.0, 1.0, 0.0), False))
     return out
 
 
@@ -126,22 +179,24 @@ def head_pieces():
         Piece("ellipsoid", (0.103, 0.031, CZ + 0.0823), (0.004, 0.017, 0.003), BROW),
         Piece("ellipsoid", (0.180, 0.0, CZ + 0.0883), (0.006, 0.018, 0.003), LIPS),
         Piece("cylinder", (0.225, 0.0, 0.052), (0.052, 0.120), SKIN),  # neck, to its flat base
-        # hair over the sides (seen from above beside the tail); not a collider and not on any patch
-        Piece("ellipsoid", (0.060, -0.050, CZ - 0.005), (0.065, 0.030, 0.080), HAIR),
-        Piece("ellipsoid", (0.060, 0.050, CZ - 0.005), (0.065, 0.030, 0.080), HAIR),
+        # hair over the sides, low beside the head (seen from above); not a collider and not on any patch
+        Piece("ellipsoid", (0.040, -0.062, CZ - 0.010), (0.060, 0.016, 0.070), HAIR),
+        Piece("ellipsoid", (0.040, 0.062, CZ - 0.010), (0.060, 0.016, 0.070), HAIR),
         # colliders
         Piece("ellipsoid", *CRANIUM, SKIN, collide=True),
         Piece("ellipsoid", (0.165, 0.0, CZ + 0.020), (0.054, 0.054, 0.054), SKIN, collide=True),
         Piece("cylinder", (0.225, 0.0, 0.052), (0.050, 0.120), SKIN, collide=True),
     ]
-    ps += [_disc(p, n, TAPE) for _, p, n, _, _ in patches_head()]
+    ps += [_disc(p, n, TAPE) for _, _, p, n, _, _ in patches_head()]
     return ps
 
 
 HEAD = hair_kit.figure("training_head", tuple(HEAD_O), 0.0, head_pieces(), SKIN)
-PATCHES = [sk.Patch(n, HEAD_O + p, nn, ax, PATCH_SIDE, w) for n, p, nn, ax, w in patches_head()]
-MUST_WET = [p.name for p in PATCHES if p.must_wet]
-MUST_DRY = [p.name for p in PATCHES if not p.must_wet]
+_PH = patches_head()
+PATCHES = [sk.Patch(n, HEAD_O + p, nn, ax, PATCH_SIDE, w) for n, _, p, nn, ax, w in _PH]
+UNIT_OF = {n: u for n, u, *_ in _PH}
+SCALP = [u for u in dict.fromkeys(UNIT_OF[p.name] for p in PATCHES if p.must_wet)]
+MUST_DRY = [u for u in dict.fromkeys(UNIT_OF[p.name] for p in PATCHES if not p.must_wet)]
 
 # ---------------------------------------------------------------- the hair: one tail combed back over the crown
 # The top hair, combed straight back into one loose tail held by a hair tie near its ends, rooted along the middle of
@@ -151,6 +206,8 @@ LOCK_R, PITCH, LINKS = 0.012, 0.028, 9
 KG_PER_M, EI = 0.250, 1.5e-4
 LOCK_SPREAD = 0.020  # the 24 mm tail lying on the scalp spreads to about 40 mm wide: the width it keeps water off
 ROOT_X = 0.028
+BAND_LINKS = (1, 3, 5)  # tape bands round the tail, centred 42, 98 and 154 mm from its root
+BAND_W = 0.015
 
 
 def lock_path(y, off):
@@ -192,12 +249,15 @@ def lock_path(y, off):
 
 def _lock():
     return hair_kit.Rope(links=LINKS, pitch=PITCH, radius=LOCK_R, link_mass=KG_PER_M * PITCH, bend_k=EI / PITCH,
-                         bend_d=0.1 * EI / PITCH, friction=(0.8, 0.8), color=HAIR, roughness=0.55)
+                         bend_d=0.1 * EI / PITCH, friction=(0.8, 0.8), color=HAIR, roughness=0.55,
+                         band_links=BAND_LINKS, band_color=TAPE, band_width=BAND_W)
 
 
 _LOCKS = [("hair_tail", 0.0, LOCK_R + 0.0008)]
 LOCK_NAMES = tuple(n for n, _, _ in _LOCKS)
 LOCKS = [hair_kit.strand_path(n, HEAD_O + lock_path(y, off), _lock()) for n, y, off in _LOCKS]
+BANDS = [sk.Band(f"tail_band_{i + 1}", k, LOCK_R, BAND_W) for i, k in enumerate(BAND_LINKS)]
+MUST_WET = SCALP + [b.name for b in BANDS]
 
 # ---------------------------------------------------------------- the hand spray (free)
 # A camping-shower hand spray: handle 25 mm across, 150 mm long, head 70 mm across, 25 mm thick, nozzle face
@@ -343,7 +403,7 @@ def hair_capsules(objects):
 
 
 def spray_landings(objects):
-    """Points where the spray's jets land on the head this instant."""
+    """(points where the jets land on the head this instant, [(hair capsule index, point on the tail's surface)])."""
     origin, R = spray_pose(objects)
     face = origin + R @ FACE_LOCAL
     O, D = sk.jets(face, -R[:, 2], R[:, 0])
@@ -351,36 +411,57 @@ def spray_landings(objects):
     A = np.array([c[0] for c in caps])
     B = np.array([c[1] for c in caps])
     rr = np.array([c[2] for c in caps])
-    block = sk.ray_capsules(O, D, A, B, rr)
+    hair_t, hair_k = sk.ray_capsules(O, D, A, B, rr, index=True)
+    other = np.full(len(O), np.inf)
     grips = grippers()
     if grips:
         hands = sk.hand_capsules(grips)
-        block = np.minimum(block, sk.ray_capsules(O, D, np.array([h[0] for h in hands]),
+        other = np.minimum(other, sk.ray_capsules(O, D, np.array([h[0] for h in hands]),
                                                   np.array([h[1] for h in hands]), sk.HAND_R))
-    block = np.minimum(block, sk.ray_plane_z(O, D, TOP + FLOOR))
+        other = np.minimum(other, sk.ray_boxes(O, D, sk.hand_boxes(grips)))
+    other = np.minimum(other, sk.ray_plane_z(O, D, TOP + FLOOR))
     head = np.full(len(O), np.inf)
     for c, s in (CRANIUM, FACE, NOSE, *EARS):
         head = np.minimum(head, sk.ray_ellipsoid(O, D, HEAD_O + np.asarray(c), s))
-    return sk.landings(O, D, block, head)
+    on_head = sk.landings(O, D, np.minimum(other, hair_t), head)
+    on_hair = []
+    for i in np.flatnonzero(np.isfinite(hair_t) & (hair_t < other) & (hair_t < head) & (hair_t < sk.MAX_RANGE)):
+        k = int(hair_k[i])
+        on_hair.append((k, sk.strand_landing(O[i], D[i], A[k], B[k], LOCK_R)))
+    return on_head, on_hair
 
 
 _WET = {"key": None, "episode": None, "grid": {}}
 
 
+def _fresh():
+    grid = {p.name: np.zeros(sk.GRID ** 2, bool) for p in PATCHES}
+    grid.update({b.name: np.zeros(sk.RING_AROUND * sk.RING_ALONG, bool) for b in BANDS})
+    return grid
+
+
 def update(objects):
-    """Wet the patches' grid points the jets land on now (once per control step)."""
+    """Wet the patches' and bands' grid points the jets land on now (once per control step)."""
     key = (_RUN["episode"], _RUN["step"])
     if _RUN["env"] is not None and _WET["key"] == key:
         return
     alone = _RUN["env"] is None and TEST_GRIPPERS is None  # an offline check of one state: judge it alone
     if _WET["episode"] != _RUN["episode"] or alone:
-        _WET.update(episode=_RUN["episode"], grid={p.name: np.zeros(sk.GRID ** 2, bool) for p in PATCHES})
+        _WET.update(episode=_RUN["episode"], grid=_fresh())
     _WET["key"] = key
-    hits = spray_landings(objects)
+    hits, hair_hits = spray_landings(objects)
     before = patch_states() if DIAG and _RUN["env"] is not None else None
     for p in PATCHES:
         near = hits[np.linalg.norm(hits - p.c, axis=1) < PATCH_SIDE + sk.SPLASH_R] if len(hits) else hits
         _WET["grid"][p.name] |= p.wet_by(near)
+    if hair_hits:
+        caps = hair_capsules(objects)
+        for b in BANDS:
+            pts = np.array([q for k, q in hair_hits if k == b.link])
+            if len(pts):
+                ring = b.points(caps[b.link][0], caps[b.link][1])
+                d = np.linalg.norm(ring[:, None, :] - pts[None, :, :], axis=2)
+                _WET["grid"][b.name] |= (d <= sk.SPLASH_R).any(axis=1)
     if before is not None:
         after = patch_states()
         t = _RUN["step"]
@@ -398,22 +479,21 @@ def update(objects):
                           f"approach {np.round(rot[:, 2], 2).tolist()}", flush=True)
         if after != before or t % 20 == 0:
             o, R = spray_pose(objects)
-            w1 = PATCHES[0].c
-            caps = hair_capsules(objects)
-            hd = min(np.linalg.norm(0.5 * (a + b) - w1) for a, b, _ in caps)
-            fr = {p.name: round(float(_WET["grid"][p.name].mean()), 2) for p in PATCHES}
+            fr = {k: round(float(v.mean()), 2) for k, v in _WET["grid"].items() if v.any()}
             print(f"HR ep {_RUN['episode']} step {t} way {current_way()} spray {np.round(o - (0, 0, TOP), 3).tolist()} "
-                  f"face_z {R[2, 2]:+.2f} hits {len(hits)} hair_to_crown {hd:.3f} wet {fr}", flush=True)
+                  f"face_z {R[2, 2]:+.2f} hits {len(hits)} hair {len(hair_hits)} wet {fr}", flush=True)
 
 
 def patch_states():
-    """{patch: wet?}: must-wet patches need WET_FRACTION of their area, must-dry ones fail on any wetting."""
+    """{unit: wet?}: a scalp patch is wet with WET_FRACTION of its area red, a tail band with BAND_FRACTION of its
+    surface; a face or ear unit (the forehead strip: any of its nine squares) is wet on any red at all."""
     if TEST_WET is not None:
-        return {p.name: bool(TEST_WET.get(p.name, False)) for p in PATCHES}
-    out = {}
-    for p in PATCHES:
-        g = _WET["grid"][p.name]
-        out[p.name] = bool(g.mean() >= sk.WET_FRACTION) if p.must_wet else bool(g.any())
+        return {u: bool(TEST_WET.get(u, False)) for u in MUST_WET + MUST_DRY}
+    g = _WET["grid"]
+    out = {u: bool(g[u].mean() >= sk.WET_FRACTION) for u in SCALP}
+    out.update({b.name: bool(g[b.name].mean() >= BAND_FRACTION) for b in BANDS})
+    for u in MUST_DRY:
+        out[u] = any(bool(g[p].any()) for p, uu in UNIT_OF.items() if uu == u)
     return out
 
 
@@ -435,20 +515,22 @@ def spray_put_back(objects):
 
 
 def score(objects):
-    """1.0: both scalp patches wet, face and ears dry, spray laid back face down in the basin. 0.75: the same with
-    the spray not laid back. 0.5: one scalp patch wet, face and ears dry. 0.25: both scalp patches wet but the
-    forehead or an ear wet. 0 otherwise (nothing wet; one scalp patch with the face or an ear wet)."""
+    """Must wet (9): six scalp patches (hairline, top left and right, crown under the tail, crown left and right)
+    and three bands round the tail. Must stay dry (9 units): the forehead strip, each eye, each cheek, each ear's
+    front and outside. With no red on the face or ears: all nine wet and the spray laid back 1.0; all nine wet,
+    spray not laid back 0.75; 6-8 wet 0.5; 1-5 wet 0.25; none 0. With red on the face or an ear: all nine wet
+    0.25, otherwise 0."""
     update(objects)
     st = patch_states()
     n_wet = sum(st[n] for n in MUST_WET)
     dry_ok = not any(st[n] for n in MUST_DRY)
-    if n_wet == 2 and dry_ok:
+    if not dry_ok:
+        return 0.25 if n_wet == len(MUST_WET) else 0.0
+    if n_wet == len(MUST_WET):
         return 1.0 if spray_put_back(objects) else 0.75
-    if n_wet == 1 and dry_ok:
+    if n_wet >= FULL_SHARE:
         return 0.5
-    if n_wet == 2:
-        return 0.25
-    return 0.0
+    return 0.25 if n_wet >= 1 else 0.0
 
 
 def success(objects):
@@ -525,9 +607,18 @@ PINCH = -0.0105  # 21 mm between the pads on the 25 mm handle
 SPRAY_OPEN = -0.022  # 44 mm: the fingers open only this far beside the basin's near tube
 SPRAY_LET_GO = -0.028  # 56 mm when letting go, so the rising fingers clear the handle
 PARK = {"left": (np.array((0.17, 0.25, TOP + 0.21)), G), "right": (np.array((0.17, -0.25, TOP + 0.21)), G)}
-W1_TILT, W2_TILT, AIM_DIST, W1_DIST = 64.0, 60.0, 0.075, 0.090
-W2_YAW, W1_YAW = -25.0, -38.0  # the spray comes from behind and to the robot's left
-SHIELD_LEAN, SHIELD_PITCH = 45.0, 20.0
+W1_TILT, W2_TILT, AIM_DIST, W1_DIST = 64.0, 30.0, 0.066, 0.090
+W2_YAW, W1_YAW = -30.0, -38.0  # the spray comes from behind and to the robot's left
+SHIELD_LEAN, SHIELD_PITCH, SHIELD_TIP_Y = 45.0, 22.0, 0.012
+CROWN_LOW = (0.230, 0.110, 0.170)  # beside the head, left of the lifted tail: the spray turns here, then goes in
+CROWN_TURN_EARLY = True  # turn the spray to its crown angle while still beside the head, away from the tail
+CROWN_ENTRY = -0.03  # the spray comes to the crown aim from this far below it
+CARELESS_TILT = 40.0  # the no-shield ways aim at the hairline patch itself from 40 degrees
+HAIRLINE_BACK = 0.014  # the hairline aim point sits this far behind the hairline patch (toward the robot)
+SHIELD_ROLL = 0.0  # the shield hand turned about its own fingers' direction
+SHIELD_X, SHIELD_UP = 0.077, 0.007  # head-frame x of the shield's fingertips, their height over the scalp
+SWAY_HAIRLINE, SWAY_CROWN, SWAY_SPOT = 0.006, 0.012, 0.008  # side-to-side sway of the spray (spots: the old 8 mm)
+TAIL_TILT, TAIL_DIST, TAIL_YAW = 55.0, 0.085, -30.0  # rinsing the tail from behind-left, at each band in turn
 SWEEP_Z = TOP + FLOOR + CZ + 0.010  # fingertips just above the crown's widest line
 
 
@@ -599,9 +690,14 @@ def hair_pick():
 
 
 HAIR_OPEN, HAIR_PINCH = FINGER_OPEN, -0.009  # 94 mm open across the hair, closed to 18 mm on the 24 mm tail
-HAIR_HOLD = np.array((0.180, -0.050, TOP + 0.275))  # the hair held up and back, off the crown
+HAIR_HOLD = np.array((0.220, -0.100, TOP + 0.250))  # the hair held up, back and to the right, off the crown
 HAIR_HOLD_PITCH = 30.0
 BEHIND_HEAD = np.array((0.250, -0.080, TOP + 0.200))  # the right hand passes here, clear of the back of the head
+
+
+def band_start(b):
+    """A tail band's centre in the start shape (the tail lies there, untouched, until the right hand lifts it)."""
+    return hair_kit.world_centres(LOCK_NAMES[0])[b.link]
 
 
 def plan(way):
@@ -611,13 +707,16 @@ def plan(way):
     above = lambda: spray_grasp()[0] + (0.0, 0.0, 0.10)  # noqa: E731
     w1 = [p for p in PATCHES if p.name == "crown"][0]
     w2 = [p for p in PATCHES if p.name == "hairline"][0]
-    aimA, rotA = spray_tcp_for(w2.c, W2_TILT, AIM_DIST, W2_YAW)
+    if way in ("noshield", "careless"):  # no hand at the brow, and the spray aimed at the hairline itself, steeper
+        aimA, rotA = spray_tcp_for(w2.c, CARELESS_TILT, AIM_DIST, W2_YAW)
+    else:
+        aimA, rotA = spray_tcp_for(w2.c - (HAIRLINE_BACK, 0.0, 0.0), W2_TILT, AIM_DIST, W2_YAW)
     aimB, rotB = spray_tcp_for(w1.c, W1_TILT, W1_DIST, W1_YAW)
     wait = (np.array((0.225, 0.140, TOP + 0.200)), Rz(math.pi / 2) @ G0)  # head toward the robot, jets down
     # shield: the right hand leaned sideways, its closed fingertips 10 mm above the forehead between the hairline
     # patch and the forehead patch, its body up to the robot's right: a wall across the jets' path to the forehead
-    sh_tip = HEAD_O + cranium_point(0.5 * (W2_X + D1_X) + 0.004)[0] + np.array((0.0, 0.012, 0.010))
-    sh_rot = Rx(math.radians(SHIELD_LEAN)) @ pitched(SHIELD_PITCH)
+    sh_tip = HEAD_O + cranium_point(SHIELD_X)[0] + np.array((0.0, SHIELD_TIP_Y, SHIELD_UP))
+    sh_rot = Rx(math.radians(SHIELD_LEAN)) @ pitched(SHIELD_PITCH) @ Rz(math.radians(SHIELD_ROLL))
     sh_tcp = sh_tip - sh_rot[:, 2] * sk.HAND_TIP
     hold_rot = pitched(HAIR_HOLD_PITCH)
     C, O = 0.0, FINGER_OPEN
@@ -636,11 +735,20 @@ def plan(way):
           _w(0.6, grip0, rot0, PINCH, "pinch"), _w(1.2, above, rot0, PINCH, "lift"),
           _w(0.8, above, rot0, PINCH, "settle")]
     # stage A: the hairline, with a slow side-to-side sweep
-    L.append(_w(2.0, aimA + (0.0, 0.0, 0.03), rotA, PINCH, "to hairline"))
-    for k, dy in enumerate((0.0, 0.008, -0.008, 0.008, -0.008, 0.0)):
+    swA = SWAY_SPOT if way == "spots" else SWAY_HAIRLINE
+    L.append(_w(2.0, aimA + (-0.04, 0.0, 0.0), rotA, PINCH, "to hairline"))
+    for k, dy in enumerate((0.0, swA, -swA, swA, -swA, 0.0)):
         L.append(_w(0.8, aimA + (0.0, dy, 0.0), rotA, PINCH, f"rinse hairline {k}"))
-    L.append(_w(1.5, np.array((CROWN_X - 0.060, 0.030, TOP + 0.215)), Ry(-math.radians(25.0)) @ G0, PINCH,
-                "spray down onto the hair"))
+    # the tail where it lies over the back of the head: each band in turn, from the top down
+    if way == "spots":
+        L.append(_w(1.5, np.array((CROWN_X - 0.060, 0.030, TOP + 0.215)), Ry(-math.radians(25.0)) @ G0, PINCH,
+                    "spray down onto the hair"))
+        L += [_w(1.0, *wait, PINCH, f"rinse tail {k}") for k in range(len(BANDS))]
+    else:
+        for k, b in enumerate(BANDS):
+            aim = spray_tcp_for(band_start(b), TAIL_TILT, TAIL_DIST, TAIL_YAW)
+            L.append(_w(1.5 if k == 0 else 1.0, *aim, PINCH, "spray down onto the hair" if k == 0 else f"rinse tail {k}"))
+        L.append(_w(1.0, *aim, PINCH, f"rinse tail {len(BANDS)}"))
     L.append(_w(1.5, *wait, PINCH, "spray down to the basin"))
     tA = sum(w.duration for w in L)
     t_r = sum(w.duration for w in Rt)
@@ -667,9 +775,10 @@ def plan(way):
     tR = sum(w.duration for w in Rt)
     L.append(_w(max(0.5, tR - sum(w.duration for w in L)), *wait, PINCH, "wait"))
     # stage B: the crown, from behind and to the left, under the lifted hair
-    L.append(_w(1.5, *wait, PINCH, "behind the head"))
-    L.append(_w(2.0, aimB + (0.0, 0.0, -0.02), rotB, PINCH, "to crown"))
-    for k, dy in enumerate((0.0, 0.008, -0.008, 0.008, -0.008, 0.0)):
+    L.append(_w(1.5, np.array(CROWN_LOW) + (0.0, 0.0, TOP), rotB if CROWN_TURN_EARLY else wait[1], PINCH, "behind the head"))
+    L.append(_w(2.0, aimB + (0.0, 0.0, CROWN_ENTRY), rotB, PINCH, "to crown"))
+    swB = SWAY_SPOT if way == "spots" else SWAY_CROWN
+    for k, dy in enumerate((0.0, swB, -swB, swB, -swB, 0.0)):
         L.append(_w(0.8, aimB + (0.0, dy, 0.0), rotB, PINCH, f"rinse crown {k}"))
     L += [_w(2.0, above, rot0, PINCH, "spray back down"),
           _w(1.2, lambda: spray_grasp()[0] + (0.0, 0.0, 0.001), rot0, PINCH, "lay down"),
@@ -727,6 +836,6 @@ class WayWaypoint(Waypoint):
 
 def demo():
     base = _plan_of("rinse")
-    for way in ("noshield", "toponly", "careless"):
+    for way in ("noshield", "toponly", "careless", "spots"):
         assert [w.duration for a in base for w in base[a]] == [w.duration for a in base for w in _plan_of(way)[a]]
     return {arm: [WayWaypoint(arm, i, w) for i, w in enumerate(ws)] for arm, ws in base.items()}

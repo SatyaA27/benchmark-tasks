@@ -70,7 +70,7 @@ GOAL_POSES = {
 }
 START, GOAL = layout(START_POSES), layout(GOAL_POSES)
 
-GOAL_MODULE = {'TEST_WET': "{'crown': True, 'hairline': True}"}
+GOAL_MODULE = {'TEST_WET': '{u: True for u in MUST_WET}'}
 
 
 def test_the_task_loads_with_its_loose_objects():
@@ -107,22 +107,32 @@ def test_success_waits_for_the_objects_to_settle(monkeypatch):
 CASES = [
     ('untouched start', START_POSES, {
     }, 0, {}),
-    ('hairline only (the hair was never moved off the crown)', START_POSES, {
-    }, 0.5, {'TEST_WET': "{'hairline': True}"}),
-    ('crown only', START_POSES, {
-    }, 0.5, {'TEST_WET': "{'crown': True}"}),
-    ('both scalp patches, forehead wet (no shield)', START_POSES, {
-    }, 0.25, {'TEST_WET': "{'crown': True, 'hairline': True, 'forehead': True}"}),
-    ('both scalp patches, an ear wet', START_POSES, {
-    }, 0.25, {'TEST_WET': "{'crown': True, 'hairline': True, 'left_ear': True}"}),
-    ('hairline and forehead wet only', START_POSES, {
-    }, 0, {'TEST_WET': "{'hairline': True, 'forehead': True}"}),
-    ('both scalp patches, spray left lying face up in the basin', START_POSES, {
+    ('only the two old scalp spots wet (crown and hairline)', START_POSES, {
+    }, 0.25, {'TEST_WET': "{'crown': True, 'hairline': True}"}),
+    ('hair never lifted, every place but the crown under the tail wet', START_POSES, {
+    }, 0.5, {'TEST_WET': "{u: u != 'crown' for u in MUST_WET}"}),
+    ('six of nine wet (tail never rinsed)', START_POSES, {
+    }, 0.5, {'TEST_WET': '{u: True for u in SCALP}'}),
+    ('five of nine wet', START_POSES, {
+    }, 0.25, {'TEST_WET': '{u: True for u in SCALP[:5]}'}),
+    ('everything wet but red on the left eye', START_POSES, {
+    }, 0.25, {'TEST_WET': "{**{u: True for u in MUST_WET}, 'left_eye': True}"}),
+    ('everything wet but red on the right cheek', START_POSES, {
+    }, 0.25, {'TEST_WET': "{**{u: True for u in MUST_WET}, 'right_cheek': True}"}),
+    ('everything wet but red on the forehead strip (no shield)', START_POSES, {
+    }, 0.25, {'TEST_WET': "{**{u: True for u in MUST_WET}, 'forehead_strip': True}"}),
+    ('everything wet but red on an ear front', START_POSES, {
+    }, 0.25, {'TEST_WET': "{**{u: True for u in MUST_WET}, 'right_ear_front': True}"}),
+    ('eight of nine wet and an eye wet', START_POSES, {
+    }, 0, {'TEST_WET': "{**{u: u != 'crown' for u in MUST_WET}, 'right_eye': True}"}),
+    ('two old scalp spots and the forehead wet', START_POSES, {
+    }, 0, {'TEST_WET': "{'crown': True, 'hairline': True, 'forehead_strip': True}"}),
+    ('everything wet, spray left lying face up in the basin', START_POSES, {
         'hand_spray': {'pos': (0.22, 0.09, 0.79), 'yaw_deg': 90, 'tilt_deg': 180, 'tilt_axis': 'x'},
-    }, 0.75, {'TEST_WET': "{'crown': True, 'hairline': True}"}),
-    ('both scalp patches, spray dropped on the table outside the basin', START_POSES, {
+    }, 0.75, {'TEST_WET': '{u: True for u in MUST_WET}'}),
+    ('everything wet, spray dropped on the table outside the basin', START_POSES, {
         'hand_spray': {'pos': (0.4, -0.4, 0.76), 'yaw_deg': 90},
-    }, 0.75, {'TEST_WET': "{'crown': True, 'hairline': True}"}),
+    }, 0.75, {'TEST_WET': '{u: True for u in MUST_WET}'}),
 ]
 
 
