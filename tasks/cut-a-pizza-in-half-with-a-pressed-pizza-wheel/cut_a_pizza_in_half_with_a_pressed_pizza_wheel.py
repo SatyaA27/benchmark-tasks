@@ -195,6 +195,10 @@ CUT_AXLE_Z = K_H - GUARD[0][2] + GUARD[1][2] / 2      # axle above the desk with
 
 WOOD, WOOD_D = (0.62, 0.40, 0.22), (0.45, 0.28, 0.15)
 CRUST, SAUCE, CHEESE, PEPPERONI = (0.82, 0.58, 0.30), (0.70, 0.14, 0.07), (0.98, 0.85, 0.48), (0.60, 0.12, 0.09)
+TAPE, TAPE_W = (0.20, 0.45, 0.85), 0.018
+# Where the wheel is laid down: a 140 x 140 mm taped rectangle on the table to the right of (and beyond) the board.
+# (Probes: standing the wheel back in the block's 12 mm slot was not reliable; it toppled out in three demos.)
+MAT_X, MAT_Y, MAT_HALF = 0.360, -0.340, 0.070
 RED, DARK, STEEL, BLOCK = (0.80, 0.08, 0.08), (0.12, 0.12, 0.13), (0.55, 0.57, 0.60), (0.30, 0.20, 0.12)
 
 
@@ -263,6 +267,12 @@ def _block():
     end = (K_L - SLOT_L) / 2
     for sx in (-1, 1):
         s.append(box((sx * (SLOT_L / 2 + end / 2), 0.0, (K_FLOOR + K_H) / 2), (end, SLOT_W, K_H - K_FLOOR), BLOCK))
+    # The taped rectangle where the wheel is laid down (blue painter's tape, 18 mm wide, inside the 140 mm outline),
+    # carried by this fixed part so it is drawn; block frame: world (dx, dy) = (-ly, lx) at the block's 90 deg yaw.
+    lx, ly, w, t = MAT_Y - KY, -(MAT_X - KX), TAPE_W, 0.0004
+    for k in (-1, 1):
+        s.append(box((lx + k * (MAT_HALF - w / 2), ly, t / 2), (w, 2 * MAT_HALF, t), TAPE))
+        s.append(box((lx, ly + k * (MAT_HALF - w / 2), t / 2), (2 * MAT_HALF - 2 * w, w, t), TAPE))
     return Part("block", (KX, KY, TOP), s, mass=None, color=BLOCK, yaw=K_YAW, friction=(0.6, 0.5))
 
 
@@ -430,6 +440,18 @@ def wheel_held(cutter_state, pts):
     return False
 
 
+
+
+def wheel_on_mat(cutter_state):
+    """The wheel rests on the table inside the taped rectangle: its axle inside the rectangle (seen from above) and
+    at most 90 mm above the table (however it lies or leans on the table; the axle cannot be higher unless the wheel
+    is held up. A 60 mm limit wrongly failed a wheel resting tipped on its guard at 64 mm, demo-1ab19d54-a1)."""
+    if cutter_state is None:
+        return False
+    o = np.asarray(cutter_state.origin, float)
+    return bool(abs(o[0] - MAT_X) <= MAT_HALF and abs(o[1] - MAT_Y) <= MAT_HALF and o[2] - TOP <= 0.090)
+
+
 def _follow(objects):
     """Once per control step: board movement, the wheel's contact and force, the cut map, pieces freed."""
     ep = _episode()
@@ -498,7 +520,8 @@ def status(objects):
     if TEST_MOVE is None and _RUN["t"] is None:
         move, turn = float(math.hypot(b.origin[0] - BX, b.origin[1] - BY)), 0.0
     held = bool(TEST_HELD) if TEST_HELD is not None else ep["held"]
-    return dict(seams=seams, out=out, move=move, turn=turn, held=held, tipped=b.tilt_deg() > 30.0,
+    home = wheel_on_mat(objects["cutter"] if "cutter" in objects else None)
+    return dict(seams=seams, out=out, move=move, turn=turn, held=held, home=home, tipped=b.tilt_deg() > 30.0,
                 off=float(b.origin[2]) < TOP - 0.05)
 
 
@@ -533,7 +556,13 @@ def score(objects):
     n = sum(st["seams"])
     if n == 0 or st["tipped"] or st["off"]:
         return 0.0
-    return min(seam_tier(n), draw_tier(st["out"]), move_tier(st["move"], st["turn"]), 0.75 if st["held"] else 1.0)
+    return min(seam_tier(n), draw_tier(st["out"]), move_tier(st["move"], st["turn"]), wheel_tier(st["held"], st["home"]))
+
+
+def wheel_tier(held, home):
+    """Pizza wheel put down: lying in the taped rectangle and let go = 1.0; let go anywhere else = 0.75; still in the
+    hand = 0.5."""
+    return 0.5 if held else 1.0 if home else 0.75
 
 
 def success(objects):
@@ -847,15 +876,12 @@ def demo():
                     kyaw))
     right[-1]._where = lambda: (_hold_offset(), take() + np.array([0.0, 0.0, 0.066]))[1]
     right += cut("A")
-    back = lambda: _cutter_start() - _rz(kyaw) @ _hold_offset()  # noqa: E731
+    mat = lambda h: np.array([MAT_X, MAT_Y, TOP + R_W + h]) - _rz(kyaw) @ _hold_offset()  # noqa: E731  (axle h over)
     right += [
-        At(2.5, lambda: back() + np.array([0.0, 0.0, 0.066]), WHEEL_PINCH, "right: carry the wheel over its block", kyaw),
-        At(0.8, lambda: back() + np.array([0.0, 0.0, 0.040]), WHEEL_PINCH, "right: line the wheel up over the slot",
-           lambda: _align_slot(kyaw)),
-        At(1.4, lambda: back() + np.array([0.0, 0.0, 0.004]), WHEEL_PINCH, "right: lower it into the slot",
-           lambda: _align_slot(kyaw)),
-        At(0.6, lambda: back() + np.array([0.0, 0.0, 0.004]), FINGER_OPEN, "right: let go", kyaw),
-        At(0.8, lambda: back() + np.array([0.0, 0.0, 0.045]), FINGER_OPEN, "right: rise clear", kyaw),
+        At(2.5, lambda: mat(0.09), WHEEL_PINCH, "right: carry the wheel over the taped rectangle", kyaw),
+        At(1.4, lambda: mat(0.008), WHEEL_PINCH, "right: lower it until the wheel is just above the table", kyaw),
+        At(0.8, lambda: mat(0.008), FINGER_OPEN, "right: let go (the wheel settles onto its side)", kyaw),
+        At(1.0, lambda: mat(0.090), FINGER_OPEN, "right: rise clear of the handle", kyaw),
     ]
     # Draw half 1 (the far half) 45 mm along the board's -x (toward the robot's right and away), fingertips pressed
     # on it 38 mm out along its bisector.

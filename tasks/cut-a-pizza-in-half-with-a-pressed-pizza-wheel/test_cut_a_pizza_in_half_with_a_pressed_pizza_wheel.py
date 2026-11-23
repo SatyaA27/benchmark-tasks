@@ -79,7 +79,7 @@ START_POSES = {
 }
 GOAL_POSES = {
     'board': {'pos': (0.225, -0.155, 0.7495), 'yaw_deg': 135, 'joints': {'s0': 0.0, 's1': -0.035}},
-    'cutter': {'pos': (0.24, -0.39, 0.8205), 'yaw_deg': 90, 'joints': {'wheel': 0.0}},
+    'cutter': {'pos': (0.36, -0.34, 0.7625), 'yaw_deg': 90, 'tilt_deg': 90, 'tilt_axis': 'x', 'joints': {'wheel': 0.0}},
 }
 START, GOAL = layout(START_POSES), layout(GOAL_POSES)
 
@@ -88,7 +88,7 @@ GOAL_MODULE = {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 
 
 def test_the_task_loads_with_its_loose_objects():
     assert TASK.scene == "station"
-    assert set(TASK.free_objects) == {'board', 'cutter'}
+    assert set(TASK.free_objects) == {'cutter', 'board'}
     assert TASK.docs and TASK.docs.strip()
 
 
@@ -112,7 +112,16 @@ CASES = [
     }, 0, {}),
     ('all cut, half drawn, board steady, but the wheel still in the hand', START_POSES, {
         'board': {'pos': (0.225, -0.155, 0.7495), 'yaw_deg': 135, 'joints': {'s0': 0.0, 's1': -0.035}},
-    }, 0.75, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'True'}),
+    }, 0.5, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'True'}),
+    ('all cut, half drawn, board steady, wheel let go lying on the table outside the taped rectangle', START_POSES, {
+        'board': {'pos': (0.225, -0.155, 0.7495), 'yaw_deg': 135, 'joints': {'s0': 0.0, 's1': -0.035}},
+        'cutter': {'pos': (0.14, -0.34, 0.7625), 'yaw_deg': 90, 'tilt_deg': 90, 'tilt_axis': 'x', 'joints': {'wheel': 0.0}},
+    }, 0.75, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'False'}),
+    ('all cut, half drawn, board steady, wheel let go standing back in its block (not in the rectangle)', START_POSES, {
+        'board': {'pos': (0.225, -0.155, 0.7495), 'yaw_deg': 135, 'joints': {'s0': 0.0, 's1': -0.035}},
+    }, 0.75, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'False'}),
+    ('wheel lying in the taped rectangle but still pinched in the hand', GOAL_POSES, {
+    }, 0.5, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'True'}),
     ('all cut, half drawn only 20 mm', START_POSES, {
         'board': {'pos': (0.225, -0.155, 0.7495), 'yaw_deg': 135, 'joints': {'s0': 0.0, 's1': -0.02}},
     }, 0.75, {'TEST_CUTS': '(1, 1)', 'TEST_MOVE': '(0.004, 1.0)', 'TEST_HELD': 'False'}),
